@@ -1,0 +1,3016 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FakeLavv | SHOP</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        :root {
+            --black: #000000;
+            --dark: #0a0a0a;
+            --gray: #1a1a1a;
+            --light-gray: #2a2a2a;
+            --white: #ffffff;
+            --accent: #888888;
+            
+            /* Цвета бейджиков */
+            --badge-owner: #ff4444;
+            --badge-creator: #ff8800;
+            --badge-dev: #4488ff;
+            --badge-sponsor: #ffdd00;
+            --badge-premium: #aa44ff;
+            --badge-buyer: #44ff88;
+            --badge-vip: #ff44aa;
+            --badge-mod: #44aaff;
+            --badge-helper: #44ffaa;
+            --badge-new: #888888;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: var(--black);
+            color: var(--white);
+            min-height: 100vh;
+            overflow-x: hidden;
+            font-size: 14px;
+            line-height: 1.6;
+            cursor: none;
+        }
+
+        /* ===== КАСТОМНЫЙ КУРСОР ===== */
+        .cursor {
+            position: fixed;
+            width: 24px;
+            height: 24px;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            z-index: 9999;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            transition: width 0.2s, height 0.2s, border-color 0.2s, background 0.2s;
+            will-change: transform;
+            mix-blend-mode: difference;
+        }
+
+        .cursor.hover {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .cursor.click {
+            width: 15px;
+            height: 15px;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        /* ===== ЗАГРУЗКА ===== */
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            transition: opacity 0.5s ease, visibility 0.5s;
+        }
+
+        .loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .loader-logo {
+            font-size: 3rem;
+            font-weight: 900;
+            background: linear-gradient(90deg, #333, #888, #fff, #888, #333);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: shine 2s linear infinite;
+            margin-bottom: 2rem;
+        }
+
+        @keyframes shine {
+            to { background-position: 200% center; }
+        }
+
+        .loader-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top-color: #888;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loader-progress {
+            width: 250px;
+            height: 3px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 1.5rem;
+        }
+
+        .loader-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #444, #888);
+            width: 0%;
+            transition: width 0.2s ease;
+        }
+
+        /* ===== НАВИГАЦИЯ ===== */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 10, 10, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding: 1rem 2rem;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            animation: slideDown 0.6s ease;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            background: linear-gradient(90deg, #fff, #888);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-tab {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #aaa;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+            cursor: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-tab::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .nav-tab:hover::before {
+            left: 100%;
+        }
+
+        .nav-tab:hover, .nav-tab.active {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border-color: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .nav-tab .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ff4444;
+            color: #fff;
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-weight: 700;
+            animation: pulse-badge 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse-badge {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* ===== БЕЙДЖИКИ ===== */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: 2px solid;
+            box-shadow: 0 0 15px currentColor;
+            animation: badge-glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes badge-glow {
+            from { box-shadow: 0 0 5px currentColor; }
+            to { box-shadow: 0 0 20px currentColor, 0 0 30px currentColor; }
+        }
+
+        .badge-owner {
+            background: linear-gradient(135deg, rgba(255,68,68,0.2), rgba(255,68,68,0.05));
+            border-color: var(--badge-owner);
+            color: #ff6666;
+        }
+
+        .badge-creator {
+            background: linear-gradient(135deg, rgba(255,136,0,0.2), rgba(255,136,0,0.05));
+            border-color: var(--badge-creator);
+            color: #ffaa44;
+        }
+
+        .badge-dev {
+            background: linear-gradient(135deg, rgba(68,136,255,0.2), rgba(68,136,255,0.05));
+            border-color: var(--badge-dev);
+            color: #66aaff;
+        }
+
+        .badge-sponsor {
+            background: linear-gradient(135deg, rgba(255,221,0,0.2), rgba(255,221,0,0.05));
+            border-color: var(--badge-sponsor);
+            color: #ffee44;
+        }
+
+        .badge-premium {
+            background: linear-gradient(135deg, rgba(170,68,255,0.2), rgba(170,68,255,0.05));
+            border-color: var(--badge-premium);
+            color: #cc88ff;
+        }
+
+        .badge-buyer {
+            background: linear-gradient(135deg, rgba(68,255,136,0.2), rgba(68,255,136,0.05));
+            border-color: var(--badge-buyer);
+            color: #66ffaa;
+        }
+
+        .badge-vip {
+            background: linear-gradient(135deg, rgba(255,68,170,0.2), rgba(255,68,170,0.05));
+            border-color: var(--badge-vip);
+            color: #ff88cc;
+        }
+
+        .badge-mod {
+            background: linear-gradient(135deg, rgba(68,170,255,0.2), rgba(68,170,255,0.05));
+            border-color: var(--badge-mod);
+            color: #88ccff;
+        }
+
+        .badge-helper {
+            background: linear-gradient(135deg, rgba(68,255,170,0.2), rgba(68,255,170,0.05));
+            border-color: var(--badge-helper);
+            color: #88ffcc;
+        }
+
+        .badge-new {
+            background: linear-gradient(135deg, rgba(136,136,136,0.2), rgba(136,136,136,0.05));
+            border-color: var(--badge-new);
+            color: #aaaaaa;
+        }
+
+        .badge-small {
+            padding: 0.15rem 0.5rem;
+            font-size: 0.65rem;
+        }
+
+        .badge-large {
+            padding: 0.5rem 1.2rem;
+            font-size: 0.9rem;
+        }
+
+        /* ===== ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ С БЕЙДЖИКАМИ ===== */
+        .user-profile {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .user-profile::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--badge-owner), var(--badge-dev), var(--badge-premium));
+        }
+
+        .user-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #333, #555);
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            border: 3px solid rgba(255,255,255,0.1);
+            position: relative;
+        }
+
+        .user-avatar::after {
+            content: '';
+            position: absolute;
+            inset: -5px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            border-top-color: var(--badge-premium);
+            border-right-color: var(--badge-dev);
+            animation: avatar-rotate 4s linear infinite;
+        }
+
+        @keyframes avatar-rotate {
+            to { transform: rotate(360deg); }
+        }
+
+        .user-name {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .user-badges {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+
+        .user-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .user-stat {
+            text-align: center;
+        }
+
+        .user-stat-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #fff;
+        }
+
+        .user-stat-label {
+            font-size: 0.8rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* ===== КОНТЕЙНЕР ===== */
+        .container {
+            max-width: 1200px;
+            margin: 80px auto 0;
+            padding: 2rem;
+        }
+
+        .tab-content {
+            display: none;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+            animation: fadeInUp 0.5s ease;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.2rem;
+            margin-bottom: 2rem;
+            color: #fff;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            position: relative;
+            padding-bottom: 1rem;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 10px rgba(255,255,255,0.1); }
+            to { text-shadow: 0 0 20px rgba(255,255,255,0.3), 0 0 30px rgba(255,255,255,0.1); }
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #888, transparent);
+        }
+
+        /* ===== ГЕРОЙ ===== */
+        .hero {
+            padding: 2rem 0;
+        }
+
+        .hero-content {
+            display: flex;
+            gap: 3rem;
+            align-items: center;
+            margin-bottom: 3rem;
+        }
+
+        @media (max-width: 900px) {
+            .hero-content {
+                flex-direction: column;
+            }
+        }
+
+        .hero-text {
+            flex: 1;
+            animation: slideInLeft 0.8s ease;
+        }
+
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .hero-title {
+            font-size: 3rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            background: linear-gradient(90deg, #fff, #888);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .hero-subtitle {
+            font-size: 1.3rem;
+            color: #888;
+            margin-bottom: 1.5rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .hero-description {
+            font-size: 1.1rem;
+            color: #aaa;
+            line-height: 1.8;
+            padding-left: 1rem;
+            border-left: 2px solid rgba(255,255,255,0.1);
+        }
+
+        .hero-highlight {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            color: #bbb;
+            font-style: italic;
+            position: relative;
+            overflow: hidden;
+            animation: slideInUp 0.8s ease 0.2s both;
+        }
+
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hero-highlight::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #888, transparent);
+            animation: scan 3s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        /* ===== МУЗЫКАЛЬНЫЙ ПЛЕЕР ===== */
+        .music-player-main {
+            flex: 0 0 400px;
+            perspective: 1000px;
+            animation: slideInRight 0.8s ease;
+        }
+
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .music-player {
+            background: rgba(20,20,20,0.8);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            transform-style: preserve-3d;
+            transition: transform 0.1s ease-out;
+            will-change: transform;
+        }
+
+        .cover-container {
+            width: 220px;
+            height: 220px;
+            margin: 0 auto 1.5rem;
+            border-radius: 15px;
+            overflow: hidden;
+            border: 2px solid rgba(255,255,255,0.1);
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .cover-container.playing .cover-image {
+            animation: rotate 10s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .cover-image {
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            border-radius: 15px;
+        }
+
+        .cover-image::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 50px;
+            height: 50px;
+            background: rgba(0,0,0,0.8);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+
+        .visualizer-container {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 3px;
+            height: 50px;
+            margin: 1rem 0;
+            padding: 0 1rem;
+        }
+
+        .visualizer-bar {
+            width: 6px;
+            background: linear-gradient(to top, rgba(255,255,255,0.8), rgba(255,255,255,0.2));
+            border-radius: 3px;
+            transition: height 0.05s ease;
+            min-height: 3px;
+            max-height: 50px;
+        }
+
+        .track-info {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .track-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 0.3rem;
+        }
+
+        .track-artist {
+            color: #888;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            margin: 1rem 0;
+            cursor: none;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #666, #fff);
+            width: 0%;
+            border-radius: 2px;
+            transition: width 0.1s linear;
+            box-shadow: 0 0 10px rgba(255,255,255,0.3);
+        }
+
+        .time-display {
+            display: flex;
+            justify-content: space-between;
+            color: #666;
+            font-size: 0.75rem;
+            margin-bottom: 1rem;
+            font-family: monospace;
+        }
+
+        .player-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .control-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: none;
+            transition: all 0.2s;
+            font-size: 1.1rem;
+        }
+
+        .control-btn:hover {
+            background: rgba(255,255,255,0.1);
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(255,255,255,0.1);
+        }
+
+        .play-btn {
+            width: 60px;
+            height: 60px;
+            font-size: 1.3rem;
+            animation: pulse-btn 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-btn {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.2); }
+            50% { box-shadow: 0 0 0 10px rgba(255,255,255,0); }
+        }
+
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .volume-slider {
+            flex: 1;
+            height: 4px;
+            -webkit-appearance: none;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            outline: none;
+            cursor: none;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #fff;
+            cursor: none;
+            box-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+
+        /* ===== ЧАТ С БЕЙДЖИКАМИ ===== */
+        .chat-container {
+            display: flex;
+            height: 70vh;
+            background: rgba(20,20,20,0.8);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .chat-sidebar {
+            width: 280px;
+            background: rgba(0,0,0,0.3);
+            border-right: 1px solid rgba(255,255,255,0.1);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-user-info {
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        .chat-user-id {
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+
+        .chat-user-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .online-status {
+            width: 8px;
+            height: 8px;
+            background: #00ff88;
+            border-radius: 50%;
+            animation: pulse-status 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-status {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .chat-stats {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .chat-stat {
+            display: flex;
+            justify-content: space-between;
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        .chat-stat span:last-child {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .chat-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .chat-message {
+            max-width: 80%;
+            padding: 1rem 1.2rem;
+            border-radius: 15px;
+            position: relative;
+            animation: messageAppear 0.3s ease;
+        }
+
+        @keyframes messageAppear {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .chat-message.own {
+            align-self: flex-end;
+            background: linear-gradient(135deg, rgba(100,100,255,0.2), rgba(100,100,255,0.1));
+            border: 1px solid rgba(100,100,255,0.2);
+        }
+
+        .chat-message.other {
+            align-self: flex-start;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .chat-message-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        .chat-message-id {
+            color: #888;
+            font-family: monospace;
+        }
+
+        .chat-message-time {
+            color: #666;
+            font-size: 0.75rem;
+        }
+
+        .chat-message-text {
+            color: #fff;
+            line-height: 1.5;
+        }
+
+        .chat-input-area {
+            padding: 1.5rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            gap: 1rem;
+        }
+
+        .chat-input {
+            flex: 1;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 25px;
+            padding: 0.8rem 1.5rem;
+            color: #fff;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s;
+            cursor: none;
+        }
+
+        .chat-input:focus {
+            border-color: rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.08);
+        }
+
+        .chat-input::placeholder {
+            color: #666;
+        }
+
+        .chat-send-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: none;
+            transition: all 0.3s;
+            font-size: 1.2rem;
+        }
+
+        .chat-send-btn:hover {
+            background: rgba(255,255,255,0.2);
+            transform: scale(1.1);
+        }
+
+        .chat-online-users {
+            margin-top: auto;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .chat-online-title {
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .chat-online-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .chat-online-user {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+
+        .chat-online-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #444, #666);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.8rem;
+            color: #fff;
+        }
+
+        /* ===== ПРОДУКТЫ ===== */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .product-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 15px;
+            padding: 1.8rem;
+            text-align: center;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.15s ease-out, box-shadow 0.3s;
+            will-change: transform;
+            cursor: none;
+            animation: fadeInUp 0.5s ease backwards;
+        }
+
+        .product-card:nth-child(1) { animation-delay: 0.1s; }
+        .product-card:nth-child(2) { animation-delay: 0.2s; }
+        .product-card:nth-child(3) { animation-delay: 0.3s; }
+        .product-card:nth-child(4) { animation-delay: 0.4s; }
+        .product-card:nth-child(5) { animation-delay: 0.5s; }
+        .product-card:nth-child(6) { animation-delay: 0.6s; }
+
+        .product-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 15px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .product-card:hover::before {
+            opacity: 1;
+        }
+
+        .product-card:hover {
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            border-color: rgba(255,255,255,0.15);
+        }
+
+        .product-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: #fff;
+            transform: translateZ(30px);
+        }
+
+        .product-card p {
+            color: #888;
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+            transform: translateZ(20px);
+        }
+
+        .price-container {
+            margin-bottom: 1.5rem;
+            transform: translateZ(40px);
+        }
+
+        .price-from {
+            color: #666;
+            font-size: 0.9rem;
+            margin-right: 0.5rem;
+        }
+
+        .price {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #fff;
+            text-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .add-to-cart {
+            background: rgba(255,255,255,0.08);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.15);
+            padding: 0.9rem 1.8rem;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: none;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.85rem;
+            transform: translateZ(30px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .add-to-cart::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .add-to-cart:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .add-to-cart:hover {
+            background: rgba(255,255,255,0.15);
+            transform: translateZ(40px) translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        /* ===== КОРЗИНА ===== */
+        .cart-btn {
+            position: relative;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: none;
+            transition: all 0.3s;
+        }
+
+        .cart-btn:hover {
+            background: rgba(255,255,255,0.1);
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .cart-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #444;
+            color: #fff;
+            font-size: 0.75rem;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            animation: bounce 1s ease infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        .cart-sidebar {
+            position: fixed;
+            right: -400px;
+            top: 0;
+            width: 380px;
+            height: 100vh;
+            background: rgba(15,15,15,0.98);
+            border-left: 1px solid rgba(255,255,255,0.1);
+            transition: right 0.4s ease;
+            z-index: 1001;
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(10px);
+        }
+
+        .cart-sidebar.active {
+            right: 0;
+        }
+
+        .cart-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cart-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .close-cart {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: none;
+            transition: all 0.3s;
+        }
+
+        .close-cart:hover {
+            background: rgba(255,255,255,0.1);
+            transform: rotate(90deg);
+        }
+
+        .cart-items {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+        }
+
+        .empty-cart {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #555;
+        }
+
+        .empty-cart i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: rgba(255,255,255,0.03);
+            border-radius: 10px;
+            margin-bottom: 0.8rem;
+            border: 1px solid rgba(255,255,255,0.05);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .cart-footer {
+            padding: 1.5rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .cart-total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .buy-btn {
+            background: linear-gradient(90deg, #333, #555, #333);
+            background-size: 200% auto;
+            color: #fff;
+            border: none;
+            padding: 1rem;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: none;
+            width: 100%;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+            animation: gradient 3s ease infinite;
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% center; }
+            50% { background-position: 100% center; }
+            100% { background-position: 0% center; }
+        }
+
+        .buy-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        /* ===== МОДАЛЬНЫЕ ОКНА ===== */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9998;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-content {
+            background: rgba(20,20,20,0.95);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 2.5rem;
+            max-width: 450px;
+            width: 90%;
+            text-align: center;
+            transform: scale(0.9) rotateX(10deg);
+            transition: transform 0.3s;
+        }
+
+        .modal.active .modal-content {
+            transform: scale(1) rotateX(0);
+        }
+
+        /* ===== FAQ ===== */
+        .faq-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .faq-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 15px;
+            padding: 1.8rem;
+            transform-style: preserve-3d;
+            transition: transform 0.15s ease-out, box-shadow 0.3s;
+            will-change: transform;
+            cursor: none;
+            animation: fadeInUp 0.5s ease backwards;
+        }
+
+        .faq-card:nth-child(1) { animation-delay: 0.1s; }
+        .faq-card:nth-child(2) { animation-delay: 0.2s; }
+        .faq-card:nth-child(3) { animation-delay: 0.3s; }
+        .faq-card:nth-child(4) { animation-delay: 0.4s; }
+        .faq-card:nth-child(5) { animation-delay: 0.5s; }
+        .faq-card:nth-child(6) { animation-delay: 0.6s; }
+        .faq-card:nth-child(7) { animation-delay: 0.7s; }
+        .faq-card:nth-child(8) { animation-delay: 0.8s; }
+        .faq-card:nth-child(9) { animation-delay: 0.9s; }
+        .faq-card:nth-child(10) { animation-delay: 1s; }
+
+        .faq-card:hover {
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+            border-color: rgba(255,255,255,0.15);
+        }
+
+        .faq-card h3 {
+            color: #fff;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            transform: translateZ(25px);
+        }
+
+        .faq-card h3 i {
+            color: #888;
+            font-size: 1.2rem;
+            transition: all 0.3s;
+        }
+
+        .faq-card:hover h3 i {
+            color: #fff;
+            transform: scale(1.2) rotate(10deg);
+        }
+
+        .faq-card p {
+            color: #888;
+            line-height: 1.7;
+            transform: translateZ(15px);
+        }
+
+        /* ===== КОНТАКТЫ ===== */
+        .contacts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .contact-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            transform-style: preserve-3d;
+            transition: transform 0.15s ease-out, box-shadow 0.3s;
+            will-change: transform;
+            cursor: none;
+            animation: fadeInUp 0.5s ease backwards;
+        }
+
+        .contact-card:nth-child(1) { animation-delay: 0.1s; }
+        .contact-card:nth-child(2) { animation-delay: 0.2s; }
+        .contact-card:nth-child(3) { animation-delay: 0.3s; }
+        .contact-card:nth-child(4) { animation-delay: 0.4s; }
+        .contact-card:nth-child(5) { animation-delay: 0.5s; }
+        .contact-card:nth-child(6) { animation-delay: 0.6s; }
+
+        .contact-card:hover {
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+            border-color: rgba(255,255,255,0.15);
+        }
+
+        .contact-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            transform: translateZ(30px);
+            transition: transform 0.3s;
+        }
+
+        .contact-card:hover .contact-icon {
+            transform: translateZ(50px) scale(1.2);
+        }
+
+        .contact-name {
+            color: #fff;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transform: translateZ(20px);
+        }
+
+        .contact-value {
+            color: #888;
+            font-size: 0.9rem;
+            transform: translateZ(15px);
+        }
+
+        .contact-value a {
+            color: inherit;
+            text-decoration: none;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.3s;
+        }
+
+        .contact-value a:hover {
+            color: #fff;
+            border-bottom-color: #fff;
+        }
+
+        /* ===== СТРАНИЦА БЕЙДЖИКОВ ===== */
+        .badges-showcase {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .badge-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .badge-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255,255,255,0.15);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .badge-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, currentColor, transparent);
+            opacity: 0.5;
+        }
+
+        .badge-preview {
+            margin-bottom: 1.5rem;
+            transform: scale(1.2);
+        }
+
+        .badge-name {
+            font-size: 1.3rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .badge-description {
+            color: #888;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .badge-requirements {
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 1rem;
+            font-size: 0.85rem;
+            color: #aaa;
+        }
+
+        .badge-requirements strong {
+            color: #fff;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        /* ===== АДМИН-ПАНЕЛЬ БЕЙДЖИКОВ ===== */
+        .admin-panel {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .admin-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .admin-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .admin-item {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 1rem;
+            cursor: none;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .admin-item:hover {
+            background: rgba(255,255,255,0.05);
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        .admin-item.active {
+            background: rgba(100,255,100,0.1);
+            border-color: rgba(100,255,100,0.3);
+        }
+
+        /* ===== ПЛАВАЮЩИЕ ЧАСТИЦЫ ===== */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: -1;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            animation: float-particle 15s infinite;
+            will-change: transform;
+        }
+
+        @keyframes float-particle {
+            0%, 100% {
+                transform: translateY(100vh);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh);
+                opacity: 0;
+            }
+        }
+
+        /* ===== АДАПТИВНОСТЬ ===== */
+        @media (max-width: 768px) {
+            .cursor {
+                display: none;
+            }
+            
+            body {
+                cursor: auto;
+            }
+            
+            .navbar {
+                padding: 0.8rem;
+            }
+            
+            .nav-tab span {
+                display: none;
+            }
+            
+            .container {
+                margin-top: 100px;
+                padding: 1rem;
+            }
+            
+            .hero-title {
+                font-size: 2rem;
+            }
+            
+            .music-player-main {
+                flex: 1;
+                width: 100%;
+            }
+            
+            .cart-sidebar {
+                width: 100%;
+                right: -100%;
+            }
+            
+            .products-grid, .faq-grid, .contacts-grid, .badges-showcase {
+                grid-template-columns: 1fr;
+            }
+            
+            .chat-container {
+                flex-direction: column;
+                height: 80vh;
+            }
+            
+            .chat-sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid rgba(255,255,255,0.1);
+            }
+
+            .user-stats {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+            }
+
+            .chat-message-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.3rem;
+            }
+        }
+
+        /* ===== УВЕДОМЛЕНИЯ ===== */
+        .notification {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            color: #fff;
+            backdrop-filter: blur(10px);
+            z-index: 10000;
+            animation: slideInRight 0.3s ease;
+            max-width: 300px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(100px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .notification.success {
+            background: rgba(100,255,100,0.15);
+            border-color: rgba(100,255,100,0.3);
+        }
+
+        .notification.error {
+            background: rgba(255,100,100,0.15);
+            border-color: rgba(255,100,100,0.3);
+        }
+
+        /* ===== ТИПИНГ ИНДИКАТОР ===== */
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 1rem;
+            align-self: flex-start;
+        }
+
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Плавающие частицы фона -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Кастомный курсор -->
+    <div class="cursor" id="cursor"></div>
+
+    <!-- Загрузка -->
+    <div class="loader" id="loader">
+        <div class="loader-logo">FAKELAVV</div>
+        <div class="loader-spinner"></div>
+        <div class="loader-progress">
+            <div class="loader-progress-bar" id="progressBar"></div>
+        </div>
+    </div>
+
+    <!-- Навигация -->
+    <nav class="navbar">
+        <div class="logo">FAKELAVV</div>
+        <div class="nav-tabs">
+            <button class="nav-tab active" data-tab="home">
+                <i class="fas fa-home"></i>
+                <span>Главная</span>
+            </button>
+            <button class="nav-tab" data-tab="chat">
+                <i class="fas fa-comments"></i>
+                <span>Чат</span>
+                <span class="notification-badge" id="chatBadge">3</span>
+            </button>
+            <button class="nav-tab" data-tab="black">
+                <i class="fas fa-skull"></i>
+                <span>Чёрнуха</span>
+            </button>
+            <button class="nav-tab" data-tab="programming">
+                <i class="fas fa-code"></i>
+                <span>Программирование</span>
+            </button>
+            <button class="nav-tab" data-tab="design">
+                <i class="fas fa-paint-brush"></i>
+                <span>Дизайн</span>
+            </button>
+            <button class="nav-tab" data-tab="faq">
+                <i class="fas fa-question-circle"></i>
+                <span>FAQ</span>
+            </button>
+            <button class="nav-tab" data-tab="packets">
+                <i class="fas fa-gift"></i>
+                <span>Пакеты</span>
+            </button>
+            <button class="nav-tab" data-tab="badges">
+                <i class="fas fa-medal"></i>
+                <span>Бейджики</span>
+            </button>
+            <button class="nav-tab" data-tab="contacts">
+                <i class="fas fa-phone"></i>
+                <span>Контакты</span>
+            </button>
+        </div>
+        <div class="cart-btn" id="cartBtn">
+            <i class="fas fa-shopping-cart"></i>
+            <div class="cart-count" id="cartCount">0</div>
+        </div>
+    </nav>
+
+    <!-- Контент -->
+    <div class="container">
+        <!-- Главная -->
+        <div class="tab-content active" id="home">
+            <div class="hero">
+                <!-- Профиль пользователя с бейджиками -->
+                <div class="user-profile" id="userProfile">
+                    <div class="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="user-name" id="profileName">
+                        <span id="displayName">Guest</span>
+                    </div>
+                    <div class="user-badges" id="profileBadges">
+                        <span class="badge badge-new"><i class="fas fa-user"></i> New</span>
+                    </div>
+                    <div class="user-stats">
+                        <div class="user-stat">
+                            <div class="user-stat-value" id="statMessages">0</div>
+                            <div class="user-stat-label">Сообщений</div>
+                        </div>
+                        <div class="user-stat">
+                            <div class="user-stat-value" id="statPurchases">0</div>
+                            <div class="user-stat-label">Покупок</div>
+                        </div>
+                        <div class="user-stat">
+                            <div class="user-stat-value" id="statBadges">1</div>
+                            <div class="user-stat-label">Бейджиков</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hero-content">
+                    <div class="hero-text">
+                        <h1 class="hero-title">FakeLavv SHOP</h1>
+                        <div class="hero-subtitle">OSINT-специалист и Музыкант</div>
+                        <div class="hero-description">
+                            Я предлагаю широкий спектр услуг по разработке и ведению ваших проектов. 
+                            Мои решения помогут автоматизировать процессы, повысить безопасность 
+                            и разнообразить взаимодействие с пользователями.
+                        </div>
+                    </div>
+                    <div class="music-player-main" id="playerContainer">
+                        <div class="music-player" id="musicPlayer">
+                            <div class="cover-container" id="coverContainer">
+                                <div class="cover-image" id="coverImage"></div>
+                            </div>
+                            
+                            <div class="visualizer-container" id="visualizer"></div>
+                            
+                            <div class="track-info">
+                                <div class="track-title" id="trackTitle">Загрузка...</div>
+                                <div class="track-artist" id="trackArtist">FakeLavv</div>
+                            </div>
+                            <div class="time-display">
+                                <span id="currentTime">0:00</span>
+                                <span id="duration">0:00</span>
+                            </div>
+                            <div class="progress-container" id="progressContainer">
+                                <div class="progress-bar" id="progressBar"></div>
+                            </div>
+                            <div class="player-controls">
+                                <button class="control-btn" id="prevBtn">
+                                    <i class="fas fa-step-backward"></i>
+                                </button>
+                                <button class="control-btn play-btn" id="playBtn">
+                                    <i class="fas fa-play" id="playIcon"></i>
+                                </button>
+                                <button class="control-btn" id="nextBtn">
+                                    <i class="fas fa-step-forward"></i>
+                                </button>
+                            </div>
+                            <div class="volume-control">
+                                <i class="fas fa-volume-up" id="volumeIcon"></i>
+                                <input type="range" min="0" max="100" value="70" class="volume-slider" id="volumeSlider">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="hero-highlight">
+                    <p>Профессиональные услуги в области цифровой безопасности, разработки и анализа. 
+                    Индивидуальный подход к каждому проекту, гарантия качества и полная анонимность.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ЧАТ -->
+        <div class="tab-content" id="chat">
+            <h2 class="section-title">Общий Чат</h2>
+            <div class="chat-container">
+                <div class="chat-sidebar">
+                    <div class="chat-user-info">
+                        <div class="chat-user-id">Ваш ID</div>
+                        <div class="chat-user-name">
+                            <span class="online-status"></span>
+                            <span id="userName">User_</span>
+                        </div>
+                        <div class="user-badges" id="chatBadges" style="margin-top: 0.5rem; justify-content: flex-start;">
+                            <span class="badge badge-new badge-small"><i class="fas fa-user"></i> New</span>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-stats">
+                        <div class="chat-stat">
+                            <span>Сообщений:</span>
+                            <span id="msgCount">0</span>
+                        </div>
+                        <div class="chat-stat">
+                            <span>В чате:</span>
+                            <span id="onlineCount">12</span>
+                        </div>
+                        <div class="chat-stat">
+                            <span>Ваш ранг:</span>
+                            <span id="userRank">Новичок</span>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-online-users">
+                        <div class="chat-online-title">Сейчас онлайн</div>
+                        <div class="chat-online-list" id="onlineList">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="chat-main">
+                    <div class="chat-messages" id="chatMessages">
+                    </div>
+                    <div class="chat-input-area">
+                        <input type="text" class="chat-input" id="chatInput" placeholder="Написать сообщение..." maxlength="500">
+                        <button class="chat-send-btn" id="sendBtn">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Чёрнуха -->
+        <div class="tab-content" id="black">
+            <h2 class="section-title">Чёрнуха</h2>
+            <div class="products-grid" id="blackProducts"></div>
+        </div>
+
+        <!-- Программирование -->
+        <div class="tab-content" id="programming">
+            <h2 class="section-title">Программирование</h2>
+            <div class="products-grid" id="programmingProducts"></div>
+        </div>
+
+        <!-- Дизайн -->
+        <div class="tab-content" id="design">
+            <h2 class="section-title">Дизайн</h2>
+            <div class="products-grid" id="designProducts"></div>
+        </div>
+
+        <!-- FAQ -->
+        <div class="tab-content" id="faq">
+            <h2 class="section-title">FAQ</h2>
+            <div class="faq-grid" id="faqGrid"></div>
+        </div>
+
+        <!-- Пакеты -->
+        <div class="tab-content" id="packets">
+            <h2 class="section-title">Пакеты</h2>
+            <div class="products-grid" id="packetsProducts"></div>
+        </div>
+
+        <!-- БЕЙДЖИКИ -->
+        <div class="tab-content" id="badges">
+            <h2 class="section-title">Система Бейджиков</h2>
+            
+            <!-- Админ-панель (показывается только для Owner) -->
+            <div class="admin-panel" id="adminPanel" style="display: none;">
+                <div class="admin-title">
+                    <i class="fas fa-crown" style="color: #ff4444;"></i>
+                    Админ-панель управления бейджиками
+                </div>
+                <div class="admin-grid" id="adminBadgeList">
+                    <!-- Генерируется JS -->
+                </div>
+            </div>
+
+            <!-- Информация о пользователе -->
+            <div class="user-profile" style="margin-bottom: 2rem;">
+                <div class="user-avatar" style="width: 80px; height: 80px; font-size: 2rem;">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="user-name" id="badgesPageName">Guest</div>
+                <div class="user-badges" id="badgesPageBadges">
+                    <span class="badge badge-new"><i class="fas fa-user"></i> New</span>
+                </div>
+                <div style="margin-top: 1rem; color: #888; font-size: 0.9rem;">
+                    Прогресс до следующего ранга: <span id="rankProgress">0%</span>
+                </div>
+                <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; margin-top: 0.5rem; overflow: hidden;">
+                    <div id="rankProgressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #ff4444, #ff8800); transition: width 0.5s;"></div>
+                </div>
+            </div>
+
+            <!-- Все бейджики -->
+            <h3 style="margin-bottom: 1rem; color: #888; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px;">
+                <i class="fas fa-medal"></i> Доступные бейджики
+            </h3>
+            <div class="badges-showcase" id="badgesShowcase">
+                <!-- Генерируется JS -->
+            </div>
+        </div>
+
+        <!-- Контакты -->
+        <div class="tab-content" id="contacts">
+            <h2 class="section-title">Контакты</h2>
+            <div class="contacts-grid" id="contactsGrid"></div>
+        </div>
+    </div>
+
+    <!-- Корзина -->
+    <div class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header">
+            <div class="cart-title">Корзина</div>
+            <button class="close-cart" id="closeCart">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="cart-items" id="cartItems">
+            <div class="empty-cart">
+                <i class="fas fa-shopping-cart"></i>
+                <p>Корзина пуста</p>
+            </div>
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Итого:</span>
+                <span id="cartTotal">0 ₽</span>
+            </div>
+            <button class="buy-btn" id="buyBtn">Оплатить</button>
+        </div>
+    </div>
+
+    <!-- Модальное окно оплаты -->
+    <div class="modal" id="paymentModal">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 1.5rem; color: #fff; font-size: 1.3rem;">Оплата</h3>
+            <div style="background: rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 10px; margin-bottom: 1.5rem;">
+                <div style="color: #888; font-size: 0.9rem; margin-bottom: 0.5rem;">К оплате:</div>
+                <div style="font-size: 2rem; font-weight: 800; color: #fff;" id="paymentTotal">0 ₽</div>
+            </div>
+            <button id="yoomoneyBtn" style="width: 100%; padding: 1rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 10px; margin-bottom: 1rem; cursor: none; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.3s;">
+                <i class="fas fa-credit-card"></i> ЮMoney / Карта
+            </button>
+            <a href="https://t.me/FakeLavvMp3" target="_blank" style="text-decoration: none;">
+                <button style="width: 100%; padding: 1rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 10px; cursor: none; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.3s;">
+                    <i class="fab fa-telegram"></i> Написать в Telegram
+                </button>
+            </a>
+            <button id="closePayment" style="margin-top: 1rem; width: 100%; padding: 0.8rem; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #888; border-radius: 10px; cursor: none; transition: all 0.3s;">Отмена</button>
+        </div>
+    </div>
+
+    <script>
+    // ===== ДАННЫЕ =====
+    const playlist = [
+        { title: "FakeLavv - Передоз", artist: "FakeLavv", cover: "https://cdn.discordapp.com/attachments/1446528538684686541/1450312195547205672/cover.jpg", audio: "music/1.mp3" },
+        { title: "FakeLavv - Ганджа", artist: "FakeLavv", cover: "https://cdn.discordapp.com/attachments/1446528538684686541/1450312195547205672/cover.jpg", audio: "music/2.mp3" },
+        { title: "FakeLavv - Больно", artist: "FakeLavv", cover: "https://cdn.discordapp.com/attachments/1446528538684686541/1450312195547205672/cover.jpg", audio: "music/3.mp3" },
+        { title: "FakeLavv - кровавый", artist: "FakeLavv", cover: "https://cdn.discordapp.com/attachments/1446528538684686541/1450312195547205672/cover.jpg", audio: "music/4.mp3" },
+        { title: "FakeLavv - Never sober", artist: "FakeLavv", cover: "https://cdn.discordapp.com/attachments/1446528538684686541/1450312195547205672/cover.jpg", audio: "music/5.mp3" }
+    ];
+
+    const products = [
+        { category: 'black', name: 'Полный пробив', price: 1000, desc: 'Детальная информация по всем доступным источникам.', from: false },
+        { category: 'black', name: 'Сватинг', price: 1500, desc: 'Организованный вызов экстренных служб.', from: false },
+        { category: 'black', name: 'Снос аккаунта', price: 2000, desc: 'Полное удаление аккаунта в соцсетях.', from: false },
+        { category: 'black', name: 'Защита от доксеров', price: 1500, desc: 'Комплексная защита от троллей и доксеров.', from: false },
+        { category: 'black', name: 'Физическое воздействие', price: 5000, desc: 'Организация встречи для выяснения отношений.', from: false },
+        { category: 'black', name: 'Таргетированный троллинг', price: 250, desc: 'Систематический троллинг цели в соцсетях.', from: false },
+        { category: 'black', name: 'Физические номера', price: 100, desc: 'SIM-карты для регистрации аккаунтов.', from: true },
+        { category: 'black', name: 'Обучение', price: 5000, desc: 'Полное обучение OSINT и безопасности.', from: false },
+        
+        { category: 'programming', name: 'Discord бот', price: 250, desc: 'Разработка бота с любыми функциями.', from: true },
+        { category: 'programming', name: 'Telegram бот', price: 250, desc: 'Боты для бизнеса и автоматизации.', from: true },
+        { category: 'programming', name: 'Веб-сайт', price: 500, desc: 'Создание сайтов любой сложности.', from: true },
+        { category: 'programming', name: 'Desktop приложения', price: 1000, desc: 'Разработка утилит для Windows/Linux.', from: false },
+        { category: 'programming', name: 'Читы для игр', price: 1000, desc: 'Разработка читов для онлайн игр.', from: true },
+        { category: 'programming', name: 'Хостинг 24/7', price: 150, desc: 'Надежный хостинг для проектов.', from: true },
+        
+        { category: 'design', name: 'Аватарка премиум', price: 500, desc: 'Уникальный дизайн аватарки.', from: false },
+        { category: 'design', name: 'Баннер для соцсетей', price: 500, desc: 'Создание баннеров для соцсетей.', from: false },
+        { category: 'design', name: 'Тема оформления', price: 800, desc: 'Полный пакет оформления.', from: false },
+        
+        { category: 'packets', name: 'Чёрнуха PRO', price: 8800, desc: 'Все услуги + поддержка + скидка 20%', from: false },
+        { category: 'packets', name: 'Разработчик PRO', price: 2100, desc: 'Все услуги + хостинг + скидка 25%', from: false },
+        { category: 'packets', name: 'Дизайн PRO', price: 1260, desc: 'Все услуги + правки + скидка 30%', from: false },
+        { category: 'packets', name: 'ВСЁ ВКЛЮЧЕНО', price: 10075, desc: 'Все услуги + поддержка + скидка 35%', from: false }
+    ];
+
+    const faqs = [
+        { icon: 'fa-clock', q: 'Сколько выполняется заказ?', a: 'От 1 часа до 24 часов. Срочные заказы +50% к стоимости.' },
+        { icon: 'fa-user-secret', q: 'Насколько анонимно?', a: 'Полная анонимность. Все данные шифруются и удаляются после работы.' },
+        { icon: 'fa-ban', q: 'Возврат средств?', a: 'ВОЗВРАТА НЕТ. Услуги цифровые, не подлежат возврату.' },
+        { icon: 'fa-headset', q: 'Есть ли поддержка?', a: 'Поддержка 24/7 в Telegram. Ответ за 5-15 минут.' },
+        { icon: 'fa-shield-alt', q: 'Какие гарантии?', a: 'Гарантия 14 дней. Бесплатно исправим проблемы по нашей вине.' },
+        { icon: 'fa-credit-card', q: 'Способы оплаты?', a: 'ЮMoney, карты, криптовалюта (BTC, USDT).' },
+        { icon: 'fa-lock', q: 'Конфиденциальность?', a: 'Данные не передаются третьим лицам. Чаты очищаются после проекта.' },
+        { icon: 'fa-exchange-alt', q: 'Можно ли правки?', a: 'До 3 правок включены (кроме Чёрнухи).' },
+        { icon: 'fa-exclamation-triangle', q: 'Юридическая ответственность?', a: 'Услуги для образовательных целей. Мы не несем ответственности за незаконное использование.' },
+        { icon: 'fa-file-contract', q: 'Нужен договор?', a: 'Нет. Все условия в Telegram. Работаем на репутации.' }
+    ];
+
+    const contacts = [
+        { name: 'Discord', value: 'rootbios', url: 'https://discord.com/users/rootbios', icon: 'fab fa-discord', color: '#7289DA' },
+        { name: 'VK', value: '@fakelavv', url: 'https://vk.com/fakelavv', icon: 'fab fa-vk', color: '#4C75A3' },
+        { name: 'Telegram', value: '@FakeLavvMp3', url: 'https://t.me/FakeLavvMp3', icon: 'fab fa-telegram', color: '#0088CC' },
+        { name: 'Gmail', value: 'fakelavvofficial@gmail.com', url: 'mailto:fakelavvofficial@gmail.com', icon: 'fas fa-envelope', color: '#D44638' },
+        { name: 'GitHub', value: 'fakelavv', url: 'https://github.com/fakelavv', icon: 'fab fa-github', color: '#fff' },
+        { name: 'YouTube', value: 'fakelavv', url: 'https://youtube.com/@fakelavv', icon: 'fab fa-youtube', color: '#FF0000' }
+    ];
+
+    // ===== СИСТЕМА БЕЙДЖИКОВ =====
+    const badgeSystem = {
+        // Определения бейджиков
+        definitions: {
+            owner: {
+                id: 'owner',
+                name: 'Owner',
+                icon: 'fa-crown',
+                color: '#ff4444',
+                description: 'Владелец проекта. Полный доступ ко всем функциям.',
+                requirement: 'Только для FakeLavv',
+                auto: false,
+                admin: true
+            },
+            creator: {
+                id: 'creator',
+                name: 'Creator',
+                icon: 'fa-star',
+                color: '#ff8800',
+                description: 'Создатель контента. Выдаётся за создание оригинального контента.',
+                requirement: 'Создание 5+ работ',
+                auto: false,
+                admin: true
+            },
+            dev: {
+                id: 'dev',
+                name: 'Dev',
+                icon: 'fa-code',
+                color: '#4488ff',
+                description: 'Разработчик. Помогает в развитии проекта.',
+                requirement: 'Помощь в разработке',
+                auto: false,
+                admin: true
+            },
+            sponsor: {
+                id: 'sponsor',
+                name: 'Sponsor',
+                icon: 'fa-gem',
+                color: '#ffdd00',
+                description: 'Спонсор проекта. Поддерживает финансово.',
+                requirement: 'Донат от 5000₽',
+                auto: true,
+                condition: (stats) => stats.donated >= 5000
+            },
+            premium: {
+                id: 'premium',
+                name: 'Premium',
+                icon: 'fa-crown',
+                color: '#aa44ff',
+                description: 'Премиум пользователь. Имеет особые привилегии.',
+                requirement: 'Покупка Premium пакета',
+                auto: true,
+                condition: (stats) => stats.purchases >= 3 && stats.totalSpent >= 5000
+            },
+            buyer: {
+                id: 'buyer',
+                name: 'Buyer',
+                icon: 'fa-shopping-bag',
+                color: '#44ff88',
+                description: 'Покупатель. Совершил первую покупку.',
+                requirement: '1 покупка',
+                auto: true,
+                condition: (stats) => stats.purchases >= 1
+            },
+            vip: {
+                id: 'vip',
+                name: 'VIP',
+                icon: 'fa-vip',
+                color: '#ff44aa',
+                description: 'VIP статус. Особое внимание и приоритет.',
+                requirement: 'Покупки от 10000₽',
+                auto: true,
+                condition: (stats) => stats.totalSpent >= 10000
+            },
+            mod: {
+                id: 'mod',
+                name: 'Mod',
+                icon: 'fa-shield-alt',
+                color: '#44aaff',
+                description: 'Модератор чата. Следит за порядком.',
+                requirement: 'Назначается админом',
+                auto: false,
+                admin: true
+            },
+            helper: {
+                id: 'helper',
+                name: 'Helper',
+                icon: 'fa-hands-helping',
+                color: '#44ffaa',
+                description: 'Помощник. Помогает новичкам.',
+                requirement: 'Помощь 10+ пользователям',
+                auto: false,
+                admin: true
+            },
+            new: {
+                id: 'new',
+                name: 'New',
+                icon: 'fa-user',
+                color: '#888888',
+                description: 'Новичок. Только зарегистрировался.',
+                requirement: 'Автоматически',
+                auto: true,
+                condition: () => true
+            }
+        },
+
+        // Получить HTML бейджика
+        getBadgeHTML(badgeId, size = '') {
+            const badge = this.definitions[badgeId];
+            if (!badge) return '';
+            const sizeClass = size ? `badge-${size}` : '';
+            return `<span class="badge badge-${badge.id} ${sizeClass}"><i class="fas ${badge.icon}"></i> ${badge.name}</span>`;
+        },
+
+        // Получить все бейджики пользователя
+        getUserBadges(userStats) {
+            const badges = [];
+            for (const [id, badge] of Object.entries(this.definitions)) {
+                if (badge.auto && badge.condition && badge.condition(userStats)) {
+                    badges.push(id);
+                }
+            }
+            return badges;
+        },
+
+        // Проверить есть ли бейдж
+        hasBadge(userBadges, badgeId) {
+            return userBadges.includes(badgeId);
+        },
+
+        // Добавить бейдж (админ)
+        addBadge(userBadges, badgeId) {
+            if (!this.hasBadge(userBadges, badgeId)) {
+                userBadges.push(badgeId);
+                return true;
+            }
+            return false;
+        },
+
+        // Удалить бейдж (админ)
+        removeBadge(userBadges, badgeId) {
+            const index = userBadges.indexOf(badgeId);
+            if (index > -1) {
+                userBadges.splice(index, 1);
+                return true;
+            }
+            return false;
+        }
+    };
+
+    const chatNames = ['DarkSoul', 'AnonPro', 'ShadowHunter', 'CyberGhost', 'NightWalker', 'ZeroDay', 'BlackHat', 'Phantom'];
+    const chatMessages = [
+        'Привет всем!', 'Кто заказывал пробив?', 'Сколько по времени сайт?', 'Работает ли хостинг?', 
+        'Спасибо за работу!', 'Как оплатить?', 'Есть скидки?', 'Проверенный продавец', 'Рекомендую', 'Всем удачи!'
+    ];
+
+    // ===== СОСТОЯНИЕ =====
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    let currentTrack = 0;
+    let isPlaying = false;
+    let audio = null;
+    let audioContext = null;
+    let analyser = null;
+    let dataArray = null;
+    let source = null;
+    let rafId = null;
+    let userId = null;
+    let messageCount = 0;
+    let userBadges = JSON.parse(localStorage.getItem('userBadges')) || ['new'];
+    let userStats = JSON.parse(localStorage.getItem('userStats')) || {
+        messages: 0,
+        purchases: 0,
+        totalSpent: 0,
+        donated: 0,
+        joinedAt: Date.now()
+    };
+    let isAdmin = false; // Включить для теста админки
+
+    // ===== ИНИЦИАЛИЗАЦИЯ =====
+    document.addEventListener('DOMContentLoaded', () => {
+        initParticles();
+        initLoader();
+        initCursor();
+        initNavigation();
+        initPlayer();
+        initVisualizer();
+        initChat();
+        initCart();
+        initBadges();
+        renderProducts();
+        renderFAQ();
+        renderContacts();
+        init3DTilt();
+    });
+
+    // ===== ПЛАВАЮЩИЕ ЧАСТИЦЫ =====
+    function initParticles() {
+        const container = document.getElementById('particles');
+        const fragment = document.createDocumentFragment();
+        
+        for (let i = 0; i < 20; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 15 + 's';
+            particle.style.animationDuration = (10 + Math.random() * 10) + 's';
+            fragment.appendChild(particle);
+        }
+        
+        container.appendChild(fragment);
+    }
+
+    // ===== ЗАГРУЗКА =====
+    function initLoader() {
+        const loader = document.getElementById('loader');
+        const bar = document.getElementById('progressBar');
+        let progress = 0;
+        
+        const interval = setInterval(() => {
+            progress += Math.random() * 15 + 10;
+            if (progress > 100) progress = 100;
+            bar.style.width = progress + '%';
+            
+            if (progress >= 100) {
+                clearInterval(interval);
+                setTimeout(() => loader.classList.add('hidden'), 300);
+            }
+        }, 100);
+    }
+
+    // ===== КУРСОР =====
+    function initCursor() {
+        if (window.matchMedia('(pointer: coarse)').matches) {
+            document.body.style.cursor = 'auto';
+            return;
+        }
+        
+        const cursor = document.getElementById('cursor');
+        let mouseX = 0, mouseY = 0;
+        let cursorX = 0, cursorY = 0;
+        
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        }, { passive: true });
+        
+        document.addEventListener('mousedown', () => cursor.classList.add('click'));
+        document.addEventListener('mouseup', () => cursor.classList.remove('click'));
+        
+        function animate() {
+            cursorX += (mouseX - cursorX) * 0.15;
+            cursorY += (mouseY - cursorY) * 0.15;
+            cursor.style.left = cursorX + 'px';
+            cursor.style.top = cursorY + 'px';
+            rafId = requestAnimationFrame(animate);
+        }
+        animate();
+        
+        document.querySelectorAll('button, a, .product-card, .faq-card, .contact-card, .music-player, input, .chat-send-btn, .badge-card').forEach(el => {
+            el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+            el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+        });
+    }
+
+    // ===== 3D НАКЛОНЕНИЕ =====
+    function init3DTilt() {
+        const cards = document.querySelectorAll('.product-card, .faq-card, .contact-card, .music-player, .badge-card');
+        
+        cards.forEach(card => {
+            card.addEventListener('mousemove', handleTilt, { passive: true });
+            card.addEventListener('mouseleave', resetTilt);
+        });
+        
+        function handleTilt(e) {
+            const card = e.currentTarget;
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            
+            const rotateX = (y - centerY) / 10;
+            const rotateY = (centerX - x) / 10;
+            
+            card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+        }
+        
+        function resetTilt(e) {
+            e.currentTarget.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)';
+        }
+    }
+
+    // ===== НАВИГАЦИЯ =====
+    function initNavigation() {
+        const tabs = document.querySelectorAll('.nav-tab');
+        const contents = document.querySelectorAll('.tab-content');
+        
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const target = tab.dataset.tab;
+                
+                tabs.forEach(t => t.classList.remove('active'));
+                contents.forEach(c => c.classList.remove('active'));
+                
+                tab.classList.add('active');
+                document.getElementById(target).classList.add('active');
+                
+                if (target === 'chat') {
+                    document.getElementById('chatBadge').style.display = 'none';
+                }
+                
+                if (target === 'badges') {
+                    updateBadgesPage();
+                }
+            });
+        });
+    }
+
+    // ===== СИСТЕМА БЕЙДЖИКОВ =====
+    function initBadges() {
+        // Проверка на владельца (для демо)
+        if (userId === 'User_FAKELAVV' || isAdmin) {
+            document.getElementById('adminPanel').style.display = 'block';
+            isAdmin = true;
+            renderAdminPanel();
+        }
+        
+        // Обновление автоматических бейджиков
+        updateAutoBadges();
+        
+        // Обновление отображения
+        updateBadgesDisplay();
+        
+        // Рендер страницы бейджиков
+        renderBadgesPage();
+    }
+
+    function updateAutoBadges() {
+        const autoBadges = badgeSystem.getUserBadges(userStats);
+        autoBadges.forEach(badge => {
+            if (!userBadges.includes(badge)) {
+                userBadges.push(badge);
+            }
+        });
+        saveUserData();
+    }
+
+    function updateBadgesDisplay() {
+        const badgesHTML = userBadges.map(id => badgeSystem.getBadgeHTML(id)).join('');
+        
+        // Профиль на главной
+        document.getElementById('profileBadges').innerHTML = badgesHTML || badgeSystem.getBadgeHTML('new');
+        document.getElementById('statBadges').textContent = userBadges.length;
+        
+        // Чат
+        document.getElementById('chatBadges').innerHTML = userBadges.map(id => badgeSystem.getBadgeHTML(id, 'small')).join('');
+        
+        // Страница бейджиков
+        document.getElementById('badgesPageBadges').innerHTML = badgesHTML;
+        document.getElementById('badgesPageName').textContent = userId || 'Guest';
+        
+        // Обновление ранга
+        updateRank();
+    }
+
+    function updateRank() {
+        const ranks = [
+            { name: 'Новичок', min: 0 },
+            { name: 'Пользователь', min: 1 },
+            { name: 'Клиент', min: 3 },
+            { name: 'VIP', min: 5 },
+            { name: 'Элита', min: 8 }
+        ];
+        
+        let currentRank = ranks[0];
+        for (const rank of ranks) {
+            if (userBadges.length >= rank.min) {
+                currentRank = rank;
+            }
+        }
+        
+        document.getElementById('userRank').textContent = currentRank.name;
+        
+        // Прогресс
+        const nextRank = ranks.find(r => r.min > userBadges.length);
+        if (nextRank) {
+            const progress = ((userBadges.length - currentRank.min) / (nextRank.min - currentRank.min)) * 100;
+            document.getElementById('rankProgress').textContent = Math.round(progress) + '%';
+            document.getElementById('rankProgressBar').style.width = progress + '%';
+        } else {
+            document.getElementById('rankProgress').textContent = 'MAX';
+            document.getElementById('rankProgressBar').style.width = '100%';
+        }
+    }
+
+    function renderBadgesPage() {
+        const container = document.getElementById('badgesShowcase');
+        
+        container.innerHTML = Object.values(badgeSystem.definitions).map(badge => {
+            const hasBadge = userBadges.includes(badge.id);
+            const status = hasBadge ? 
+                '<span style="color: #44ff88;"><i class="fas fa-check"></i> Получен</span>' : 
+                '<span style="color: #888;"><i class="fas fa-lock"></i> Не получен</span>';
+            
+            return `
+                <div class="badge-card" style="${hasBadge ? 'border-color: ' + badge.color + ';' : ''}">
+                    <div class="badge-preview">
+                        <span class="badge badge-${badge.id} badge-large">
+                            <i class="fas ${badge.icon}"></i> ${badge.name}
+                        </span>
+                    </div>
+                    <div class="badge-name" style="color: ${badge.color}">${badge.name}</div>
+                    <div class="badge-description">${badge.description}</div>
+                    <div class="badge-requirements">
+                        <strong>Требования:</strong>
+                        ${badge.requirement}
+                    </div>
+                    <div style="margin-top: 1rem; font-size: 0.85rem;">
+                        ${status}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function updateBadgesPage() {
+        updateBadgesDisplay();
+        renderBadgesPage();
+        if (isAdmin) renderAdminPanel();
+    }
+
+    function renderAdminPanel() {
+        const container = document.getElementById('adminBadgeList');
+        
+        container.innerHTML = Object.values(badgeSystem.definitions).map(badge => {
+            const hasBadge = userBadges.includes(badge.id);
+            return `
+                <div class="admin-item ${hasBadge ? 'active' : ''}" onclick="toggleBadge('${badge.id}')">
+                    <i class="fas ${badge.icon}" style="color: ${badge.color};"></i>
+                    <span>${badge.name}</span>
+                    ${hasBadge ? '<i class="fas fa-check" style="margin-left: auto; color: #44ff88;"></i>' : ''}
+                </div>
+            `;
+        }).join('');
+    }
+
+    function toggleBadge(badgeId) {
+        if (badgeSystem.hasBadge(userBadges, badgeId)) {
+            badgeSystem.removeBadge(userBadges, badgeId);
+            showNotification(`Бейджик ${badgeSystem.definitions[badgeId].name} удалён`, 'error');
+        } else {
+            badgeSystem.addBadge(userBadges, badgeId);
+            showNotification(`Бейджик ${badgeSystem.definitions[badgeId].name} добавлен!`, 'success');
+        }
+        saveUserData();
+        updateBadgesPage();
+    }
+
+    function saveUserData() {
+        localStorage.setItem('userBadges', JSON.stringify(userBadges));
+        localStorage.setItem('userStats', JSON.stringify(userStats));
+    }
+
+    // ===== ВИЗУАЛИЗАТОР =====
+    function initVisualizer() {
+        const container = document.getElementById('visualizer');
+        const fragment = document.createDocumentFragment();
+        
+        for (let i = 0; i < 20; i++) {
+            const bar = document.createElement('div');
+            bar.className = 'visualizer-bar';
+            bar.style.height = '3px';
+            fragment.appendChild(bar);
+        }
+        
+        container.appendChild(fragment);
+    }
+
+    function initAudioContext() {
+        if (!audioContext) {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            analyser = audioContext.createAnalyser();
+            analyser.fftSize = 64;
+            source = audioContext.createMediaElementSource(audio);
+            source.connect(analyser);
+            analyser.connect(audioContext.destination);
+            dataArray = new Uint8Array(analyser.frequencyBinCount);
+        }
+    }
+
+    let visualizerFrame = 0;
+    function animateVisualizer() {
+        if (!isPlaying || !analyser) return;
+        
+        visualizerFrame++;
+        if (visualizerFrame % 2 !== 0) {
+            requestAnimationFrame(animateVisualizer);
+            return;
+        }
+        
+        analyser.getByteFrequencyData(dataArray);
+        const bars = document.querySelectorAll('.visualizer-bar');
+        
+        for (let i = 0; i < bars.length; i++) {
+            const value = dataArray[i * 2] || 0;
+            const height = Math.max(3, (value / 255) * 50);
+            bars[i].style.height = height + 'px';
+        }
+        
+        requestAnimationFrame(animateVisualizer);
+    }
+
+    // ===== ПЛЕЕР =====
+    function initPlayer() {
+        audio = new Audio();
+        audio.crossOrigin = "anonymous";
+        loadTrack(0);
+        
+        document.getElementById('playBtn').addEventListener('click', togglePlay);
+        document.getElementById('nextBtn').addEventListener('click', () => changeTrack(1));
+        document.getElementById('prevBtn').addEventListener('click', () => changeTrack(-1));
+        document.getElementById('volumeSlider').addEventListener('input', updateVolume);
+        document.getElementById('progressContainer').addEventListener('click', seek);
+        
+        audio.addEventListener('timeupdate', updateProgress);
+        audio.addEventListener('ended', () => changeTrack(1));
+        audio.addEventListener('loadedmetadata', () => {
+            document.getElementById('duration').textContent = formatTime(audio.duration);
+        });
+    }
+
+    function loadTrack(index) {
+        currentTrack = index;
+        const track = playlist[index];
+        
+        document.getElementById('trackTitle').textContent = track.title;
+        document.getElementById('trackArtist').textContent = track.artist;
+        document.getElementById('coverImage').style.backgroundImage = `url('${track.cover}')`;
+        audio.src = track.audio;
+        
+        if (isPlaying) {
+            audio.play();
+            initAudioContext();
+            animateVisualizer();
+        }
+    }
+
+    function togglePlay() {
+        isPlaying = !isPlaying;
+        const icon = document.getElementById('playIcon');
+        const cover = document.getElementById('coverContainer');
+        
+        if (isPlaying) {
+            audio.play();
+            icon.classList.replace('fa-play', 'fa-pause');
+            cover.classList.add('playing');
+            initAudioContext();
+            animateVisualizer();
+        } else {
+            audio.pause();
+            icon.classList.replace('fa-pause', 'fa-play');
+            cover.classList.remove('playing');
+        }
+    }
+
+    function changeTrack(dir) {
+        currentTrack = (currentTrack + dir + playlist.length) % playlist.length;
+        loadTrack(currentTrack);
+    }
+
+    function updateVolume(e) {
+        audio.volume = e.target.value / 100;
+        const icon = document.getElementById('volumeIcon');
+        if (audio.volume === 0) icon.className = 'fas fa-volume-mute';
+        else if (audio.volume < 0.5) icon.className = 'fas fa-volume-down';
+        else icon.className = 'fas fa-volume-up';
+    }
+
+    function updateProgress() {
+        const progress = (audio.currentTime / audio.duration) * 100;
+        document.getElementById('progressBar').style.width = progress + '%';
+        document.getElementById('currentTime').textContent = formatTime(audio.currentTime);
+    }
+
+    function seek(e) {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const pos = (e.clientX - rect.left) / rect.width;
+        audio.currentTime = pos * audio.duration;
+    }
+
+    function formatTime(sec) {
+        if (isNaN(sec)) return '0:00';
+        const m = Math.floor(sec / 60);
+        const s = Math.floor(sec % 60);
+        return `${m}:${s.toString().padStart(2, '0')}`;
+    }
+
+    // ===== ЧАТ =====
+    function initChat() {
+        userId = 'User_' + Math.random().toString(36).substr(2, 6).toUpperCase();
+        document.getElementById('userName').textContent = userId;
+        document.getElementById('displayName').textContent = userId;
+        
+        renderOnlineUsers();
+        loadInitialMessages();
+        
+        document.getElementById('sendBtn').addEventListener('click', sendMessage);
+        document.getElementById('chatInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+        
+        setInterval(simulateIncomingMessage, 15000);
+        setInterval(() => {
+            document.getElementById('onlineCount').textContent = Math.floor(Math.random() * 20) + 5;
+        }, 10000);
+    }
+
+    function renderOnlineUsers() {
+        const list = document.getElementById('onlineList');
+        const shuffled = [...chatNames].sort(() => 0.5 - Math.random()).slice(0, 5);
+        
+        // Случайные бейджи для онлайн пользователей
+        const availableBadges = ['premium', 'buyer', 'dev', 'mod', 'vip'];
+        
+        list.innerHTML = shuffled.map(name => {
+            const randomBadge = availableBadges[Math.floor(Math.random() * availableBadges.length)];
+            return `
+                <div class="chat-online-user">
+                    <div class="chat-online-avatar">${name[0]}</div>
+                    <div style="flex: 1;">
+                        <div>${name}</div>
+                        <div style="font-size: 0.75rem; margin-top: 2px;">
+                            ${badgeSystem.getBadgeHTML(randomBadge, 'small')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function loadInitialMessages() {
+        const messages = [
+            { id: 'User_7A2B9C', text: 'Привет всем! Как дела?', time: '14:32', own: false, badges: ['premium'] },
+            { id: 'User_4F8D1E', text: 'Привет! Все отлично', time: '14:33', own: false, badges: ['buyer'] },
+            { id: 'FakeLavv', text: 'Добро пожаловать в чат!', time: '14:35', own: false, badges: ['owner', 'dev'] }
+        ];
+        
+        messages.forEach(msg => addMessage(msg.id, msg.text, msg.time, msg.own, msg.badges));
+    }
+
+    function addMessage(id, text, time, own = false, badges = []) {
+        const container = document.getElementById('chatMessages');
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `chat-message ${own ? 'own' : 'other'}`;
+        
+        const badgesHTML = badges.map(b => badgeSystem.getBadgeHTML(b, 'small')).join('');
+        
+        msgDiv.innerHTML = `
+            <div class="chat-message-header">
+                <span class="chat-message-id">${id}</span>
+                ${badgesHTML}
+                <span class="chat-message-time">${time || new Date().toLocaleTimeString('ru', {hour: '2-digit', minute: '2-digit'})}</span>
+            </div>
+            <div class="chat-message-text">${escapeHtml(text)}</div>
+        `;
+        
+        container.appendChild(msgDiv);
+        container.scrollTop = container.scrollHeight;
+        
+        if (own) {
+            messageCount++;
+            userStats.messages++;
+            document.getElementById('msgCount').textContent = messageCount;
+            document.getElementById('statMessages').textContent = userStats.messages;
+            saveUserData();
+        }
+    }
+
+    function sendMessage() {
+        const input = document.getElementById('chatInput');
+        const text = input.value.trim();
+        
+        if (!text) return;
+        
+        addMessage(userId, text, null, true, userBadges);
+        input.value = '';
+        
+        setTimeout(() => {
+            const randomMsg = chatMessages[Math.floor(Math.random() * chatMessages.length)];
+            const randomName = chatNames[Math.floor(Math.random() * chatNames.length)] + '_' + Math.random().toString(36).substr(2, 4).toUpperCase();
+            const randomBadges = Math.random() > 0.5 ? ['buyer'] : [];
+            addMessage(randomName, randomMsg, null, false, randomBadges);
+        }, 2000);
+    }
+
+    function simulateIncomingMessage() {
+        if (Math.random() > 0.7) {
+            const randomMsg = chatMessages[Math.floor(Math.random() * chatMessages.length)];
+            const randomName = chatNames[Math.floor(Math.random() * chatNames.length)] + '_' + Math.random().toString(36).substr(2, 4).toUpperCase();
+            const randomBadges = Math.random() > 0.6 ? ['premium'] : (Math.random() > 0.5 ? ['buyer'] : []);
+            addMessage(randomName, randomMsg, null, false, randomBadges);
+            
+            const chatTab = document.querySelector('[data-tab="chat"]');
+            if (!chatTab.classList.contains('active')) {
+                const badge = document.getElementById('chatBadge');
+                badge.style.display = 'block';
+                badge.textContent = parseInt(badge.textContent) + 1;
+            }
+        }
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // ===== КОРЗИНА =====
+    function initCart() {
+        const cartBtn = document.getElementById('cartBtn');
+        const closeCart = document.getElementById('closeCart');
+        const sidebar = document.getElementById('cartSidebar');
+        const buyBtn = document.getElementById('buyBtn');
+        
+        cartBtn.addEventListener('click', () => sidebar.classList.add('active'));
+        closeCart.addEventListener('click', () => sidebar.classList.remove('active'));
+        buyBtn.addEventListener('click', () => {
+            if (cart.length === 0) return showNotification('Корзина пуста!', 'error');
+            showPaymentModal();
+        });
+        
+        document.getElementById('closePayment').addEventListener('click', () => {
+            document.getElementById('paymentModal').classList.remove('active');
+        });
+        
+        document.getElementById('yoomoneyBtn').addEventListener('click', () => {
+            const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+            
+            // Обновление статистики при покупке
+            userStats.purchases += cart.reduce((sum, item) => sum + item.quantity, 0);
+            userStats.totalSpent += total;
+            saveUserData();
+            updateAutoBadges();
+            updateBadgesDisplay();
+            
+            window.open(`https://yoomoney.ru/quickpay/confirm?receiver=4100118840680796&quickpay-form=button&paymentType=AC&sum=${total}`, '_blank');
+        });
+        
+        updateCart();
+    }
+
+    function addToCart(name, price) {
+        const existing = cart.find(item => item.name === name);
+        if (existing) {
+            existing.quantity++;
+        } else {
+            cart.push({ name, price, quantity: 1 });
+        }
+        localStorage.setItem('cart', JSON.stringify(cart));
+        updateCart();
+        showNotification(`${name} добавлен в корзину`, 'success');
+    }
+
+    function removeFromCart(index) {
+        cart.splice(index, 1);
+        localStorage.setItem('cart', JSON.stringify(cart));
+        updateCart();
+    }
+
+    function updateCart() {
+        const container = document.getElementById('cartItems');
+        const totalEl = document.getElementById('cartTotal');
+        const countEl = document.getElementById('cartCount');
+        
+        const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+        
+        countEl.textContent = count;
+        totalEl.textContent = total + ' ₽';
+        
+        if (cart.length === 0) {
+            container.innerHTML = '<div class="empty-cart"><i class="fas fa-shopping-cart"></i><p>Корзина пуста</p></div>';
+            return;
+        }
+        
+        container.innerHTML = cart.map((item, i) => `
+            <div class="cart-item">
+                <div>
+                    <div style="font-weight: 700; color: #fff;">${item.name}</div>
+                    <div style="color: #888; font-size: 0.85rem;">${item.price} ₽ × ${item.quantity}</div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="font-weight: 700;">${item.price * item.quantity} ₽</div>
+                    <button onclick="removeFromCart(${i})" style="background: rgba(255,100,100,0.2); border: none; color: #ff8888; width: 30px; height: 30px; border-radius: 50%; cursor: none;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function showPaymentModal() {
+        const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        document.getElementById('paymentTotal').textContent = total + ' ₽';
+        document.getElementById('paymentModal').classList.add('active');
+    }
+
+    // ===== РЕНДЕР =====
+    function renderProducts() {
+        ['black', 'programming', 'design', 'packets'].forEach(cat => {
+            const container = document.getElementById(cat + 'Products');
+            if (container) {
+                container.innerHTML = products
+                    .filter(p => p.category === cat)
+                    .map(p => createProductCard(p))
+                    .join('');
+            }
+        });
+    }
+
+    function createProductCard(p) {
+        const priceHtml = p.from 
+            ? `<span class="price-from">от</span><span class="price">${p.price} ₽</span>`
+            : `<span class="price">${p.price} ₽</span>`;
+            
+        return `
+            <div class="product-card">
+                <h3>${p.name}</h3>
+                <p>${p.desc}</p>
+                <div class="price-container">
+                    ${priceHtml}
+                </div>
+                <button class="add-to-cart" onclick="addToCart('${p.name}', ${p.price})">
+                    <i class="fas fa-cart-plus"></i> В корзину
+                </button>
+            </div>
+        `;
+    }
+
+    function renderFAQ() {
+        document.getElementById('faqGrid').innerHTML = faqs.map(f => `
+            <div class="faq-card">
+                <h3><i class="fas ${f.icon}"></i> ${f.q}</h3>
+                <p>${f.a}</p>
+            </div>
+        `).join('');
+    }
+
+    function renderContacts() {
+        document.getElementById('contactsGrid').innerHTML = contacts.map(c => `
+            <div class="contact-card">
+                <div class="contact-icon" style="color: ${c.color}">
+                    <i class="${c.icon}"></i>
+                </div>
+                <div class="contact-name">${c.name}</div>
+                <div class="contact-value">
+                    <a href="${c.url}" target="_blank" style="color: ${c.color}">${c.value}</a>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // ===== УТИЛИТЫ =====
+    function showNotification(msg, type) {
+        const n = document.createElement('div');
+        n.className = `notification ${type}`;
+        n.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check' : 'fa-exclamation-circle'}"></i> ${msg}`;
+        document.body.appendChild(n);
+        setTimeout(() => {
+            n.style.animation = 'slideInRight 0.3s reverse';
+            setTimeout(() => n.remove(), 300);
+        }, 3000);
+    }
+
+    // Очистка
+    window.addEventListener('beforeunload', () => {
+        if (rafId) cancelAnimationFrame(rafId);
+        if (audioContext) audioContext.close();
+    });
+    </script>
+</body>
+</html>
