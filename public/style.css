@@ -1,0 +1,208 @@
+/* ===== ПЕРЕЛИВАЮЩИЙСЯ ТЕКСТ ===== */
+.rainbow-text {
+    background: linear-gradient(
+        90deg,
+        #111111 0%,
+        #333333 20%,
+        #555555 40%,
+        #777777 60%,
+        #999999 80%,
+        #bbbbbb 100%
+    );
+    background-size: 400% 400%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: rainbow 3s ease-in-out infinite;
+}
+
+@keyframes rainbow {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* ===== ОТЗЫВЫ ===== */
+.reviews-section {
+    max-width: 1200px;
+    margin: 2rem auto 0;
+}
+
+.reviews-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.review-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 15px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+}
+
+.review-card:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* Адаптивность */
+@media (max-width: 1024px) {
+    .container {
+        max-width: 100%;
+        padding: 1rem;
+    }
+    
+    .reviews-grid {
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .reviews-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ===== FAQ СТИЛИ ===== */
+.faq-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.faq-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 1.8rem;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+}
+
+.faq-card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.faq-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+}
+
+.faq-card h3 {
+    color: #ffffff;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+    position: relative;
+    padding-bottom: 0.8rem;
+}
+
+.faq-card h3::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 50px;
+    height: 2px;
+    background: linear-gradient(90deg, #777777, transparent);
+}
+
+.faq-card h3 i {
+    color: #777777;
+    font-size: 1.1rem;
+    width: 25px;
+    text-align: center;
+}
+
+.faq-card p {
+    color: #aaaaaa;
+    line-height: 1.6;
+    font-size: 1rem;
+    padding-left: 2.5rem;
+    position: relative;
+}
+
+.faq-card p::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: #777777;
+    font-weight: bold;
+}
+
+/* Адаптивность FAQ */
+@media (max-width: 992px) {
+    .faq-grid {
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1rem;
+    }
+    
+    .faq-card {
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .faq-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .faq-card h3 {
+        font-size: 1.1rem;
+    }
+    
+    .faq-card p {
+        font-size: 0.95rem;
+        padding-left: 2rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .faq-card {
+        padding: 1.2rem;
+    }
+    
+    .faq-card h3 {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .faq-card h3 i {
+        align-self: flex-start;
+    }
+    
+    .faq-card p {
+        padding-left: 0;
+    }
+    
+    .faq-card p::before {
+        position: relative;
+        margin-right: 0.5rem;
+    }
+}
