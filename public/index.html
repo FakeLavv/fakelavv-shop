@@ -196,11 +196,6 @@
             color: #ff8888;
         }
 
-        .nav-tab.admin-tab:hover {
-            background: rgba(255,68,68,0.25);
-            color: #ffaaaa;
-        }
-
         .user-menu {
             display: flex;
             align-items: center;
@@ -221,7 +216,7 @@
             background: rgba(255,68,68,0.3);
         }
 
-        /* COMPACT BADGES - НОВЫЕ КОМПАКТНЫЕ БЕЙДЖИКИ */
+        /* COMPACT BADGES */
         .badge {
             display: inline-flex;
             align-items: center;
@@ -241,66 +236,16 @@
             font-size: 0.65rem;
         }
 
-        .badge-owner { 
-            border-color: var(--badge-owner); 
-            color: #ff6666; 
-            background: rgba(255,68,68,0.08);
-            box-shadow: 0 0 8px rgba(255,68,68,0.4);
-        }
-        .badge-creator { 
-            border-color: var(--badge-creator); 
-            color: #ffaa44; 
-            background: rgba(255,136,0,0.08);
-            box-shadow: 0 0 8px rgba(255,136,0,0.4);
-        }
-        .badge-dev { 
-            border-color: var(--badge-dev); 
-            color: #66aaff; 
-            background: rgba(68,136,255,0.08);
-            box-shadow: 0 0 8px rgba(68,136,255,0.4);
-        }
-        .badge-sponsor { 
-            border-color: var(--badge-sponsor); 
-            color: #ffee44; 
-            background: rgba(255,221,0,0.08);
-            box-shadow: 0 0 8px rgba(255,221,0,0.4);
-        }
-        .badge-premium { 
-            border-color: var(--badge-premium); 
-            color: #cc88ff; 
-            background: rgba(170,68,255,0.08);
-            box-shadow: 0 0 8px rgba(170,68,255,0.4);
-        }
-        .badge-buyer { 
-            border-color: var(--badge-buyer); 
-            color: #66ffaa; 
-            background: rgba(68,255,136,0.08);
-            box-shadow: 0 0 8px rgba(68,255,136,0.4);
-        }
-        .badge-vip { 
-            border-color: var(--badge-vip); 
-            color: #ff88cc; 
-            background: rgba(255,68,170,0.08);
-            box-shadow: 0 0 8px rgba(255,68,170,0.4);
-        }
-        .badge-mod { 
-            border-color: var(--badge-mod); 
-            color: #88ccff; 
-            background: rgba(68,170,255,0.08);
-            box-shadow: 0 0 8px rgba(68,170,255,0.4);
-        }
-        .badge-helper { 
-            border-color: var(--badge-helper); 
-            color: #88ffcc; 
-            background: rgba(68,255,170,0.08);
-            box-shadow: 0 0 8px rgba(68,255,170,0.4);
-        }
-        .badge-new { 
-            border-color: var(--badge-new); 
-            color: #999999; 
-            background: rgba(136,136,136,0.08);
-            box-shadow: 0 0 8px rgba(136,136,136,0.3);
-        }
+        .badge-owner { border-color: var(--badge-owner); color: #ff6666; background: rgba(255,68,68,0.08); box-shadow: 0 0 8px rgba(255,68,68,0.4); }
+        .badge-creator { border-color: var(--badge-creator); color: #ffaa44; background: rgba(255,136,0,0.08); box-shadow: 0 0 8px rgba(255,136,0,0.4); }
+        .badge-dev { border-color: var(--badge-dev); color: #66aaff; background: rgba(68,136,255,0.08); box-shadow: 0 0 8px rgba(68,136,255,0.4); }
+        .badge-sponsor { border-color: var(--badge-sponsor); color: #ffee44; background: rgba(255,221,0,0.08); box-shadow: 0 0 8px rgba(255,221,0,0.4); }
+        .badge-premium { border-color: var(--badge-premium); color: #cc88ff; background: rgba(170,68,255,0.08); box-shadow: 0 0 8px rgba(170,68,255,0.4); }
+        .badge-buyer { border-color: var(--badge-buyer); color: #66ffaa; background: rgba(68,255,136,0.08); box-shadow: 0 0 8px rgba(68,255,136,0.4); }
+        .badge-vip { border-color: var(--badge-vip); color: #ff88cc; background: rgba(255,68,170,0.08); box-shadow: 0 0 8px rgba(255,68,170,0.4); }
+        .badge-mod { border-color: var(--badge-mod); color: #88ccff; background: rgba(68,170,255,0.08); box-shadow: 0 0 8px rgba(68,170,255,0.4); }
+        .badge-helper { border-color: var(--badge-helper); color: #88ffcc; background: rgba(68,255,170,0.08); box-shadow: 0 0 8px rgba(68,255,170,0.4); }
+        .badge-new { border-color: var(--badge-new); color: #999999; background: rgba(136,136,136,0.08); box-shadow: 0 0 8px rgba(136,136,136,0.3); }
 
         .badge-small {
             padding: 0.1rem 0.4rem;
@@ -407,7 +352,7 @@
             letter-spacing: 1px;
         }
 
-        /* ADMIN USERS PANEL - НОВАЯ ПАНЕЛЬ ПОЛЬЗОВАТЕЛЕЙ */
+        /* ADMIN USERS PANEL */
         .admin-users-panel {
             background: rgba(255,255,255,0.03);
             border: 1px solid rgba(255,255,255,0.1);
@@ -544,35 +489,12 @@
             opacity: 0.9;
         }
 
-        .admin-action-btn.ban {
-            background: #ff4444;
-            color: #fff;
-        }
-
-        .admin-action-btn.unban {
-            background: #44ff88;
-            color: #000;
-        }
-
-        .admin-action-btn.mute {
-            background: #ffaa00;
-            color: #000;
-        }
-
-        .admin-action-btn.unmute {
-            background: #44aaff;
-            color: #fff;
-        }
-
-        .admin-action-btn.delete {
-            background: #aa0000;
-            color: #fff;
-        }
-
-        .admin-action-btn.badge-btn {
-            background: #aa44ff;
-            color: #fff;
-        }
+        .admin-action-btn.ban { background: #ff4444; color: #fff; }
+        .admin-action-btn.unban { background: #44ff88; color: #000; }
+        .admin-action-btn.mute { background: #ffaa00; color: #000; }
+        .admin-action-btn.unmute { background: #44aaff; color: #fff; }
+        .admin-action-btn.delete { background: #aa0000; color: #fff; }
+        .admin-action-btn.badge-btn { background: #aa44ff; color: #fff; }
 
         /* CHAT */
         .chat-container {
@@ -760,6 +682,96 @@
 
         .add-to-cart:hover {
             background: rgba(255,255,255,0.15);
+        }
+
+        /* FAQ */
+        .faq-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .faq-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 15px;
+            padding: 1.8rem;
+            transition: all 0.3s;
+        }
+
+        .faq-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255,255,255,0.15);
+        }
+
+        .faq-card h3 {
+            color: #fff;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .faq-card h3 i {
+            color: #888;
+            font-size: 1.2rem;
+        }
+
+        .faq-card p {
+            color: #888;
+            line-height: 1.7;
+        }
+
+        /* CONTACTS - ИСПРАВЛЕННЫЕ СТИЛИ */
+        .contacts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .contact-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .contact-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255,255,255,0.15);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+        }
+
+        .contact-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            transition: transform 0.3s;
+        }
+
+        .contact-card:hover .contact-icon {
+            transform: scale(1.2);
+        }
+
+        .contact-name {
+            color: #fff;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .contact-value {
+            color: #888;
+            font-size: 0.9rem;
+            word-break: break-all;
         }
 
         /* CART */
@@ -960,6 +972,9 @@
             .chat-sidebar {
                 width: 100%;
             }
+            .contacts-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -1006,7 +1021,6 @@
                 <button class="nav-tab" data-tab="packets"><i class="fas fa-gift"></i> Пакеты</button>
                 <button class="nav-tab" data-tab="badges"><i class="fas fa-medal"></i> Бейджики</button>
                 <button class="nav-tab" data-tab="contacts"><i class="fas fa-phone"></i> Контакты</button>
-                <!-- Users tab for admin only -->
             </div>
             <div class="user-menu">
                 <div class="cart-btn" id="cartBtn">
@@ -1088,7 +1102,7 @@
             <!-- FAQ -->
             <div class="tab-content" id="faq">
                 <h2 class="section-title">FAQ</h2>
-                <div class="products-grid" id="faqGrid"></div>
+                <div class="faq-grid" id="faqGrid"></div>
             </div>
 
             <!-- Packets -->
@@ -1122,16 +1136,16 @@
                             <span>Забанено: <b id="bannedUsersCount">0</b></span>
                         </div>
                     </div>
-                    <div class="admin-users-list" id="adminUsersList">
-                        <!-- Generated by JS -->
-                    </div>
+                    <div class="admin-users-list" id="adminUsersList"></div>
                 </div>
             </div>
 
-            <!-- Contacts -->
+            <!-- Contacts - ИСПРАВЛЕННАЯ ВЕРСИЯ -->
             <div class="tab-content" id="contacts">
                 <h2 class="section-title">Контакты</h2>
-                <div class="products-grid" id="contactsGrid"></div>
+                <div class="contacts-grid" id="contactsGrid">
+                    <!-- Контакты будут здесь -->
+                </div>
             </div>
         </div>
     </div>
@@ -1181,62 +1195,68 @@
 
     <script>
         // ===== DATA =====
-const playlist = [
-        { title: "FakeLavv - Передоз", artist: "FakeLavv", cover: "https://cdn.discordapp.com/attachments/1446528538684686541/1450312195547205672/cover.jpg", audio: "music/1.mp3" },
-        { title: "FakeLavv - Ганджа", artist: "FakeLavv", cover: "https://cdn.discordapp.com/attachments/1446528538684686541/1450312195547205672/cover.jpg", audio: "music/2.mp3" },
-        { title: "FakeLavv - Больно", artist: "FakeLavv", cover: "https://cdn.discordapp.com/attachments/1446528538684686541/1450312195547205672/cover.jpg", audio: "music/3.mp3" },
-        { title: "FakeLavv - кровавый", artist: "FakeLavv", cover: "https://cdn.discordapp.com/attachments/1446528538684686541/1450312195547205672/cover.jpg", audio: "music/4.mp3" },
-        { title: "FakeLavv - Never sober", artist: "FakeLavv", cover: "https://cdn.discordapp.com/attachments/1446528538684686541/1450312195547205672/cover.jpg", audio: "music/5.mp3" }
-    ];
+        const products = [
+            { category: 'black', name: 'Полный пробив', price: 1000, desc: 'Детальная информация по всем доступным источникам.' },
+            { category: 'black', name: 'Сватинг', price: 1500, desc: 'Организованный вызов экстренных служб.' },
+            { category: 'black', name: 'Снос аккаунта', price: 2000, desc: 'Полное удаление аккаунта в соцсетях.' },
+            { category: 'black', name: 'Защита от доксеров', price: 1500, desc: 'Комплексная защита от троллей и доксеров.' },
+            { category: 'black', name: 'Физическое воздействие', price: 5000, desc: 'Организация встречи для выяснения отношений.' },
+            { category: 'black', name: 'Таргетированный троллинг', price: 250, desc: 'Систематический троллинг цели в соцсетях.' },
+            { category: 'black', name: 'Физические номера', price: 100, desc: 'SIM-карты для регистрации аккаунтов.' },
+            { category: 'black', name: 'Обучение', price: 5000, desc: 'Полное обучение OSINT и безопасности.' },
+            
+            { category: 'programming', name: 'Discord бот', price: 250, desc: 'Разработка бота с любыми функциями.' },
+            { category: 'programming', name: 'Telegram бот', price: 250, desc: 'Боты для бизнеса и автоматизации.' },
+            { category: 'programming', name: 'Веб-сайт', price: 500, desc: 'Создание сайтов любой сложности.' },
+            { category: 'programming', name: 'Desktop приложения', price: 1000, desc: 'Разработка утилит для Windows/Linux.' },
+            { category: 'programming', name: 'Читы для игр', price: 1000, desc: 'Разработка читов для онлайн игр.' },
+            { category: 'programming', name: 'Хостинг 24/7', price: 150, desc: 'Надежный хостинг для проектов.' },
+            
+            { category: 'design', name: 'Аватарка премиум', price: 500, desc: 'Уникальный дизайн аватарки.' },
+            { category: 'design', name: 'Баннер для соцсетей', price: 500, desc: 'Создание баннеров для соцсетей.' },
+            { category: 'design', name: 'Тема оформления', price: 800, desc: 'Полный пакет оформления.' },
+            
+            { category: 'packets', name: 'Чёрнуха PRO', price: 8800, desc: 'Все услуги + поддержка + скидка 20%' },
+            { category: 'packets', name: 'Разработчик PRO', price: 2100, desc: 'Все услуги + хостинг + скидка 25%' },
+            { category: 'packets', name: 'Дизайн PRO', price: 1260, desc: 'Все услуги + правки + скидка 30%' },
+            { category: 'packets', name: 'ВСЁ ВКЛЮЧЕНО', price: 10075, desc: 'Все услуги + поддержка + скидка 35%' }
+        ];
 
-    const products = [
-        { category: 'black', name: 'Полный пробив', price: 1000, desc: 'Детальная информация по всем доступным источникам.', from: false },
-        { category: 'black', name: 'Сватинг', price: 1500, desc: 'Организованный вызов экстренных служб.', from: false },
-        { category: 'black', name: 'Снос аккаунта', price: 2000, desc: 'Полное удаление аккаунта в соцсетях.', from: false },
-        { category: 'black', name: 'Защита от доксеров', price: 1500, desc: 'Комплексная защита от троллей и доксеров.', from: false },
-        { category: 'black', name: 'Физическое воздействие', price: 5000, desc: 'Организация встречи для выяснения отношений.', from: false },
-        { category: 'black', name: 'Таргетированный троллинг', price: 250, desc: 'Систематический троллинг цели в соцсетях.', from: false },
-        { category: 'black', name: 'Физические номера', price: 100, desc: 'SIM-карты для регистрации аккаунтов.', from: true },
-        { category: 'black', name: 'Обучение', price: 5000, desc: 'Полное обучение OSINT и безопасности.', from: false },
-        
-        { category: 'programming', name: 'Discord бот', price: 250, desc: 'Разработка бота с любыми функциями.', from: true },
-        { category: 'programming', name: 'Telegram бот', price: 250, desc: 'Боты для бизнеса и автоматизации.', from: true },
-        { category: 'programming', name: 'Веб-сайт', price: 500, desc: 'Создание сайтов любой сложности.', from: true },
-        { category: 'programming', name: 'Desktop приложения', price: 1000, desc: 'Разработка утилит для Windows/Linux.', from: false },
-        { category: 'programming', name: 'Читы для игр', price: 1000, desc: 'Разработка читов для онлайн игр.', from: true },
-        { category: 'programming', name: 'Хостинг 24/7', price: 150, desc: 'Надежный хостинг для проектов.', from: true },
-        
-        { category: 'design', name: 'Аватарка премиум', price: 500, desc: 'Уникальный дизайн аватарки.', from: false },
-        { category: 'design', name: 'Баннер для соцсетей', price: 500, desc: 'Создание баннеров для соцсетей.', from: false },
-        { category: 'design', name: 'Тема оформления', price: 800, desc: 'Полный пакет оформления.', from: false },
-        
-        { category: 'packets', name: 'Чёрнуха PRO', price: 8800, desc: 'Все услуги + поддержка + скидка 20%', from: false },
-        { category: 'packets', name: 'Разработчик PRO', price: 2100, desc: 'Все услуги + хостинг + скидка 25%', from: false },
-        { category: 'packets', name: 'Дизайн PRO', price: 1260, desc: 'Все услуги + правки + скидка 30%', from: false },
-        { category: 'packets', name: 'ВСЁ ВКЛЮЧЕНО', price: 10075, desc: 'Все услуги + поддержка + скидка 35%', from: false }
-    ];
+        const faqs = [
+            { icon: 'fa-clock', q: 'Сколько выполняется заказ?', a: 'От 1 часа до 24 часов. Срочные заказы +50% к стоимости.' },
+            { icon: 'fa-user-secret', q: 'Насколько анонимно?', a: 'Полная анонимность. Все данные шифруются и удаляются после работы.' },
+            { icon: 'fa-ban', q: 'Возврат средств?', a: 'ВОЗВРАТА НЕТ. Услуги цифровые, не подлежат возврату.' },
+            { icon: 'fa-headset', q: 'Есть ли поддержка?', a: 'Поддержка 24/7 в Telegram. Ответ за 5-15 минут.' },
+            { icon: 'fa-shield-alt', q: 'Какие гарантии?', a: 'Гарантия 14 дней. Бесплатно исправим проблемы по нашей вине.' },
+            { icon: 'fa-credit-card', q: 'Способы оплаты?', a: 'ЮMoney, карты, криптовалюта (BTC, USDT).' },
+            { icon: 'fa-lock', q: 'Конфиденциальность?', a: 'Данные не передаются третьим лицам. Чаты очищаются после проекта.' },
+            { icon: 'fa-exchange-alt', q: 'Можно ли правки?', a: 'До 3 правок включены (кроме Чёрнухи).' },
+            { icon: 'fa-exclamation-triangle', q: 'Юридическая ответственность?', a: 'Услуги для образовательных целей. Мы не несем ответственности за незаконное использование.' },
+            { icon: 'fa-file-contract', q: 'Нужен договор?', a: 'Нет. Все условия в Telegram. Работаем на репутации.' }
+        ];
 
-    const faqs = [
-        { icon: 'fa-clock', q: 'Сколько выполняется заказ?', a: 'От 1 часа до 24 часов. Срочные заказы +50% к стоимости.' },
-        { icon: 'fa-user-secret', q: 'Насколько анонимно?', a: 'Полная анонимность. Все данные шифруются и удаляются после работы.' },
-        { icon: 'fa-ban', q: 'Возврат средств?', a: 'ВОЗВРАТА НЕТ. Услуги цифровые, не подлежат возврату.' },
-        { icon: 'fa-headset', q: 'Есть ли поддержка?', a: 'Поддержка 24/7 в Telegram. Ответ за 5-15 минут.' },
-        { icon: 'fa-shield-alt', q: 'Какие гарантии?', a: 'Гарантия 14 дней. Бесплатно исправим проблемы по нашей вине.' },
-        { icon: 'fa-credit-card', q: 'Способы оплаты?', a: 'ЮMoney, карты, криптовалюта (BTC, USDT).' },
-        { icon: 'fa-lock', q: 'Конфиденциальность?', a: 'Данные не передаются третьим лицам. Чаты очищаются после проекта.' },
-        { icon: 'fa-exchange-alt', q: 'Можно ли правки?', a: 'До 3 правок включены (кроме Чёрнухи).' },
-        { icon: 'fa-exclamation-triangle', q: 'Юридическая ответственность?', a: 'Услуги для образовательных целей. Мы не несем ответственности за незаконное использование.' },
-        { icon: 'fa-file-contract', q: 'Нужен договор?', a: 'Нет. Все условия в Telegram. Работаем на репутации.' }
-    ];
+        const contacts = [
+            { name: 'Discord', value: 'rootbios', url: 'https://discord.com/users/rootbios', icon: 'fab fa-discord', color: '#7289DA' },
+            { name: 'VK', value: '@fakelavv', url: 'https://vk.com/fakelavv', icon: 'fab fa-vk', color: '#4C75A3' },
+            { name: 'Telegram', value: '@FakeLavvMp3', url: 'https://t.me/FakeLavvMp3', icon: 'fab fa-telegram', color: '#0088CC' },
+            { name: 'Gmail', value: 'fakelavvofficial@gmail.com', url: 'mailto:fakelavvofficial@gmail.com', icon: 'fas fa-envelope', color: '#D44638' },
+            { name: 'GitHub', value: 'fakelavv', url: 'https://github.com/fakelavv', icon: 'fab fa-github', color: '#fff' },
+            { name: 'YouTube', value: 'fakelavv', url: 'https://youtube.com/@fakelavv', icon: 'fab fa-youtube', color: '#FF0000' }
+        ];
 
-    const contacts = [
-        { name: 'Discord', value: 'rootbios', url: 'https://discord.com/users/rootbios', icon: 'fab fa-discord', color: '#7289DA' },
-        { name: 'VK', value: '@fakelavv', url: 'https://vk.com/fakelavv', icon: 'fab fa-vk', color: '#4C75A3' },
-        { name: 'Telegram', value: '@FakeLavvMp3', url: 'https://t.me/FakeLavvMp3', icon: 'fab fa-telegram', color: '#0088CC' },
-        { name: 'Gmail', value: 'fakelavvofficial@gmail.com', url: 'mailto:fakelavvofficial@gmail.com', icon: 'fas fa-envelope', color: '#D44638' },
-        { name: 'GitHub', value: 'fakelavv', url: 'https://github.com/fakelavv', icon: 'fab fa-github', color: '#fff' },
-        { name: 'YouTube', value: 'fakelavv', url: 'https://youtube.com/@fakelavv', icon: 'fab fa-youtube', color: '#FF0000' }
-    ];
+        const badgeDefs = {
+            owner: { name: 'Owner', icon: 'fa-crown', color: '#ff4444' },
+            creator: { name: 'Creator', icon: 'fa-star', color: '#ff8800' },
+            dev: { name: 'Dev', icon: 'fa-code', color: '#4488ff' },
+            sponsor: { name: 'Sponsor', icon: 'fa-gem', color: '#ffdd00' },
+            premium: { name: 'Premium', icon: 'fa-crown', color: '#aa44ff' },
+            buyer: { name: 'Buyer', icon: 'fa-shopping-bag', color: '#44ff88' },
+            vip: { name: 'VIP', icon: 'fa-star', color: '#ff44aa' },
+            mod: { name: 'Mod', icon: 'fa-shield-alt', color: '#44aaff' },
+            helper: { name: 'Helper', icon: 'fa-hands-helping', color: '#44ffaa' },
+            new: { name: 'New', icon: 'fa-user', color: '#888888' }
+        };
+
         // ===== STATE =====
         let currentUser = null;
         let socket = null;
@@ -1299,7 +1319,7 @@ const playlist = [
             initChat();
             renderProducts();
             renderFAQ();
-            renderContacts();
+            renderContacts(); // ИСПРАВЛЕНО: вызываем здесь
             updateCart();
         }
 
@@ -1447,7 +1467,7 @@ const playlist = [
                 
                 if (data.success) {
                     showNotification(`Действие выполнено: ${action}`, 'success');
-                    loadAdminUsers(); // Refresh list
+                    loadAdminUsers();
                 } else {
                     showNotification(data.error || 'Ошибка', 'error');
                 }
@@ -1532,7 +1552,7 @@ const playlist = [
                 currentUser.badges = badges;
                 updateBadges();
                 showNotification('Бейджики обновлены!', 'success');
-                if (currentUser.isOwner) loadAdminUsers(); // Refresh admin panel
+                if (currentUser.isOwner) loadAdminUsers();
             });
             
             socket.on('banned', () => {
@@ -1623,13 +1643,17 @@ const playlist = [
             `).join('');
         }
 
+        // ===== ИСПРАВЛЕННЫЕ КОНТАКТЫ =====
         function renderContacts() {
-            document.getElementById('contactsGrid').innerHTML = contacts.map(c => `
-                <div class="contact-card">
-                    <div class="contact-icon" style="color: ${c.color}"><i class="${c.icon}"></i></div>
+            const container = document.getElementById('contactsGrid');
+            container.innerHTML = contacts.map(c => `
+                <a href="${c.url}" target="_blank" class="contact-card">
+                    <div class="contact-icon" style="color: ${c.color}">
+                        <i class="${c.icon}"></i>
+                    </div>
                     <div class="contact-name">${c.name}</div>
-                    <div class="contact-value"><a href="${c.url}" target="_blank" style="color: ${c.color}">${c.value}</a></div>
-                </div>
+                    <div class="contact-value">${c.value}</div>
+                </a>
             `).join('');
         }
 
@@ -1713,10 +1737,11 @@ const playlist = [
                     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
                     
                     tab.classList.add('active');
-                    document.getElementById(tab.dataset.tab).classList.add('active');
+                    const targetId = tab.dataset.tab;
+                    document.getElementById(targetId).classList.add('active');
                     
-                    if (tab.dataset.tab === 'users') {
-                        loadAdminUsers(); // Refresh users list
+                    if (targetId === 'users') {
+                        loadAdminUsers();
                     }
                 });
             });
