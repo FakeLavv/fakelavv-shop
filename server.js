@@ -24,72 +24,12 @@ const USERS_FILE = path.join(DB_DIR, 'users.json');
 const BANNED_FILE = path.join(DB_DIR, 'banned.json');
 const MUTED_FILE = path.join(DB_DIR, 'muted.json');
 const REVIEWS_FILE = path.join(DB_DIR, 'reviews.json');
+const CART_FILE = path.join(DB_DIR, 'carts.json');
 
 // Создаём папку data если нет
 if (!fs.existsSync(DB_DIR)) {
     fs.mkdirSync(DB_DIR, { recursive: true });
-}
-
-// Загрузка данных из файлов
-function loadData() {
-    try {
-        if (fs.existsSync(USERS_FILE)) {
-            const data = JSON.parse(fs.readFileSync(USERS_FILE, 'utf8'));
-            for (const [username, user] of Object.entries(data)) {
-                users.set(username, user);
-            }
-            console.log(`📁 Загружено ${users.size} пользователей из базы`);
-        }
-        if (fs.existsSync(BANNED_FILE)) {
-            const data = JSON.parse(fs.readFileSync(BANNED_FILE, 'utf8'));
-            data.forEach(u => bannedUsers.add(u));
-        }
-        if (fs.existsSync(MUTED_FILE)) {
-            const data = JSON.parse(fs.readFileSync(MUTED_FILE, 'utf8'));
-            data.forEach(u => mutedUsers.add(u));
-        }
-        if (fs.existsSync(REVIEWS_FILE)) {
-            const data = JSON.parse(fs.readFileSync(REVIEWS_FILE, 'utf8'));
-            data.forEach(r => reviews.push(r));
-            console.log(`📁 Загружено ${reviews.length} отзывов`);
-        }
-    } catch (e) {
-        console.error('Ошибка загрузки данных:', e);
-    }
-}
-
-// Сохранение данных в файлы
-function saveUsers() {
-    try {
-        const data = Object.fromEntries(users);
-        fs.writeFileSync(USERS_FILE, JSON.stringify(data, null, 2));
-    } catch (e) {
-        console.error('Ошибка сохранения users:', e);
-    }
-}
-
-function saveBanned() {
-    try {
-        fs.writeFileSync(BANNED_FILE, JSON.stringify([...bannedUsers], null, 2));
-    } catch (e) {
-        console.error('Ошибка сохранения banned:', e);
-    }
-}
-
-function saveMuted() {
-    try {
-        fs.writeFileSync(MUTED_FILE, JSON.stringify([...mutedUsers], null, 2));
-    } catch (e) {
-        console.error('Ошибка сохранения muted:', e);
-    }
-}
-
-function saveReviews() {
-    try {
-        fs.writeFileSync(REVIEWS_FILE, JSON.stringify(reviews, null, 2));
-    } catch (e) {
-        console.error('Ошибка сохранения reviews:', e);
-    }
+    console.log('📁 Создана папка data');
 }
 
 // Хранилище в памяти
@@ -100,6 +40,95 @@ const onlineUsers = new Map();
 const bannedUsers = new Set();
 const mutedUsers = new Set();
 const reviews = [];
+const carts = new Map();
+
+// Загрузка данных из файлов
+function loadData() {
+    try {
+        if (fs.existsSync(USERS_FILE)) {
+            const data = JSON.parse(fs.readFileSync(USERS_FILE, 'utf8'));
+            for (const [username, user] of Object.entries(data)) {
+                users.set(username, user);
+            }
+            console.log(`✅ Загружено ${users.size} пользователей`);
+        } else {
+            console.log('⚠️ Файл users.json не найден, будет создан при первом сохранении');
+        }
+
+        if (fs.existsSync(BANNED_FILE)) {
+            const data = JSON.parse(fs.readFileSync(BANNED_FILE, 'utf8'));
+            data.forEach(u => bannedUsers.add(u));
+            console.log(`✅ Загружено ${bannedUsers.size} забаненных`);
+        }
+
+        if (fs.existsSync(MUTED_FILE)) {
+            const data = JSON.parse(fs.readFileSync(MUTED_FILE, 'utf8'));
+            data.forEach(u => mutedUsers.add(u));
+            console.log(`✅ Загружено ${mutedUsers.size} замученных`);
+        }
+
+        if (fs.existsSync(REVIEWS_FILE)) {
+            const data = JSON.parse(fs.readFileSync(REVIEWS_FILE, 'utf8'));
+            data.forEach(r => reviews.push(r));
+            console.log(`✅ Загружено ${reviews.length} отзывов`);
+        }
+
+        if (fs.existsSync(CART_FILE)) {
+            const data = JSON.parse(fs.readFileSync(CART_FILE, 'utf8'));
+            for (const [username, cart] of Object.entries(data)) {
+                carts.set(username, cart);
+            }
+            console.log(`✅ Загружено ${carts.size} корзин`);
+        }
+    } catch (e) {
+        console.error('❌ Ошибка загрузки данных:', e);
+    }
+}
+
+// Сохранение данных в файлы
+function saveUsers() {
+    try {
+        const data = Object.fromEntries(users);
+        fs.writeFileSync(USERS_FILE, JSON.stringify(data, null, 2));
+        console.log('💾 Пользователи сохранены');
+    } catch (e) {
+        console.error('❌ Ошибка сохранения users:', e);
+    }
+}
+
+function saveBanned() {
+    try {
+        fs.writeFileSync(BANNED_FILE, JSON.stringify([...bannedUsers], null, 2));
+    } catch (e) {
+        console.error('❌ Ошибка сохранения banned:', e);
+    }
+}
+
+function saveMuted() {
+    try {
+        fs.writeFileSync(MUTED_FILE, JSON.stringify([...mutedUsers], null, 2));
+    } catch (e) {
+        console.error('❌ Ошибка сохранения muted:', e);
+    }
+}
+
+function saveReviews() {
+    try {
+        fs.writeFileSync(REVIEWS_FILE, JSON.stringify(reviews, null, 2));
+        console.log('💾 Отзывы сохранены');
+    } catch (e) {
+        console.error('❌ Ошибка сохранения reviews:', e);
+    }
+}
+
+function saveCarts() {
+    try {
+        const data = Object.fromEntries(carts);
+        fs.writeFileSync(CART_FILE, JSON.stringify(data, null, 2));
+    } catch (e) {
+        console.error('❌ Ошибка сохранения carts:', e);
+    }
+}
 
 // Загружаем данные при старте
 loadData();
@@ -110,13 +139,14 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/music', express.static(path.join(__dirname, 'music')));
 app.use('/images', express.static(path.join(__dirname, 'images')));
+app.use('/examples', express.static(path.join(__dirname, 'examples')));
 
 // Session
 app.use(session({
     secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false, maxAge: 30 * 24 * 60 * 60 * 1000 } // 30 дней
+    cookie: { secure: false, maxAge: 30 * 24 * 60 * 60 * 1000 }
 }));
 
 // ===== API =====
@@ -173,6 +203,10 @@ app.post('/api/register', async (req, res) => {
     
     users.set(username, newUser);
     saveUsers();
+    
+    // Создаём пустую корзину для нового пользователя
+    carts.set(username, []);
+    saveCarts();
     
     req.session.username = username;
     
@@ -237,6 +271,28 @@ app.get('/api/me', (req, res) => {
     } else {
         res.json({ loggedIn: false });
     }
+});
+
+// CART API - Сохранение корзины на сервере
+app.get('/api/cart', (req, res) => {
+    if (!req.session.username) {
+        return res.status(401).json({ error: 'Не авторизован' });
+    }
+    
+    const userCart = carts.get(req.session.username) || [];
+    res.json({ cart: userCart });
+});
+
+app.post('/api/cart', (req, res) => {
+    if (!req.session.username) {
+        return res.status(401).json({ error: 'Не авторизован' });
+    }
+    
+    const { cart } = req.body;
+    carts.set(req.session.username, cart || []);
+    saveCarts();
+    
+    res.json({ success: true });
 });
 
 // Reviews API
@@ -306,7 +362,6 @@ app.put('/api/reviews/:id', (req, res) => {
     
     const review = reviews[reviewIndex];
     
-    // Только владелец отзыва или админ может редактировать
     if (review.username !== username && !isOwner) {
         return res.status(403).json({ error: 'Нет прав' });
     }
@@ -345,7 +400,6 @@ app.delete('/api/reviews/:id', (req, res) => {
     
     const review = reviews[reviewIndex];
     
-    // Владелец отзыва или админ может удалить
     if (review.username !== username && !isOwner) {
         return res.status(403).json({ error: 'Нет прав' });
     }
@@ -401,8 +455,10 @@ app.post('/api/admin/action', (req, res) => {
         case 'delete':
             users.delete(targetUsername);
             bannedUsers.add(targetUsername);
+            carts.delete(targetUsername);
             saveUsers();
             saveBanned();
+            saveCarts();
             for (const [sid, uname] of sessions) {
                 if (uname === targetUsername) {
                     io.to(sid).emit('accountDeleted');
@@ -566,39 +622,6 @@ io.on('connection', (socket) => {
         io.emit('newMessage', message);
     });
     
-    socket.on('adminCommand', (data) => {
-        const username = sessions.get(socket.id);
-        if (!username) return;
-        
-        const user = users.get(username);
-        if (!user.badges.includes('owner')) {
-            socket.emit('error', { message: 'Нет прав' });
-            return;
-        }
-        
-        const { command, targetUsername, badge } = data;
-        const target = users.get(targetUsername);
-        
-        if (!target) {
-            socket.emit('error', { message: 'Пользователь не найден' });
-            return;
-        }
-        
-        if (command === 'giveBadge') {
-            if (!target.badges.includes(badge)) {
-                target.badges.push(badge);
-                saveUsers();
-                updateUserBadges(targetUsername, target.badges);
-                socket.emit('success', `Бейджик ${badge} выдан ${targetUsername}`);
-            }
-        } else if (command === 'removeBadge') {
-            target.badges = target.badges.filter(b => b !== badge);
-            saveUsers();
-            updateUserBadges(targetUsername, target.badges);
-            socket.emit('success', `Бейджик ${badge} удалён у ${targetUsername}`);
-        }
-    });
-    
     function updateUserBadges(targetUsername, newBadges) {
         for (const [sid, uname] of sessions) {
             if (uname === targetUsername) {
@@ -636,4 +659,5 @@ app.get('*', (req, res) => {
 server.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
     console.log(`📁 База данных: ${DB_DIR}`);
+    console.log(`📄 Файлы: users.json, banned.json, muted.json, reviews.json, carts.json`);
 });
