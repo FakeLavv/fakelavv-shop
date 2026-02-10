@@ -4,7 +4,7 @@ const socketIo = require('socket.io');
 const path = require('path');
 const bcrypt = require('bcryptjs');
 const session = require('express-session');
-const { MongoClient } = require('mongodb');
+const { MongoClient, ServerApiVersion } = require('mongodb');
 const { v4: uuidv4 } = require('uuid');
 
 const app = express();
@@ -14,32 +14,57 @@ const io = socketIo(server, {
 });
 
 const PORT = process.env.PORT || 3000;
+
+// MongoDB URI - используй правильную строку из MongoDB Atlas
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/fakelavv-shop';
 
 // MongoDB клиент
 let db;
 let client;
 
-// In-memory для сессий и чата (не сохраняем в БД)
+// In-memory для сессий и чата
 const sessions = new Map();
 const messages = [];
 const onlineUsers = new Map();
 
 async function connectDB() {
     try {
-        client = new MongoClient(MONGODB_URI);
+        client = new MongoClient(MONGODB_URI, {
+            serverApi: {
+                version: ServerApiVersion.v1,
+                strict: true,
+                deprecationErrors: true,
+            }
+        });
+        
         await client.connect();
+        await client.db("admin").command({ ping: 1 });
         db = client.db('fakelavv-shop');
+        
         console.log('✅ Подключено к MongoDB Atlas');
         
-        // Создаём индексы
-        await db.collection('users').createIndex({ username: 1 }, { unique: true });
-        await db.collection('users').createIndex({ email: 1 }, { unique: true });
-        await db.collection('reviews').createIndex({ username: 1 }, { unique: true });
+        // Создаём коллекции если нет
+        const collections = await db.listCollections().toArray();
+        const collNames = collections.map(c => c.name);
+        
+        if (!collNames.includes('users')) {
+            await db.createCollection('users');
+            await db.collection('users').createIndex({ username: 1 }, { unique: true });
+            await db.collection('users').createIndex({ email: 1 }, { unique: true });
+        }
+        if (!collNames.includes('carts')) await db.createCollection('carts');
+        if (!collNames.includes('reviews')) {
+            await db.createCollection('reviews');
+            await db.collection('reviews').createIndex({ username: 1 }, { unique: true });
+        }
+        if (!collNames.includes('banned')) await db.createCollection('banned');
+        if (!collNames.includes('muted')) await db.createCollection('muted');
         
     } catch (e) {
-        console.error('❌ Ошибка подключения к MongoDB:', e);
-        process.exit(1);
+        console.error('❌ Ошибка подключения к MongoDB:', e.message);
+        console.log('⚠️ Работаем без базы данных (данные будут теряться при перезапуске)');
+        // Fallback - работаем без БД
+        db = null;
     }
 }
 
@@ -49,15 +74,44 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/music', express.static(path.join(__dirname, 'music')));
 app.use('/images', express.static(path.join(__dirname, 'images')));
-app.use('/examples', express.static(path.join(__dirname, 'examples')));
 
 // Session
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'your-secret-key',
+    secret: process.env.SESSION_SECRET || 'your-secret-key-change-this',
     resave: false,
     saveUninitialized: false,
     cookie: { secure: false, maxAge: 30 * 24 * 60 * 60 * 1000 }
 }));
+
+// In-memory fallback storage
+const memoryUsers = new Map();
+const memoryCarts = new Map();
+const memoryReviews = [];
+const memoryBanned = new Set();
+const memoryMuted = new Set();
+
+// Helper functions для работы с БД или памятью
+async function getUser(username) {
+    if (db) return await db.collection('users').findOne({ username });
+    return memoryUsers.get(username);
+}
+
+async function saveUser(user) {
+    if (db) {
+        await db.collection('users').insertOne(user);
+    } else {
+        memoryUsers.set(user.username, user);
+    }
+}
+
+async function updateUser(username, update) {
+    if (db) {
+        await db.collection('users').updateOne({ username }, { $set: update });
+    } else {
+        const user = memoryUsers.get(username);
+        if (user) Object.assign(user, update);
+    }
+}
 
 // ===== API =====
 
@@ -81,10 +135,32 @@ app.post('/api/register', async (req, res) => {
         return res.status(400).json({ error: 'Пароль минимум 6 символов' });
     }
     
-    const usersCount = await db.collection('users').countDocuments();
-    const isFirstUser = usersCount === 0;
+    // Проверяем существование
+    const existingUser = await getUser(username);
+    if (existingUser) {
+        return res.status(400).json({ error: 'Имя пользователя занято' });
+    }
+    
+    if (db) {
+        const existingEmail = await db.collection('users').findOne({ email });
+        if (existingEmail) return res.status(400).json({ error: 'Email уже используется' });
+    }
+    
+    const banned = db ? 
+        await db.collection('banned').findOne({ username }) : 
+        memoryBanned.has(username);
+    
+    if (banned) {
+        return res.status(403).json({ error: 'Аккаунт заблокирован' });
+    }
     
     const hashedPassword = await bcrypt.hash(password, 10);
+    
+    // Считаем пользователей для определения первого (owner)
+    const userCount = db ? 
+        await db.collection('users').countDocuments() : 
+        memoryUsers.size;
+    const isFirstUser = userCount === 0;
     
     const newUser = {
         username,
@@ -100,12 +176,18 @@ app.post('/api/register', async (req, res) => {
     };
     
     try {
-        await db.collection('users').insertOne(newUser);
-        await db.collection('carts').insertOne({ username, items: [] });
+        await saveUser(newUser);
+        
+        // Создаём корзину
+        if (db) {
+            await db.collection('carts').insertOne({ username, items: [] });
+        } else {
+            memoryCarts.set(username, []);
+        }
         
         req.session.username = username;
         
-        console.log(`✅ Новый пользователь: ${username} (IP: ${ip})`);
+        console.log(`✅ Новый пользователь: ${username} (IP: ${ip}) ${isFirstUser ? '[OWNER]' : ''}`);
         
         res.json({ 
             success: true, 
@@ -115,10 +197,8 @@ app.post('/api/register', async (req, res) => {
             message: 'Регистрация успешна!'
         });
     } catch (e) {
-        if (e.code === 11000) {
-            return res.status(400).json({ error: 'Имя пользователя или email уже заняты' });
-        }
-        throw e;
+        console.error('Ошибка регистрации:', e);
+        res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
 
@@ -126,10 +206,17 @@ app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
     const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
     
-    const user = await db.collection('users').findOne({ username });
+    const banned = db ? 
+        await db.collection('banned').findOne({ username }) : 
+        memoryBanned.has(username);
     
-    if (!user || user.banned) {
-        return res.status(400).json({ error: 'Неверные данные или аккаунт заблокирован' });
+    if (banned) {
+        return res.status(403).json({ error: 'Аккаунт заблокирован' });
+    }
+    
+    const user = await getUser(username);
+    if (!user) {
+        return res.status(400).json({ error: 'Неверные данные' });
     }
     
     const validPassword = await bcrypt.compare(password, user.password);
@@ -138,13 +225,23 @@ app.post('/api/login', async (req, res) => {
     }
     
     // Обновляем lastLogin и IP
-    await db.collection('users').updateOne(
-        { username },
-        { 
-            $set: { lastLogin: Date.now() },
-            $addToSet: { ips: ip }
-        }
-    );
+    const update = {
+        lastLogin: Date.now(),
+        $addToSet: { ips: ip }
+    };
+    
+    if (db) {
+        await db.collection('users').updateOne(
+            { username },
+            { 
+                $set: { lastLogin: Date.now() },
+                $addToSet: { ips: ip }
+            }
+        );
+    } else {
+        user.lastLogin = Date.now();
+        if (!user.ips.includes(ip)) user.ips.push(ip);
+    }
     
     req.session.username = username;
     
@@ -154,7 +251,7 @@ app.post('/api/login', async (req, res) => {
         success: true,
         username,
         badges: user.badges,
-        isOwner: user.badges.includes('owner')
+        isOwner: user.badges?.includes('owner')
     });
 });
 
@@ -163,7 +260,7 @@ app.get('/api/me', async (req, res) => {
         return res.json({ loggedIn: false });
     }
     
-    const user = await db.collection('users').findOne({ username: req.session.username });
+    const user = await getUser(req.session.username);
     if (!user) {
         return res.json({ loggedIn: false });
     }
@@ -173,7 +270,7 @@ app.get('/api/me', async (req, res) => {
         username: req.session.username,
         badges: user.badges,
         email: user.email,
-        isOwner: user.badges.includes('owner')
+        isOwner: user.badges?.includes('owner')
     });
 });
 
@@ -183,8 +280,15 @@ app.get('/api/cart', async (req, res) => {
         return res.status(401).json({ error: 'Не авторизован' });
     }
     
-    const cart = await db.collection('carts').findOne({ username: req.session.username });
-    res.json({ cart: cart?.items || [] });
+    let cart;
+    if (db) {
+        const doc = await db.collection('carts').findOne({ username: req.session.username });
+        cart = doc?.items || [];
+    } else {
+        cart = memoryCarts.get(req.session.username) || [];
+    }
+    
+    res.json({ cart });
 });
 
 app.post('/api/cart', async (req, res) => {
@@ -193,11 +297,16 @@ app.post('/api/cart', async (req, res) => {
     }
     
     const { cart } = req.body;
-    await db.collection('carts').updateOne(
-        { username: req.session.username },
-        { $set: { items: cart || [] } },
-        { upsert: true }
-    );
+    
+    if (db) {
+        await db.collection('carts').updateOne(
+            { username: req.session.username },
+            { $set: { items: cart || [] } },
+            { upsert: true }
+        );
+    } else {
+        memoryCarts.set(req.session.username, cart || []);
+    }
     
     res.json({ success: true });
 });
@@ -208,16 +317,22 @@ app.get('/api/reviews', async (req, res) => {
         return res.status(401).json({ error: 'Не авторизован' });
     }
     
-    const userReview = await db.collection('reviews').findOne({ username: req.session.username });
-    const otherReviews = await db.collection('reviews')
-        .find({ username: { $ne: req.session.username } })
-        .sort({ date: -1 })
-        .toArray();
+    let userReview, otherReviews;
     
-    res.json({ 
-        reviews: otherReviews, 
-        userReview: userReview || null 
-    });
+    if (db) {
+        userReview = await db.collection('reviews').findOne({ username: req.session.username });
+        otherReviews = await db.collection('reviews')
+            .find({ username: { $ne: req.session.username } })
+            .sort({ date: -1 })
+            .toArray();
+    } else {
+        userReview = memoryReviews.find(r => r.username === req.session.username);
+        otherReviews = memoryReviews
+            .filter(r => r.username !== req.session.username)
+            .reverse();
+    }
+    
+    res.json({ reviews: otherReviews, userReview: userReview || null });
 });
 
 app.post('/api/reviews', async (req, res) => {
@@ -232,7 +347,14 @@ app.post('/api/reviews', async (req, res) => {
         return res.status(400).json({ error: 'Оценка должна быть от 1 до 5' });
     }
     
-    const existing = await db.collection('reviews').findOne({ username });
+    // Проверяем существование отзыва
+    let existing;
+    if (db) {
+        existing = await db.collection('reviews').findOne({ username });
+    } else {
+        existing = memoryReviews.find(r => r.username === username);
+    }
+    
     if (existing) {
         return res.status(400).json({ error: 'Вы уже оставили отзыв' });
     }
@@ -246,9 +368,13 @@ app.post('/api/reviews', async (req, res) => {
         isAdminEdit: false
     };
     
-    await db.collection('reviews').insertOne(review);
-    console.log(`⭐ Новый отзыв от ${username}: ${rating} звёзд`);
+    if (db) {
+        await db.collection('reviews').insertOne(review);
+    } else {
+        memoryReviews.push(review);
+    }
     
+    console.log(`⭐ Новый отзыв от ${username}: ${rating} звёзд`);
     res.json({ success: true, review });
 });
 
@@ -261,10 +387,16 @@ app.put('/api/reviews/:id', async (req, res) => {
     const reviewId = req.params.id;
     const username = req.session.username;
     
-    const user = await db.collection('users').findOne({ username });
+    const user = await getUser(username);
     const isOwner = user?.badges?.includes('owner');
     
-    const review = await db.collection('reviews').findOne({ id: reviewId });
+    let review;
+    if (db) {
+        review = await db.collection('reviews').findOne({ id: reviewId });
+    } else {
+        review = memoryReviews.find(r => r.id === reviewId);
+    }
+    
     if (!review) {
         return res.status(404).json({ error: 'Отзыв не найден' });
     }
@@ -274,18 +406,18 @@ app.put('/api/reviews/:id', async (req, res) => {
     }
     
     const update = {
-        $set: {
-            date: Date.now(),
-            isAdminEdit: isOwner && review.username !== username
-        }
+        date: Date.now(),
+        isAdminEdit: isOwner && review.username !== username
     };
+    if (rating !== undefined) update.rating = parseInt(rating);
+    if (text !== undefined) update.text = text;
     
-    if (rating !== undefined) update.$set.rating = parseInt(rating);
-    if (text !== undefined) update.$set.text = text;
+    if (db) {
+        await db.collection('reviews').updateOne({ id: reviewId }, { $set: update });
+    } else {
+        Object.assign(review, update);
+    }
     
-    await db.collection('reviews').updateOne({ id: reviewId }, update);
-    
-    console.log(`✏️ Отзыв отредактирован`);
     res.json({ success: true });
 });
 
@@ -297,10 +429,16 @@ app.delete('/api/reviews/:id', async (req, res) => {
     const reviewId = req.params.id;
     const username = req.session.username;
     
-    const user = await db.collection('users').findOne({ username });
+    const user = await getUser(username);
     const isOwner = user?.badges?.includes('owner');
     
-    const review = await db.collection('reviews').findOne({ id: reviewId });
+    let review;
+    if (db) {
+        review = await db.collection('reviews').findOne({ id: reviewId });
+    } else {
+        review = memoryReviews.find(r => r.id === reviewId);
+    }
+    
     if (!review) {
         return res.status(404).json({ error: 'Отзыв не найден' });
     }
@@ -309,23 +447,34 @@ app.delete('/api/reviews/:id', async (req, res) => {
         return res.status(403).json({ error: 'Нет прав' });
     }
     
-    await db.collection('reviews').deleteOne({ id: reviewId });
-    console.log(`🗑️ Отзыв удалён`);
+    if (db) {
+        await db.collection('reviews').deleteOne({ id: reviewId });
+    } else {
+        const idx = memoryReviews.findIndex(r => r.id === reviewId);
+        if (idx > -1) memoryReviews.splice(idx, 1);
+    }
     
     res.json({ success: true });
 });
 
+// Admin API
 app.get('/api/admin/users', async (req, res) => {
-    const admin = req.session.username ? 
-        await db.collection('users').findOne({ username: req.session.username }) : null;
-    
+    const admin = req.session.username ? await getUser(req.session.username) : null;
     if (!admin?.badges?.includes('owner')) {
         return res.status(403).json({ error: 'Нет прав' });
     }
     
-    const usersList = await db.collection('users').find().toArray();
-    const bannedList = await db.collection('banned').find().toArray();
-    const mutedList = await db.collection('muted').find().toArray();
+    let usersList, bannedList, mutedList;
+    
+    if (db) {
+        usersList = await db.collection('users').find().toArray();
+        bannedList = await db.collection('banned').find().toArray();
+        mutedList = await db.collection('muted').find().toArray();
+    } else {
+        usersList = Array.from(memoryUsers.values());
+        bannedList = Array.from(memoryBanned).map(u => ({ username: u }));
+        mutedList = Array.from(memoryMuted).map(u => ({ username: u }));
+    }
     
     const bannedSet = new Set(bannedList.map(b => b.username));
     const mutedSet = new Set(mutedList.map(m => m.username));
@@ -347,15 +496,13 @@ app.get('/api/admin/users', async (req, res) => {
 });
 
 app.post('/api/admin/action', async (req, res) => {
-    const admin = req.session.username ? 
-        await db.collection('users').findOne({ username: req.session.username }) : null;
-    
+    const admin = req.session.username ? await getUser(req.session.username) : null;
     if (!admin?.badges?.includes('owner')) {
         return res.status(403).json({ error: 'Нет прав' });
     }
     
     const { action, targetUsername } = req.body;
-    const target = await db.collection('users').findOne({ username: targetUsername });
+    const target = await getUser(targetUsername);
     
     if (!target) {
         return res.status(404).json({ error: 'Пользователь не найден' });
@@ -367,9 +514,15 @@ app.post('/api/admin/action', async (req, res) => {
     
     switch(action) {
         case 'delete':
-            await db.collection('users').deleteOne({ username: targetUsername });
-            await db.collection('banned').insertOne({ username: targetUsername, date: Date.now() });
-            await db.collection('carts').deleteOne({ username: targetUsername });
+            if (db) {
+                await db.collection('users').deleteOne({ username: targetUsername });
+                await db.collection('banned').insertOne({ username: targetUsername, date: Date.now() });
+                await db.collection('carts').deleteOne({ username: targetUsername });
+            } else {
+                memoryUsers.delete(targetUsername);
+                memoryBanned.add(targetUsername);
+                memoryCarts.delete(targetUsername);
+            }
             for (const [sid, uname] of sessions) {
                 if (uname === targetUsername) {
                     io.to(sid).emit('accountDeleted');
@@ -379,8 +532,13 @@ app.post('/api/admin/action', async (req, res) => {
             break;
             
         case 'ban':
-            await db.collection('banned').insertOne({ username: targetUsername, date: Date.now() });
-            await db.collection('users').updateOne({ username: targetUsername }, { $set: { banned: true } });
+            if (db) {
+                await db.collection('banned').insertOne({ username: targetUsername, date: Date.now() });
+                await db.collection('users').updateOne({ username: targetUsername }, { $set: { banned: true } });
+            } else {
+                memoryBanned.add(targetUsername);
+                target.banned = true;
+            }
             for (const [sid, uname] of sessions) {
                 if (uname === targetUsername) {
                     io.to(sid).emit('banned');
@@ -390,20 +548,35 @@ app.post('/api/admin/action', async (req, res) => {
             break;
             
         case 'unban':
-            await db.collection('banned').deleteOne({ username: targetUsername });
-            await db.collection('users').updateOne({ username: targetUsername }, { $set: { banned: false } });
+            if (db) {
+                await db.collection('banned').deleteOne({ username: targetUsername });
+                await db.collection('users').updateOne({ username: targetUsername }, { $set: { banned: false } });
+            } else {
+                memoryBanned.delete(targetUsername);
+                target.banned = false;
+            }
             console.log(`✅ Админ разбанил: ${targetUsername}`);
             break;
             
         case 'mute':
-            await db.collection('muted').insertOne({ username: targetUsername, date: Date.now() });
-            await db.collection('users').updateOne({ username: targetUsername }, { $set: { muted: true } });
+            if (db) {
+                await db.collection('muted').insertOne({ username: targetUsername, date: Date.now() });
+                await db.collection('users').updateOne({ username: targetUsername }, { $set: { muted: true } });
+            } else {
+                memoryMuted.add(targetUsername);
+                target.muted = true;
+            }
             console.log(`🔇 Админ замутил: ${targetUsername}`);
             break;
             
         case 'unmute':
-            await db.collection('muted').deleteOne({ username: targetUsername });
-            await db.collection('users').updateOne({ username: targetUsername }, { $set: { muted: false } });
+            if (db) {
+                await db.collection('muted').deleteOne({ username: targetUsername });
+                await db.collection('users').updateOne({ username: targetUsername }, { $set: { muted: false } });
+            } else {
+                memoryMuted.delete(targetUsername);
+                target.muted = false;
+            }
             console.log(`🔊 Админ размутил: ${targetUsername}`);
             break;
     }
@@ -412,9 +585,7 @@ app.post('/api/admin/action', async (req, res) => {
 });
 
 app.post('/api/admin/badge', async (req, res) => {
-    const admin = req.session.username ? 
-        await db.collection('users').findOne({ username: req.session.username }) : null;
-    
+    const admin = req.session.username ? await getUser(req.session.username) : null;
     if (!admin?.badges?.includes('owner')) {
         return res.status(403).json({ error: 'Нет прав' });
     }
@@ -422,18 +593,28 @@ app.post('/api/admin/badge', async (req, res) => {
     const { action, targetUsername, badge } = req.body;
     
     if (action === 'give') {
-        await db.collection('users').updateOne(
-            { username: targetUsername },
-            { $addToSet: { badges: badge } }
-        );
+        if (db) {
+            await db.collection('users').updateOne(
+                { username: targetUsername },
+                { $addToSet: { badges: badge } }
+            );
+        } else {
+            const user = memoryUsers.get(targetUsername);
+            if (user && !user.badges.includes(badge)) user.badges.push(badge);
+        }
     } else if (action === 'remove') {
         if (badge === 'owner') {
             return res.status(403).json({ error: 'Нельзя забрать Owner' });
         }
-        await db.collection('users').updateOne(
-            { username: targetUsername },
-            { $pull: { badges: badge } }
-        );
+        if (db) {
+            await db.collection('users').updateOne(
+                { username: targetUsername },
+                { $pull: { badges: badge } }
+            );
+        } else {
+            const user = memoryUsers.get(targetUsername);
+            if (user) user.badges = user.badges.filter(b => b !== badge);
+        }
     }
     
     res.json({ success: true });
@@ -452,13 +633,13 @@ io.on('connection', (socket) => {
     socket.on('joinChat', async (data) => {
         const { username } = data;
         
-        const user = await db.collection('users').findOne({ username });
+        const user = await getUser(username);
         if (!user) {
             socket.emit('error', { message: 'Необходима авторизация' });
             return;
         }
         
-        if (user.banned) {
+        if (user.banned || (db ? await db.collection('banned').findOne({ username }) : memoryBanned.has(username))) {
             socket.emit('banned');
             return;
         }
@@ -472,7 +653,13 @@ io.on('connection', (socket) => {
         });
         
         socket.emit('chatHistory', messages.slice(-50));
-        broadcastOnlineList();
+        
+        const onlineList = Array.from(onlineUsers.values()).map(u => ({
+            username: u.username,
+            badges: u.badges,
+            ip: u.ip
+        }));
+        io.emit('onlineList', onlineList);
     });
     
     socket.on('sendMessage', async (data) => {
@@ -483,8 +670,13 @@ io.on('connection', (socket) => {
             return;
         }
         
-        const user = await db.collection('users').findOne({ username });
-        if (user?.muted) {
+        const user = await getUser(username);
+        
+        const muted = db ? 
+            await db.collection('muted').findOne({ username }) : 
+            memoryMuted.has(username);
+        
+        if (muted || user?.muted) {
             socket.emit('error', { message: 'Вы замучены' });
             return;
         }
@@ -496,10 +688,12 @@ io.on('connection', (socket) => {
             return;
         }
         
-        await db.collection('users').updateOne(
-            { username },
-            { $inc: { messagesCount: 1 } }
-        );
+        // Увеличиваем счётчик сообщений
+        if (db) {
+            await db.collection('users').updateOne({ username }, { $inc: { messagesCount: 1 } });
+        } else {
+            user.messagesCount = (user.messagesCount || 0) + 1;
+        }
         
         const message = {
             id: uuidv4(),
@@ -516,19 +710,16 @@ io.on('connection', (socket) => {
         io.emit('newMessage', message);
     });
     
-    function broadcastOnlineList() {
+    socket.on('disconnect', () => {
+        sessions.delete(socket.id);
+        onlineUsers.delete(socket.id);
+        
         const onlineList = Array.from(onlineUsers.values()).map(u => ({
             username: u.username,
             badges: u.badges,
             ip: u.ip
         }));
         io.emit('onlineList', onlineList);
-    }
-    
-    socket.on('disconnect', () => {
-        sessions.delete(socket.id);
-        onlineUsers.delete(socket.id);
-        broadcastOnlineList();
     });
 });
 
@@ -536,10 +727,14 @@ app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Запускаем сервер после подключения к БД
+// Запускаем сервер
 connectDB().then(() => {
     server.listen(PORT, () => {
         console.log(`🚀 Server running on port ${PORT}`);
-        console.log(`🗄️  MongoDB: ${MONGODB_URI.replace(/:.*@/, ':****@')}`);
+        if (db) {
+            console.log('✅ MongoDB подключена - данные сохраняются');
+        } else {
+            console.log('⚠️ MongoDB не подключена - данные в памяти (будут потеряны при перезапуске)');
+        }
     });
 });
