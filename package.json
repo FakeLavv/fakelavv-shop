@@ -1,7 +1,7 @@
 {
   "name": "fakelavv-shop",
   "version": "1.0.0",
-  "description": "Shop with real-time chat and badge system",
+  "description": "Shop with MongoDB",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
@@ -11,6 +11,7 @@
     "socket.io": "^4.6.1",
     "bcryptjs": "^2.4.3",
     "express-session": "^1.17.3",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "mongodb": "^6.3.0"
   }
 }
