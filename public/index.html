@@ -7,399 +7,52 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="/socket.io/socket.io.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', system-ui, sans-serif;
-        }
-
-        :root {
-            --black: #000000;
-            --dark: #0a0a0a;
-            --gray: #1a1a1a;
-            --white: #ffffff;
-            --badge-owner: #ff4444;
-            --badge-creator: #ff8800;
-            --badge-dev: #4488ff;
-            --badge-sponsor: #ffdd00;
-            --badge-premium: #aa44ff;
-            --badge-buyer: #44ff88;
-            --badge-vip: #ff44aa;
-            --badge-mod: #44aaff;
-            --badge-helper: #44ffaa;
-            --badge-new: #666666;
-        }
-
-        html {
-            scroll-behavior: smooth;
-        }
-
-        body {
-            background: var(--black);
-            color: var(--white);
-            min-height: 100vh;
-            overflow-x: hidden;
-            font-size: 14px;
-            line-height: 1.6;
-            cursor: none;
-        }
-
-        /* CURSOR */
-        .cursor {
-            position: fixed;
-            width: 24px;
-            height: 24px;
-            border: 2px solid rgba(255, 255, 255, 0.8);
-            border-radius: 50%;
-            z-index: 9999;
-            pointer-events: none;
-            transform: translate(-50%, -50%);
-            transition: width 0.2s, height 0.2s, border-color 0.2s, background 0.2s;
-            mix-blend-mode: difference;
-        }
-
-        .cursor.hover {
-            width: 50px;
-            height: 50px;
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.4);
-        }
-
-        .cursor.click {
-            width: 15px;
-            height: 15px;
-            background: rgba(255, 255, 255, 0.9);
-        }
-
-        /* LOADER */
-        .loader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: #000;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 10000;
-            transition: opacity 0.5s ease, visibility 0.5s;
-        }
-
-        .loader.hidden {
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
-        }
-
-        .loader-logo {
-            font-size: 3rem;
-            font-weight: 900;
-            background: linear-gradient(90deg, #333, #888, #fff, #888, #333);
-            background-size: 200% auto;
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            animation: shine 2s linear infinite;
-            margin-bottom: 2rem;
-        }
-
-        @keyframes shine {
-            to { background-position: 200% center; }
-        }
-
-        .loader-spinner {
-            width: 50px;
-            height: 50px;
-            border: 3px solid rgba(255,255,255,0.1);
-            border-top-color: #888;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .loader-progress {
-            width: 250px;
-            height: 3px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 2px;
-            overflow: hidden;
-            margin-top: 1.5rem;
-        }
-
-        .loader-progress-bar {
-            height: 100%;
-            background: linear-gradient(90deg, #444, #888);
-            width: 0%;
-            transition: width 0.2s ease;
-        }
-
-        /* AUTH MODAL */
-        #authModal {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.95);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 99999;
-            backdrop-filter: blur(10px);
-        }
-
-        .auth-container {
-            background: rgba(20,20,20,0.95);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 20px;
-            padding: 2.5rem;
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
-        }
-
-        .auth-container h2 {
-            margin-bottom: 0.5rem;
-            font-size: 1.8rem;
-        }
-
-        .auth-container p {
-            color: #888;
-            margin-bottom: 2rem;
-        }
-
-        .auth-form {
-            display: none;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .auth-form.active {
-            display: flex;
-        }
-
-        .auth-input {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            padding: 1rem;
-            border-radius: 10px;
-            color: #fff;
-            font-size: 1rem;
-            outline: none;
-            transition: all 0.3s;
-        }
-
-        .auth-input:focus {
-            border-color: rgba(255,255,255,0.3);
-            background: rgba(255,255,255,0.08);
-        }
-
-        .auth-btn {
-            background: linear-gradient(90deg, #444, #666);
-            border: none;
-            padding: 1rem;
-            border-radius: 10px;
-            color: #fff;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .auth-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(255,255,255,0.1);
-        }
-
-        .auth-toggle {
-            margin-top: 1.5rem;
-            color: #888;
-        }
-
-        .auth-toggle button {
-            background: none;
-            border: none;
-            color: #fff;
-            text-decoration: underline;
-            cursor: pointer;
-            margin-left: 0.5rem;
-        }
-
-        .auth-error {
-            color: #ff4444;
-            margin-top: 1rem;
-            font-size: 0.9rem;
-            min-height: 20px;
-        }
-
-        /* NAVBAR */
-        .navbar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background: rgba(10,10,10,0.95);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            padding: 1rem 2rem;
-            z-index: 1000;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
-            animation: slideDown 0.6s ease;
-        }
-
-        @keyframes slideDown {
-            from { transform: translateY(-100%); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        .logo {
-            font-size: 1.8rem;
-            font-weight: 900;
-            letter-spacing: 2px;
-            background: linear-gradient(90deg, #fff, #888);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.8; }
-        }
-
-        .nav-tabs {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-        }
-
-        .nav-tab {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: #aaa;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            transition: all 0.3s;
-            font-size: 0.85rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .nav-tab::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-            transition: left 0.5s;
-        }
-
-        .nav-tab:hover::before {
-            left: 100%;
-        }
-
-        .nav-tab:hover, .nav-tab.active {
-            background: rgba(255,255,255,0.1);
-            color: #fff;
-            border-color: rgba(255,255,255,0.3);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-
-        .nav-tab.admin-tab {
-            background: rgba(255,68,68,0.15);
-            border-color: rgba(255,68,68,0.3);
-            color: #ff8888;
-        }
-
-        .user-menu {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .cart-btn {
-            position: relative;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .cart-btn:hover {
-            background: rgba(255,255,255,0.1);
-            transform: scale(1.1);
-        }
-
-        .cart-count {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: #ff4444;
-            color: #fff;
-            font-size: 0.7rem;
-            font-weight: 700;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .logout-btn {
-            background: rgba(255,68,68,0.2);
-            border: 1px solid rgba(255,68,68,0.3);
-            color: #ff8888;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .logout-btn:hover {
-            background: rgba(255,68,68,0.3);
-        }
-
-        /* COMPACT BADGES */
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.3rem;
-            padding: 0.2rem 0.6rem;
-            border-radius: 12px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border: 1px solid;
-            box-shadow: 0 0 8px currentColor;
-            line-height: 1.2;
-        }
-
-        .badge i {
-            font-size: 0.65rem;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+        :root { --black: #000; --dark: #0a0a0a; --gray: #1a1a1a; --white: #fff; --badge-owner: #ff4444; --badge-creator: #ff8800; --badge-dev: #4488ff; --badge-sponsor: #ffdd00; --badge-premium: #aa44ff; --badge-buyer: #44ff88; --badge-vip: #ff44aa; --badge-mod: #44aaff; --badge-helper: #44ffaa; --badge-new: #666; }
+        html { scroll-behavior: smooth; }
+        body { background: var(--black); color: var(--white); min-height: 100vh; overflow-x: hidden; font-size: 14px; line-height: 1.6; cursor: none; }
+        .cursor { position: fixed; width: 24px; height: 24px; border: 2px solid rgba(255,255,255,0.8); border-radius: 50%; z-index: 9999; pointer-events: none; transform: translate(-50%,-50%); transition: all 0.2s; mix-blend-mode: difference; }
+        .cursor.hover { width: 50px; height: 50px; background: rgba(255,255,255,0.1); }
+        .cursor.click { width: 15px; height: 15px; background: rgba(255,255,255,0.9); }
+        .loader { position: fixed; inset: 0; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10000; transition: opacity 0.5s, visibility 0.5s; }
+        .loader.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+        .loader-logo { font-size: 3rem; font-weight: 900; background: linear-gradient(90deg,#333,#888,#fff,#888,#333); background-size: 200% auto; -webkit-background-clip: text; background-clip: text; color: transparent; animation: shine 2s linear infinite; margin-bottom: 2rem; }
+        @keyframes shine { to { background-position: 200% center; } }
+        .loader-spinner { width: 50px; height: 50px; border: 3px solid rgba(255,255,255,0.1); border-top-color: #888; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loader-progress { width: 250px; height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; margin-top: 1.5rem; }
+        .loader-progress-bar { height: 100%; background: linear-gradient(90deg,#444,#888); width: 0%; transition: width 0.2s; }
+        #authModal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: flex; align-items: center; justify-content: center; z-index: 99999; backdrop-filter: blur(10px); }
+        .auth-container { background: rgba(20,20,20,0.95); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 2.5rem; width: 90%; max-width: 400px; text-align: center; }
+        .auth-container h2 { margin-bottom: 0.5rem; font-size: 1.8rem; }
+        .auth-container p { color: #888; margin-bottom: 2rem; }
+        .auth-form { display: none; flex-direction: column; gap: 1rem; }
+        .auth-form.active { display: flex; }
+        .auth-input { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 1rem; border-radius: 10px; color: #fff; font-size: 1rem; outline: none; transition: all 0.3s; }
+        .auth-input:focus { border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.08); }
+        .auth-btn { background: linear-gradient(90deg,#444,#666); border: none; padding: 1rem; border-radius: 10px; color: #fff; font-weight: 700; cursor: pointer; transition: all 0.3s; }
+        .auth-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(255,255,255,0.1); }
+        .auth-toggle { margin-top: 1.5rem; color: #888; }
+        .auth-toggle button { background: none; border: none; color: #fff; text-decoration: underline; cursor: pointer; margin-left: 0.5rem; }
+        .auth-error { color: #ff4444; margin-top: 1rem; font-size: 0.9rem; min-height: 20px; }
+        .navbar { position: fixed; top: 0; left: 0; right: 0; background: rgba(10,10,10,0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.1); padding: 1rem 2rem; z-index: 1000; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; animation: slideDown 0.6s ease; }
+        @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .logo { font-size: 1.8rem; font-weight: 900; letter-spacing: 2px; background: linear-gradient(90deg,#fff,#888); -webkit-background-clip: text; background-clip: text; color: transparent; animation: pulse 2s ease-in-out infinite; }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.8; } }
+        .nav-tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .nav-tab { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #aaa; padding: 0.5rem 1rem; border-radius: 20px; transition: all 0.3s; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; position: relative; overflow: hidden; }
+        .nav-tab::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent); transition: left 0.5s; }
+        .nav-tab:hover::before { left: 100%; }
+        .nav-tab:hover, .nav-tab.active { background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.3); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .nav-tab.admin-tab { background: rgba(255,68,68,0.15); border-color: rgba(255,68,68,0.3); color: #ff8888; }
+        .user-menu { display: flex; align-items: center; gap: 1rem; }
+        .cart-btn { position: relative; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s; }
+        .cart-btn:hover { background: rgba(255,255,255,0.1); transform: scale(1.1); }
+        .cart-count { position: absolute; top: -5px; right: -5px; background: #ff4444; color: #fff; font-size: 0.7rem; font-weight: 700; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .logout-btn { background: rgba(255,68,68,0.2); border: 1px solid rgba(255,68,68,0.3); color: #ff8888; padding: 0.5rem 1rem; border-radius: 20px; cursor: pointer; transition: all 0.3s; }
+        .logout-btn:hover { background: rgba(255,68,68,0.3); }
+        .badge { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; border: 1px solid; box-shadow: 0 0 8px currentColor; line-height: 1.2; }
+        .badge i { font-size: 0.65rem; }
         .badge-owner { border-color: var(--badge-owner); color: #ff6666; background: rgba(255,68,68,0.08); box-shadow: 0 0 8px rgba(255,68,68,0.4); }
         .badge-creator { border-color: var(--badge-creator); color: #ffaa44; background: rgba(255,136,0,0.08); box-shadow: 0 0 8px rgba(255,136,0,0.4); }
         .badge-dev { border-color: var(--badge-dev); color: #66aaff; background: rgba(68,136,255,0.08); box-shadow: 0 0 8px rgba(68,136,255,0.4); }
@@ -409,1138 +62,203 @@
         .badge-vip { border-color: var(--badge-vip); color: #ff88cc; background: rgba(255,68,170,0.08); box-shadow: 0 0 8px rgba(255,68,170,0.4); }
         .badge-mod { border-color: var(--badge-mod); color: #88ccff; background: rgba(68,170,255,0.08); box-shadow: 0 0 8px rgba(68,170,255,0.4); }
         .badge-helper { border-color: var(--badge-helper); color: #88ffcc; background: rgba(68,255,170,0.08); box-shadow: 0 0 8px rgba(68,255,170,0.4); }
-        .badge-new { border-color: var(--badge-new); color: #999999; background: rgba(136,136,136,0.08); box-shadow: 0 0 8px rgba(136,136,136,0.3); }
-
-        .badge-small {
-            padding: 0.1rem 0.4rem;
-            font-size: 0.6rem;
-        }
-
-        /* CONTAINER */
-        .container {
-            max-width: 1200px;
-            margin: 80px auto 0;
-            padding: 2rem;
-        }
-
-        .tab-content {
-            display: none;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.4s ease, transform 0.4s ease;
-        }
-
-        .tab-content.active {
-            display: block;
-            opacity: 1;
-            transform: translateY(0);
-            animation: fadeInUp 0.5s ease;
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .section-title {
-            text-align: center;
-            font-size: 2.2rem;
-            margin-bottom: 2rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            position: relative;
-            padding-bottom: 1rem;
-            animation: glow 2s ease-in-out infinite alternate;
-        }
-
-        @keyframes glow {
-            from { text-shadow: 0 0 10px rgba(255,255,255,0.1); }
-            to { text-shadow: 0 0 20px rgba(255,255,255,0.3), 0 0 30px rgba(255,255,255,0.1); }
-        }
-
-        .section-title::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 60px;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, #888, transparent);
-        }
-
-        /* HERO - ГЛАВНАЯ СТРАНИЦА */
-        .hero {
-            padding: 2rem 0;
-        }
-
-        .hero-content {
-            display: flex;
-            gap: 3rem;
-            align-items: center;
-            margin-bottom: 3rem;
-        }
-
-        @media (max-width: 900px) {
-            .hero-content {
-                flex-direction: column;
-            }
-        }
-
-        .hero-text {
-            flex: 1;
-            animation: slideInLeft 0.8s ease;
-        }
-
-        @keyframes slideInLeft {
-            from { opacity: 0; transform: translateX(-50px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        .hero-title {
-            font-size: 3rem;
-            font-weight: 900;
-            margin-bottom: 1rem;
-            background: linear-gradient(90deg, #fff, #888);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-
-        .hero-subtitle {
-            font-size: 1.3rem;
-            color: #888;
-            margin-bottom: 1.5rem;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-        }
-
-        .hero-description {
-            font-size: 1.1rem;
-            color: #aaa;
-            line-height: 1.8;
-            padding-left: 1rem;
-            border-left: 2px solid rgba(255,255,255,0.1);
-        }
-
-        .hero-highlight {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.1);
-            padding: 2rem;
-            border-radius: 15px;
-            text-align: center;
-            color: #bbb;
-            font-style: italic;
-            position: relative;
-            overflow: hidden;
-            animation: slideInUp 0.8s ease 0.2s both;
-        }
-
-        @keyframes slideInUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .hero-highlight::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, #888, transparent);
-            animation: scan 3s linear infinite;
-        }
-
-        @keyframes scan {
-            0% { left: -100%; }
-            100% { left: 100%; }
-        }
-
-        /* USER PROFILE */
-        .user-profile {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 20px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .user-profile::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, var(--badge-owner), var(--badge-dev), var(--badge-premium));
-        }
-
-        .user-avatar {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #333, #555);
-            margin: 0 auto 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.5rem;
-            border: 3px solid rgba(255,255,255,0.1);
-            position: relative;
-        }
-
-        .user-avatar::after {
-            content: '';
-            position: absolute;
-            inset: -5px;
-            border-radius: 50%;
-            border: 2px solid transparent;
-            border-top-color: var(--badge-premium);
-            border-right-color: var(--badge-dev);
-            animation: avatar-rotate 4s linear infinite;
-        }
-
-        @keyframes avatar-rotate {
-            to { transform: rotate(360deg); }
-        }
-
-        .user-name {
-            font-size: 1.5rem;
-            font-weight: 800;
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-        }
-
-        .user-badges {
-            display: flex;
-            gap: 0.4rem;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: 0.8rem;
-        }
-
-        .user-stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1rem;
-            margin-top: 1.5rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .user-stat {
-            text-align: center;
-        }
-
-        .user-stat-value {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: #fff;
-        }
-
-        .user-stat-label {
-            font-size: 0.8rem;
-            color: #888;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        /* MUSIC PLAYER - 3D СТИЛИ */
-        .music-player-main {
-            flex: 0 0 400px;
-            perspective: 1000px;
-            animation: slideInRight 0.8s ease;
-        }
-
-        @keyframes slideInRight {
-            from { opacity: 0; transform: translateX(50px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        .music-player {
-            background: rgba(20,20,20,0.8);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 20px;
-            padding: 2rem;
-            backdrop-filter: blur(10px);
-            transform-style: preserve-3d;
-            transition: transform 0.1s ease-out;
-            will-change: transform;
-        }
-
-        .cover-container {
-            width: 220px;
-            height: 220px;
-            margin: 0 auto 1.5rem;
-            border-radius: 15px;
-            overflow: hidden;
-            border: 2px solid rgba(255,255,255,0.1);
-            position: relative;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-
-        .cover-container.playing .cover-image {
-            animation: rotate 10s linear infinite;
-        }
-
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        .cover-image {
-            width: 100%;
-            height: 100%;
-            background-size: cover;
-            background-position: center;
-            border-radius: 15px;
-        }
-
-        .cover-image::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 50px;
-            height: 50px;
-            background: rgba(0,0,0,0.8);
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            border: 2px solid rgba(255,255,255,0.2);
-        }
-
-        .visualizer-container {
-            display: flex;
-            align-items: flex-end;
-            justify-content: center;
-            gap: 3px;
-            height: 50px;
-            margin: 1rem 0;
-            padding: 0 1rem;
-        }
-
-        .visualizer-bar {
-            width: 6px;
-            background: linear-gradient(to top, rgba(255,255,255,0.8), rgba(255,255,255,0.2));
-            border-radius: 3px;
-            transition: height 0.05s ease;
-            min-height: 3px;
-            max-height: 50px;
-        }
-
-        .track-info {
-            text-align: center;
-            margin-bottom: 1rem;
-        }
-
-        .track-title {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: #fff;
-            margin-bottom: 0.3rem;
-        }
-
-        .track-artist {
-            color: #888;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        .progress-container {
-            width: 100%;
-            height: 4px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 2px;
-            margin: 1rem 0;
-            cursor: pointer;
-            position: relative;
-        }
-
-        .progress-bar {
-            height: 100%;
-            background: linear-gradient(90deg, #666, #fff);
-            width: 0%;
-            border-radius: 2px;
-            transition: width 0.1s linear;
-            box-shadow: 0 0 10px rgba(255,255,255,0.3);
-        }
-
-        .time-display {
-            display: flex;
-            justify-content: space-between;
-            color: #666;
-            font-size: 0.75rem;
-            margin-bottom: 1rem;
-            font-family: monospace;
-        }
-
-        .player-controls {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .control-btn {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: #fff;
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 1.1rem;
-        }
-
-        .control-btn:hover {
-            background: rgba(255,255,255,0.1);
-            transform: scale(1.1);
-            box-shadow: 0 0 20px rgba(255,255,255,0.1);
-        }
-
-        .play-btn {
-            width: 60px;
-            height: 60px;
-            font-size: 1.3rem;
-            animation: pulse-btn 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse-btn {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.2); }
-            50% { box-shadow: 0 0 0 10px rgba(255,255,255,0); }
-        }
-
-        .volume-control {
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-        }
-
-        .volume-slider {
-            flex: 1;
-            height: 4px;
-            -webkit-appearance: none;
-            background: rgba(255,255,255,0.1);
-            border-radius: 2px;
-            outline: none;
-            cursor: pointer;
-        }
-
-        .volume-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background: #fff;
-            cursor: pointer;
-            box-shadow: 0 0 10px rgba(255,255,255,0.5);
-        }
-
-        /* PARTICLES */
-        .particles {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: -1;
-            overflow: hidden;
-            pointer-events: none;
-        }
-
-        .particle {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 50%;
-            animation: float-particle 15s infinite;
-        }
-
-        @keyframes float-particle {
-            0%, 100% { transform: translateY(100vh); opacity: 0; }
-            10% { opacity: 1; }
-            90% { opacity: 1; }
-            100% { transform: translateY(-100vh); opacity: 0; }
-        }
-
-        /* CHAT STYLES */
-        .chat-container {
-            display: flex;
-            height: 70vh;
-            background: rgba(20,20,20,0.8);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 20px;
-            overflow: hidden;
-        }
-
-        .chat-sidebar {
-            width: 280px;
-            background: rgba(0,0,0,0.3);
-            border-right: 1px solid rgba(255,255,255,0.1);
-            padding: 1.5rem;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .online-list {
-            margin-top: auto;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        .online-title {
-            font-size: 0.8rem;
-            color: #888;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .online-user {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem;
-            margin-bottom: 0.5rem;
-            background: rgba(255,255,255,0.03);
-            border-radius: 10px;
-            font-size: 0.9rem;
-        }
-
-        .online-user .badge {
-            margin-left: auto;
-        }
-
-        .chat-main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .chat-message {
-            max-width: 80%;
-            padding: 1rem;
-            border-radius: 15px;
-            animation: messageAppear 0.3s;
-        }
-
-        @keyframes messageAppear {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .chat-message.own {
-            align-self: flex-end;
-            background: rgba(100,100,255,0.2);
-            border: 1px solid rgba(100,100,255,0.3);
-        }
-
-        .chat-message.other {
-            align-self: flex-start;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .chat-message-header {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 0.5rem;
-            font-size: 0.85rem;
-        }
-
-        .chat-message-username {
-            font-weight: 700;
-            color: #fff;
-        }
-
-        .chat-message-time {
-            color: #666;
-            font-size: 0.75rem;
-        }
-
-        .chat-message-text {
-            color: #ddd;
-            line-height: 1.5;
-            word-wrap: break-word;
-        }
-
-        .chat-input-area {
-            display: flex;
-            gap: 1rem;
-            padding: 1.5rem;
-            background: rgba(0,0,0,0.3);
-            border-top: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .chat-input {
-            flex: 1;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            padding: 1rem;
-            border-radius: 10px;
-            color: #fff;
-            font-size: 1rem;
-            outline: none;
-        }
-
-        .chat-input:focus {
-            border-color: rgba(255,255,255,0.3);
-        }
-
-        .chat-send-btn {
-            background: linear-gradient(90deg, #444, #666);
-            border: none;
-            padding: 0 1.5rem;
-            border-radius: 10px;
-            color: #fff;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .chat-send-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 20px rgba(255,255,255,0.1);
-        }
-
-        /* PRODUCTS GRID */
-        .products-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 1.5rem;
-            margin-top: 2rem;
-        }
-
-        .product-card {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 15px;
-            padding: 1.8rem;
-            text-align: center;
-            transition: all 0.3s;
-            transform-style: preserve-3d;
-        }
-
-        .product-card:hover {
-            transform: perspective(1000px) rotateX(2deg) rotateY(2deg) scale3d(1.02, 1.02, 1.02);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-            border-color: rgba(255,255,255,0.15);
-        }
-
-        .product-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            color: #888;
-        }
-
-        .product-title {
-            font-size: 1.3rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-
-        .product-desc {
-            color: #888;
-            font-size: 0.9rem;
-            margin-bottom: 1rem;
-            line-height: 1.5;
-        }
-
-        .product-price {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: #fff;
-            margin-bottom: 1rem;
-        }
-
-        .add-to-cart-btn {
-            background: linear-gradient(90deg, #444, #666);
-            border: none;
-            padding: 0.8rem 1.5rem;
-            border-radius: 25px;
-            color: #fff;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s;
-            width: 100%;
-        }
-
-        .add-to-cart-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(255,255,255,0.1);
-        }
-
-        /* FAQ GRID */
-        .faq-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 1.5rem;
-            margin-top: 2rem;
-        }
-
-        .faq-card {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 20px;
-            padding: 1.8rem;
-            transition: all 0.4s;
-        }
-
-        .faq-card:hover {
-            transform: translateY(-5px);
-            border-color: rgba(255,255,255,0.15);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
-        }
-
-        .faq-card h3 {
-            color: #fff;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            font-size: 1.2rem;
-        }
-
-        .faq-card h3 i {
-            color: #888;
-        }
-
-        .faq-card p {
-            color: #aaa;
-            line-height: 1.6;
-        }
-
-        /* CONTACTS */
-        .contacts-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-top: 2rem;
-        }
-
-        .contact-card {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 15px;
-            padding: 2rem;
-            text-align: center;
-            transition: all 0.3s;
-            text-decoration: none;
-            color: #fff;
-            display: block;
-        }
-
-        .contact-card:hover {
-            transform: translateY(-5px);
-            border-color: rgba(255,255,255,0.15);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
-        }
-
-        .contact-icon {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            color: #888;
-        }
-
-        .contact-title {
-            font-size: 1.2rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-
-        .contact-value {
-            color: #888;
-            font-size: 0.9rem;
-        }
-
-        /* CART MODAL */
-        .cart-modal {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(10px);
-            z-index: 9999;
-            display: none;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .cart-modal.active {
-            display: flex;
-        }
-
-        .cart-container {
-            background: rgba(20,20,20,0.95);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 20px;
-            width: 90%;
-            max-width: 500px;
-            max-height: 80vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .cart-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .cart-header h2 {
-            margin: 0;
-        }
-
-        .cart-close {
-            background: none;
-            border: none;
-            color: #888;
-            font-size: 1.5rem;
-            cursor: pointer;
-            transition: color 0.3s;
-        }
-
-        .cart-close:hover {
-            color: #fff;
-        }
-
-        .cart-items {
-            flex: 1;
-            overflow-y: auto;
-            padding: 1.5rem;
-        }
-
-        .cart-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem;
-            background: rgba(255,255,255,0.03);
-            border-radius: 10px;
-            margin-bottom: 1rem;
-        }
-
-        .cart-item-info h4 {
-            margin: 0 0 0.3rem 0;
-        }
-
-        .cart-item-info p {
-            margin: 0;
-            color: #888;
-            font-size: 0.9rem;
-        }
-
-        .cart-item-remove {
-            background: rgba(255,68,68,0.2);
-            border: none;
-            color: #ff8888;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .cart-item-remove:hover {
-            background: rgba(255,68,68,0.4);
-        }
-
-        .cart-footer {
-            padding: 1.5rem;
-            border-top: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .cart-total {
-            display: flex;
-            justify-content: space-between;
-            font-size: 1.3rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-        }
-
-        .checkout-btn {
-            background: linear-gradient(90deg, #444, #666);
-            border: none;
-            padding: 1rem;
-            border-radius: 10px;
-            color: #fff;
-            font-weight: 700;
-            cursor: pointer;
-            width: 100%;
-            transition: all 0.3s;
-        }
-
-        .checkout-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(255,255,255,0.1);
-        }
-
-        .empty-cart {
-            text-align: center;
-            color: #888;
-            padding: 3rem;
-        }
-
-        /* ADMIN PANEL */
-        .admin-users-panel {
-            background: rgba(20,20,20,0.8);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 20px;
-            overflow: hidden;
-        }
-
-        .admin-users-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-
-        .admin-users-stats {
-            display: flex;
-            gap: 2rem;
-            color: #888;
-        }
-
-        .admin-users-stats b {
-            color: #fff;
-        }
-
-        .admin-users-list {
-            max-height: 60vh;
-            overflow-y: auto;
-            padding: 1rem;
-        }
-
-        .admin-user-card {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 15px;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-
-        .admin-user-info {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .admin-user-avatar {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #333, #555);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-        }
-
-        .admin-user-details h4 {
-            margin: 0 0 0.3rem 0;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .admin-user-details p {
-            margin: 0;
-            color: #888;
-            font-size: 0.85rem;
-        }
-
-        .admin-user-actions {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-        }
-
-        .admin-btn {
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            border: none;
-            cursor: pointer;
-            font-size: 0.8rem;
-            transition: all 0.3s;
-        }
-
-        .admin-btn-ban {
-            background: rgba(255,68,68,0.2);
-            color: #ff8888;
-            border: 1px solid rgba(255,68,68,0.3);
-        }
-
-        .admin-btn-mute {
-            background: rgba(255,170,0,0.2);
-            color: #ffaa44;
-            border: 1px solid rgba(255,170,0,0.3);
-        }
-
-        .admin-btn-delete {
-            background: rgba(255,0,0,0.2);
-            color: #ff6666;
-            border: 1px solid rgba(255,0,0,0.3);
-        }
-
-        .admin-btn:hover {
-            transform: scale(1.05);
-            filter: brightness(1.2);
-        }
-
-        .online-indicator {
-            width: 8px;
-            height: 8px;
-            background: #44ff88;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 0.5rem;
-            box-shadow: 0 0 10px #44ff88;
-        }
-
-        /* BADGES PAGE */
-        .badges-info {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 20px;
-            padding: 2rem;
-            margin-top: 2rem;
-        }
-
-        .badges-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-top: 1.5rem;
-        }
-
-        .badge-item {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 15px;
-            padding: 1.5rem;
-            text-align: center;
-            transition: all 0.3s;
-        }
-
-        .badge-item:hover {
-            transform: translateY(-3px);
-            border-color: rgba(255,255,255,0.15);
-        }
-
-        .badge-item .badge {
-            margin-bottom: 0.5rem;
-        }
-
-        .badge-desc {
-            color: #888;
-            font-size: 0.85rem;
-            margin-top: 0.5rem;
-        }
-
-        /* RESPONSIVE */
-        @media (max-width: 768px) {
-            .cursor { display: none; }
-            body { cursor: auto; }
-            .hero-content { flex-direction: column; }
-            .music-player-main { flex: 1; width: 100%; }
-            .navbar { padding: 1rem; }
-            .nav-tabs { order: 3; width: 100%; justify-content: center; }
-            .chat-container { flex-direction: column; height: 60vh; }
-            .chat-sidebar { width: 100%; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.1); }
-            .admin-users-header { flex-direction: column; text-align: center; }
-            .admin-user-card { flex-direction: column; text-align: center; }
-        }
+        .badge-new { border-color: var(--badge-new); color: #999; background: rgba(136,136,136,0.08); box-shadow: 0 0 8px rgba(136,136,136,0.3); }
+        .badge-small { padding: 0.1rem 0.4rem; font-size: 0.6rem; }
+        .container { max-width: 1200px; margin: 80px auto 0; padding: 2rem; }
+        .tab-content { display: none; opacity: 0; transform: translateY(20px); transition: opacity 0.4s, transform 0.4s; }
+        .tab-content.active { display: block; opacity: 1; transform: translateY(0); animation: fadeInUp 0.5s ease; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        .section-title { text-align: center; font-size: 2.2rem; margin-bottom: 2rem; font-weight: 800; text-transform: uppercase; position: relative; padding-bottom: 1rem; animation: glow 2s ease-in-out infinite alternate; }
+        @keyframes glow { from { text-shadow: 0 0 10px rgba(255,255,255,0.1); } to { text-shadow: 0 0 20px rgba(255,255,255,0.3), 0 0 30px rgba(255,255,255,0.1); } }
+        .section-title::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 60px; height: 2px; background: linear-gradient(90deg,transparent,#888,transparent); }
+        .hero { padding: 2rem 0; }
+        .hero-content { display: flex; gap: 3rem; align-items: center; margin-bottom: 3rem; }
+        @media (max-width: 900px) { .hero-content { flex-direction: column; } }
+        .hero-text { flex: 1; animation: slideInLeft 0.8s ease; }
+        @keyframes slideInLeft { from { opacity: 0; transform: translateX(-50px); } to { opacity: 1; transform: translateX(0); } }
+        .hero-title { font-size: 3rem; font-weight: 900; margin-bottom: 1rem; background: linear-gradient(90deg,#fff,#888); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .hero-subtitle { font-size: 1.3rem; color: #888; margin-bottom: 1.5rem; letter-spacing: 3px; text-transform: uppercase; }
+        .hero-description { font-size: 1.1rem; color: #aaa; line-height: 1.8; padding-left: 1rem; border-left: 2px solid rgba(255,255,255,0.1); }
+        .hero-highlight { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 2rem; border-radius: 15px; text-align: center; color: #bbb; font-style: italic; position: relative; overflow: hidden; animation: slideInUp 0.8s ease 0.2s both; }
+        @keyframes slideInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        .hero-highlight::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 2px; background: linear-gradient(90deg,transparent,#888,transparent); animation: scan 3s linear infinite; }
+        @keyframes scan { 0% { left: -100%; } 100% { left: 100%; } }
+        .user-profile { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 2rem; margin-bottom: 2rem; text-align: center; position: relative; overflow: hidden; }
+        .user-profile::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg,var(--badge-owner),var(--badge-dev),var(--badge-premium)); }
+        .user-avatar { width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg,#333,#555); margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; border: 3px solid rgba(255,255,255,0.1); position: relative; }
+        .user-avatar::after { content: ''; position: absolute; inset: -5px; border-radius: 50%; border: 2px solid transparent; border-top-color: var(--badge-premium); border-right-color: var(--badge-dev); animation: avatar-rotate 4s linear infinite; }
+        @keyframes avatar-rotate { to { transform: rotate(360deg); } }
+        .user-name { font-size: 1.5rem; font-weight: 800; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; flex-wrap: wrap; }
+        .user-badges { display: flex; gap: 0.4rem; justify-content: center; flex-wrap: wrap; margin-top: 0.8rem; }
+        .user-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); }
+        .user-stat { text-align: center; }
+        .user-stat-value { font-size: 1.5rem; font-weight: 800; color: #fff; }
+        .user-stat-label { font-size: 0.8rem; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+        .music-player-main { flex: 0 0 400px; perspective: 1000px; animation: slideInRight 0.8s ease; }
+        @keyframes slideInRight { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
+        .music-player { background: rgba(20,20,20,0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 2rem; backdrop-filter: blur(10px); transform-style: preserve-3d; transition: transform 0.1s ease-out; will-change: transform; }
+        .cover-container { width: 220px; height: 220px; margin: 0 auto 1.5rem; border-radius: 15px; overflow: hidden; border: 2px solid rgba(255,255,255,0.1); position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .cover-container.playing .cover-image { animation: rotate 10s linear infinite; }
+        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .cover-image { width: 100%; height: 100%; background-size: cover; background-position: center; border-radius: 15px; }
+        .cover-image::after { content: ''; position: absolute; top: 50%; left: 50%; width: 50px; height: 50px; background: rgba(0,0,0,0.8); border-radius: 50%; transform: translate(-50%,-50%); border: 2px solid rgba(255,255,255,0.2); }
+        .visualizer-container { display: flex; align-items: flex-end; justify-content: center; gap: 3px; height: 50px; margin: 1rem 0; padding: 0 1rem; }
+        .visualizer-bar { width: 6px; background: linear-gradient(to top,rgba(255,255,255,0.8),rgba(255,255,255,0.2)); border-radius: 3px; transition: height 0.05s ease; min-height: 3px; max-height: 50px; }
+        .track-info { text-align: center; margin-bottom: 1rem; }
+        .track-title { font-size: 1.3rem; font-weight: 700; color: #fff; margin-bottom: 0.3rem; }
+        .track-artist { color: #888; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; }
+        .progress-container { width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin: 1rem 0; cursor: pointer; position: relative; }
+        .progress-bar { height: 100%; background: linear-gradient(90deg,#666,#fff); width: 0%; border-radius: 2px; transition: width 0.1s linear; box-shadow: 0 0 10px rgba(255,255,255,0.3); }
+        .time-display { display: flex; justify-content: space-between; color: #666; font-size: 0.75rem; margin-bottom: 1rem; font-family: monospace; }
+        .player-controls { display: flex; justify-content: center; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+        .control-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; font-size: 1.1rem; }
+        .control-btn:hover { background: rgba(255,255,255,0.1); transform: scale(1.1); box-shadow: 0 0 20px rgba(255,255,255,0.1); }
+        .play-btn { width: 60px; height: 60px; font-size: 1.3rem; animation: pulse-btn 2s ease-in-out infinite; }
+        @keyframes pulse-btn { 0%,100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.2); } 50% { box-shadow: 0 0 0 10px rgba(255,255,255,0); } }
+        .volume-control { display: flex; align-items: center; gap: 0.8rem; }
+        .volume-slider { flex: 1; height: 4px; -webkit-appearance: none; background: rgba(255,255,255,0.1); border-radius: 2px; outline: none; cursor: pointer; }
+        .volume-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: #fff; cursor: pointer; box-shadow: 0 0 10px rgba(255,255,255,0.5); }
+        .particles { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+        .particle { position: absolute; width: 4px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 50%; animation: float-particle 15s infinite; }
+        @keyframes float-particle { 0%,100% { transform: translateY(100vh); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { transform: translateY(-100vh); opacity: 0; } }
+        .chat-container { display: flex; height: 70vh; background: rgba(20,20,20,0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; overflow: hidden; }
+        .chat-sidebar { width: 280px; background: rgba(0,0,0,0.3); border-right: 1px solid rgba(255,255,255,0.1); padding: 1.5rem; display: flex; flex-direction: column; }
+        .online-list { margin-top: auto; max-height: 300px; overflow-y: auto; }
+        .online-title { font-size: 0.8rem; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .online-user { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; margin-bottom: 0.5rem; background: rgba(255,255,255,0.03); border-radius: 10px; font-size: 0.9rem; }
+        .online-user .badge { margin-left: auto; }
+        .chat-main { flex: 1; display: flex; flex-direction: column; }
+        .chat-messages { flex: 1; overflow-y: auto; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
+        .chat-message { max-width: 80%; padding: 1rem; border-radius: 15px; animation: messageAppear 0.3s; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; }
+        @keyframes messageAppear { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .chat-message.own { align-self: flex-end; background: rgba(100,100,255,0.2); border: 1px solid rgba(100,100,255,0.3); }
+        .chat-message.other { align-self: flex-start; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); }
+        .chat-message-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; font-size: 0.85rem; flex-wrap: wrap; }
+        .chat-message-username { font-weight: 700; color: #fff; }
+        .chat-message-time { color: #666; font-size: 0.75rem; }
+        .chat-message-text { color: #ddd; line-height: 1.5; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; max-width: 100%; }
+        .chat-input-area { display: flex; gap: 1rem; padding: 1.5rem; background: rgba(0,0,0,0.3); border-top: 1px solid rgba(255,255,255,0.1); }
+        .chat-input { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 1rem; border-radius: 10px; color: #fff; font-size: 1rem; outline: none; }
+        .chat-input:focus { border-color: rgba(255,255,255,0.3); }
+        .chat-input:disabled { opacity: 0.5; cursor: not-allowed; }
+        .chat-send-btn { background: linear-gradient(90deg,#444,#666); border: none; padding: 0 1.5rem; border-radius: 10px; color: #fff; cursor: pointer; transition: all 0.3s; }
+        .chat-send-btn:hover { transform: scale(1.05); box-shadow: 0 5px 20px rgba(255,255,255,0.1); }
+        .chat-send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .chat-limit-info { padding: 0.5rem 1.5rem; background: rgba(0,0,0,0.3); border-top: 1px solid rgba(255,255,255,0.05); font-size: 0.8rem; color: #666; text-align: center; }
+        .chat-limit-warning { color: #ffaa44; }
+        .chat-limit-blocked { color: #ff4444; }
+        .products-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(280px,1fr)); gap: 1.5rem; margin-top: 2rem; }
+        .product-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 15px; padding: 1.8rem; text-align: center; transition: all 0.3s; transform-style: preserve-3d; }
+        .product-card:hover { transform: perspective(1000px) rotateX(2deg) rotateY(2deg) scale3d(1.02,1.02,1.02); box-shadow: 0 20px 40px rgba(0,0,0,0.4); border-color: rgba(255,255,255,0.15); }
+        .product-icon { font-size: 3rem; margin-bottom: 1rem; color: #888; }
+        .product-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .product-desc { color: #888; font-size: 0.9rem; margin-bottom: 1rem; line-height: 1.5; }
+        .product-price { font-size: 1.5rem; font-weight: 800; color: #fff; margin-bottom: 1rem; }
+        .add-to-cart-btn { background: linear-gradient(90deg,#444,#666); border: none; padding: 0.8rem 1.5rem; border-radius: 25px; color: #fff; font-weight: 700; cursor: pointer; transition: all 0.3s; width: 100%; }
+        .add-to-cart-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(255,255,255,0.1); }
+        .faq-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(350px,1fr)); gap: 1.5rem; margin-top: 2rem; }
+        .faq-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 1.8rem; transition: all 0.4s; }
+        .faq-card:hover { transform: translateY(-5px); border-color: rgba(255,255,255,0.15); box-shadow: 0 15px 30px rgba(0,0,0,0.3); }
+        .faq-card h3 { color: #fff; margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem; font-size: 1.2rem; }
+        .faq-card h3 i { color: #888; }
+        .faq-card p { color: #aaa; line-height: 1.6; }
+        .contacts-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(250px,1fr)); gap: 1.5rem; margin-top: 2rem; }
+        .contact-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 15px; padding: 2rem; text-align: center; transition: all 0.3s; text-decoration: none; color: #fff; display: block; }
+        .contact-card:hover { transform: translateY(-5px); border-color: rgba(255,255,255,0.15); box-shadow: 0 15px 30px rgba(0,0,0,0.3); }
+        .contact-icon { font-size: 2.5rem; margin-bottom: 1rem; color: #888; }
+        .contact-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .contact-value { color: #888; font-size: 0.9rem; }
+        .cart-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); z-index: 9999; display: none; align-items: center; justify-content: center; }
+        .cart-modal.active { display: flex; }
+        .cart-container { background: rgba(20,20,20,0.95); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; width: 90%; max-width: 500px; max-height: 80vh; overflow: hidden; display: flex; flex-direction: column; }
+        .cart-header { padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .cart-header h2 { margin: 0; }
+        .cart-close { background: none; border: none; color: #888; font-size: 1.5rem; cursor: pointer; transition: color 0.3s; }
+        .cart-close:hover { color: #fff; }
+        .cart-items { flex: 1; overflow-y: auto; padding: 1.5rem; }
+        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 10px; margin-bottom: 1rem; }
+        .cart-item-info h4 { margin: 0 0 0.3rem 0; }
+        .cart-item-info p { margin: 0; color: #888; font-size: 0.9rem; }
+        .cart-item-remove { background: rgba(255,68,68,0.2); border: none; color: #ff8888; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; transition: all 0.3s; }
+        .cart-item-remove:hover { background: rgba(255,68,68,0.4); }
+        .cart-footer { padding: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); }
+        .cart-total { display: flex; justify-content: space-between; font-size: 1.3rem; font-weight: 700; margin-bottom: 1rem; }
+        .checkout-btn { background: linear-gradient(90deg,#444,#666); border: none; padding: 1rem; border-radius: 10px; color: #fff; font-weight: 700; cursor: pointer; width: 100%; transition: all 0.3s; }
+        .checkout-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(255,255,255,0.1); }
+        .empty-cart { text-align: center; color: #888; padding: 3rem; }
+        .admin-users-panel { background: rgba(20,20,20,0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; overflow: hidden; }
+        .admin-users-header { padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .admin-users-stats { display: flex; gap: 2rem; color: #888; }
+        .admin-users-stats b { color: #fff; }
+        .admin-users-list { max-height: 60vh; overflow-y: auto; padding: 1rem; }
+        .admin-user-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 15px; padding: 1.5rem; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .admin-user-info { display: flex; align-items: center; gap: 1rem; }
+        .admin-user-avatar { width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg,#333,#555); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+        .admin-user-details h4 { margin: 0 0 0.3rem 0; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+        .admin-user-details p { margin: 0; color: #888; font-size: 0.85rem; }
+        .admin-user-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .admin-btn { padding: 0.5rem 1rem; border-radius: 20px; border: none; cursor: pointer; font-size: 0.8rem; transition: all 0.3s; }
+        .admin-btn-ban { background: rgba(255,68,68,0.2); color: #ff8888; border: 1px solid rgba(255,68,68,0.3); }
+        .admin-btn-mute { background: rgba(255,170,0,0.2); color: #ffaa44; border: 1px solid rgba(255,170,0,0.3); }
+        .admin-btn-delete { background: rgba(255,0,0,0.2); color: #ff6666; border: 1px solid rgba(255,0,0,0.3); }
+        .admin-btn-badge { background: rgba(170,68,255,0.2); color: #cc88ff; border: 1px solid rgba(170,68,255,0.3); }
+        .admin-btn:hover { transform: scale(1.05); filter: brightness(1.2); }
+        .online-indicator { width: 8px; height: 8px; background: #44ff88; border-radius: 50%; display: inline-block; margin-right: 0.5rem; box-shadow: 0 0 10px #44ff88; }
+        .badge-select-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); z-index: 10000; display: none; align-items: center; justify-content: center; }
+        .badge-select-modal.active { display: flex; }
+        .badge-select-container { background: rgba(20,20,20,0.95); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 2rem; width: 90%; max-width: 400px; max-height: 80vh; overflow-y: auto; }
+        .badge-select-title { text-align: center; margin-bottom: 1.5rem; font-size: 1.3rem; }
+        .badge-select-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 0.8rem; margin-bottom: 1.5rem; }
+        .badge-select-item { padding: 0.8rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; cursor: pointer; transition: all 0.3s; text-align: center; }
+        .badge-select-item:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); }
+        .badge-select-item.selected { background: rgba(100,100,255,0.2); border-color: rgba(100,100,255,0.5); }
+        .badge-select-actions { display: flex; gap: 1rem; }
+        .badge-select-btn { flex: 1; padding: 0.8rem; border-radius: 10px; border: none; cursor: pointer; font-weight: 700; transition: all 0.3s; }
+        .badge-select-btn.give { background: linear-gradient(90deg,#444,#666); color: #fff; }
+        .badge-select-btn.remove { background: rgba(255,68,68,0.2); color: #ff8888; border: 1px solid rgba(255,68,68,0.3); }
+        .badge-select-btn.cancel { background: rgba(255,255,255,0.05); color: #888; border: 1px solid rgba(255,255,255,0.1); }
+        .badges-info { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 2rem; margin-top: 2rem; }
+        .badges-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(200px,1fr)); gap: 1rem; margin-top: 1.5rem; }
+        .badge-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 15px; padding: 1.5rem; text-align: center; transition: all 0.3s; }
+        .badge-item:hover { transform: translateY(-3px); border-color: rgba(255,255,255,0.15); }
+        .badge-item .badge { margin-bottom: 0.5rem; }
+        .badge-desc { color: #888; font-size: 0.85rem; margin-top: 0.5rem; }
+        @media (max-width: 768px) { .cursor { display: none; } body { cursor: auto; } .hero-content { flex-direction: column; } .music-player-main { flex: 1; width: 100%; } .navbar { padding: 1rem; } .chat-container { flex-direction: column; height: 60vh; } .chat-sidebar { width: 100%; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.1); } .admin-users-header { flex-direction: column; text-align: center; } .admin-user-card { flex-direction: column; text-align: center; } .chat-message { max-width: 95%; } }
     </style>
 </head>
 <body>
-    <!-- Particles -->
     <div class="particles" id="particles"></div>
-
-    <!-- Cursor -->
     <div class="cursor" id="cursor"></div>
-
-    <!-- Loader -->
     <div class="loader" id="loader">
         <div class="loader-logo">FAKELAVV</div>
         <div class="loader-spinner"></div>
-        <div class="loader-progress">
-            <div class="loader-progress-bar" id="progressBar"></div>
-        </div>
+        <div class="loader-progress"><div class="loader-progress-bar" id="progressBar"></div></div>
     </div>
-
-    <!-- Auth Modal -->
-    <div id="authModal">
+    <div id="authModal" style="display: none;">
         <div class="auth-container">
             <h2>FAKELAVV SHOP</h2>
             <p>Войдите или создайте аккаунт</p>
-            
             <form id="loginForm" class="auth-form active">
                 <input type="text" id="loginUsername" class="auth-input" placeholder="Имя пользователя" required minlength="3">
                 <input type="password" id="loginPassword" class="auth-input" placeholder="Пароль" required minlength="6">
                 <button type="submit" class="auth-btn">Войти</button>
             </form>
-            
             <form id="registerForm" class="auth-form">
                 <input type="text" id="regUsername" class="auth-input" placeholder="Имя пользователя" required minlength="3" maxlength="20">
                 <input type="email" id="regEmail" class="auth-input" placeholder="Email" required>
                 <input type="password" id="regPassword" class="auth-input" placeholder="Пароль (мин. 6 символов)" required minlength="6">
                 <button type="submit" class="auth-btn">Создать аккаунт</button>
             </form>
-            
-            <div class="auth-toggle">
-                <span id="toggleText">Нет аккаунта?</span>
-                <button type="button" id="toggleBtn">Зарегистрироваться</button>
-            </div>
-            
+            <div class="auth-toggle"><span id="toggleText">Нет аккаунта?</span><button type="button" id="toggleBtn">Зарегистрироваться</button></div>
             <div class="auth-error" id="authError"></div>
         </div>
     </div>
-
-    <!-- Main App -->
     <div id="mainApp" style="display: none;">
         <nav class="navbar">
             <div class="logo">FAKELAVV</div>
             <div class="nav-tabs" id="navTabs">
                 <button class="nav-tab active" data-tab="home"><i class="fas fa-home"></i> Главная</button>
                 <button class="nav-tab" data-tab="chat"><i class="fas fa-comments"></i> Чат</button>
-                <button class="nav-tab" data-tab="black"><i class="fas fa-skull"></i> Чёрнуха</button>
                 <button class="nav-tab" data-tab="programming"><i class="fas fa-code"></i> Программирование</button>
                 <button class="nav-tab" data-tab="design"><i class="fas fa-paint-brush"></i> Дизайн</button>
                 <button class="nav-tab" data-tab="faq"><i class="fas fa-question-circle"></i> FAQ</button>
@@ -1549,16 +267,11 @@
                 <button class="nav-tab" data-tab="contacts"><i class="fas fa-phone"></i> Контакты</button>
             </div>
             <div class="user-menu">
-                <div class="cart-btn" id="cartBtn">
-                    <i class="fas fa-shopping-cart"></i>
-                    <div class="cart-count" id="cartCount">0</div>
-                </div>
+                <div class="cart-btn" id="cartBtn"><i class="fas fa-shopping-cart"></i><div class="cart-count" id="cartCount">0</div></div>
                 <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
             </div>
         </nav>
-
         <div class="container">
-            <!-- HOME -->
             <div class="tab-content active" id="home">
                 <div class="hero">
                     <div class="user-profile">
@@ -1566,76 +279,36 @@
                         <div class="user-name" id="profileName">User</div>
                         <div class="user-badges" id="profileBadges"></div>
                         <div class="user-stats">
-                            <div class="user-stat">
-                                <div class="user-stat-value" id="statMessages">0</div>
-                                <div class="user-stat-label">Сообщений</div>
-                            </div>
-                            <div class="user-stat">
-                                <div class="user-stat-value" id="statPurchases">0</div>
-                                <div class="user-stat-label">Покупок</div>
-                            </div>
-                            <div class="user-stat">
-                                <div class="user-stat-value" id="statBadges">1</div>
-                                <div class="user-stat-label">Бейджиков</div>
-                            </div>
+                            <div class="user-stat"><div class="user-stat-value" id="statMessages">0</div><div class="user-stat-label">Сообщений</div></div>
+                            <div class="user-stat"><div class="user-stat-value" id="statPurchases">0</div><div class="user-stat-label">Покупок</div></div>
+                            <div class="user-stat"><div class="user-stat-value" id="statBadges">1</div><div class="user-stat-label">Бейджиков</div></div>
                         </div>
                     </div>
-
                     <div class="hero-content">
                         <div class="hero-text">
                             <h1 class="hero-title">FakeLavv SHOP</h1>
                             <div class="hero-subtitle">OSINT-специалист и Музыкант</div>
-                            <div class="hero-description">
-                                Я предлагаю широкий спектр услуг по разработке и ведению ваших проектов. 
-                                Мои решения помогут автоматизировать процессы, повысить безопасность 
-                                и разнообразить взаимодействие с пользователями.
-                            </div>
+                            <div class="hero-description">Я предлагаю широкий спектр услуг по разработке и ведению ваших проектов. Мои решения помогут автоматизировать процессы, повысить безопасность и разнообразить взаимодействие с пользователями.</div>
                         </div>
-                        
                         <div class="music-player-main" id="playerContainer">
                             <div class="music-player" id="musicPlayer">
-                                <div class="cover-container" id="coverContainer">
-                                    <div class="cover-image" id="coverImage"></div>
-                                </div>
-                                
+                                <div class="cover-container" id="coverContainer"><div class="cover-image" id="coverImage"></div></div>
                                 <div class="visualizer-container" id="visualizer"></div>
-                                
-                                <div class="track-info">
-                                    <div class="track-title" id="trackTitle">Загрузка...</div>
-                                    <div class="track-artist" id="trackArtist">FakeLavv</div>
-                                </div>
-                                
-                                <div class="time-display">
-                                    <span id="currentTime">0:00</span>
-                                    <span id="duration">0:00</span>
-                                </div>
-                                
-                                <div class="progress-container" id="progressContainer">
-                                    <div class="progress-bar" id="progressBarPlayer"></div>
-                                </div>
-                                
+                                <div class="track-info"><div class="track-title" id="trackTitle">Загрузка...</div><div class="track-artist" id="trackArtist">FakeLavv</div></div>
+                                <div class="time-display"><span id="currentTime">0:00</span><span id="duration">0:00</span></div>
+                                <div class="progress-container" id="progressContainer"><div class="progress-bar" id="progressBarPlayer"></div></div>
                                 <div class="player-controls">
                                     <button class="control-btn" id="prevBtn"><i class="fas fa-step-backward"></i></button>
                                     <button class="control-btn play-btn" id="playBtn"><i class="fas fa-play" id="playIcon"></i></button>
                                     <button class="control-btn" id="nextBtn"><i class="fas fa-step-forward"></i></button>
                                 </div>
-                                
-                                <div class="volume-control">
-                                    <i class="fas fa-volume-up" id="volumeIcon"></i>
-                                    <input type="range" min="0" max="100" value="70" class="volume-slider" id="volumeSlider">
-                                </div>
+                                <div class="volume-control"><i class="fas fa-volume-up" id="volumeIcon"></i><input type="range" min="0" max="100" value="70" class="volume-slider" id="volumeSlider"></div>
                             </div>
                         </div>
                     </div>
-                    
-                    <div class="hero-highlight">
-                        <p>Профессиональные услуги в области цифровой безопасности, разработки и анализа. 
-                        Индивидуальный подход к каждому проекту, гарантия качества и полная анонимность.</p>
-                    </div>
+                    <div class="hero-highlight"><p>Профессиональные услуги в области цифровой безопасности, разработки и анализа. Индивидуальный подход к каждому проекту, гарантия качества и полная анонимность.</p></div>
                 </div>
             </div>
-
-            <!-- Chat -->
             <div class="tab-content" id="chat">
                 <h2 class="section-title">Общий Чат</h2>
                 <div class="chat-container">
@@ -1654,44 +327,29 @@
                     <div class="chat-main">
                         <div class="chat-messages" id="chatMessages"></div>
                         <div class="chat-input-area">
-                            <input type="text" class="chat-input" id="chatInput" placeholder="Написать сообщение..." maxlength="500">
+                            <input type="text" class="chat-input" id="chatInput" placeholder="Написать сообщение..." maxlength="200">
                             <button class="chat-send-btn" id="sendBtn"><i class="fas fa-paper-plane"></i></button>
                         </div>
+                        <div class="chat-limit-info" id="chatLimitInfo">Осталось сообщений: <span id="messagesLeft">5</span>/5 | Пауза: <span id="cooldownTime">0</span>с</div>
                     </div>
                 </div>
             </div>
-
-            <!-- Black -->
-            <div class="tab-content" id="black">
-                <h2 class="section-title">Чёрнуха</h2>
-                <div class="products-grid" id="blackProducts"></div>
-            </div>
-
-            <!-- Programming -->
             <div class="tab-content" id="programming">
                 <h2 class="section-title">Программирование</h2>
                 <div class="products-grid" id="programmingProducts"></div>
             </div>
-
-            <!-- Design -->
             <div class="tab-content" id="design">
                 <h2 class="section-title">Дизайн</h2>
                 <div class="products-grid" id="designProducts"></div>
             </div>
-
-            <!-- FAQ -->
             <div class="tab-content" id="faq">
                 <h2 class="section-title">FAQ</h2>
                 <div class="faq-grid" id="faqGrid"></div>
             </div>
-
-            <!-- Packets -->
             <div class="tab-content" id="packets">
                 <h2 class="section-title">Пакеты</h2>
                 <div class="products-grid" id="packetsProducts"></div>
             </div>
-
-            <!-- Badges -->
             <div class="tab-content" id="badges">
                 <h2 class="section-title">Система Бейджиков</h2>
                 <div class="user-profile">
@@ -1704,803 +362,100 @@
                     <div class="badges-grid" id="badgesGrid"></div>
                 </div>
             </div>
-
-            <!-- Users Admin Panel -->
             <div class="tab-content" id="users">
                 <h2 class="section-title">Управление Пользователями</h2>
                 <div class="admin-users-panel">
                     <div class="admin-users-header">
-                        <div class="admin-users-title">
-                            <i class="fas fa-users-cog" style="color: #ff4444;"></i>
-                            Все пользователи
-                        </div>
-                        <div class="admin-users-stats">
-                            <span>Всего: <b id="totalUsers">0</b></span>
-                            <span>Онлайн: <b id="onlineUsersCount">0</b></span>
-                            <span>Забанено: <b id="bannedUsersCount">0</b></span>
-                        </div>
+                        <div class="admin-users-title"><i class="fas fa-users-cog" style="color: #ff4444;"></i> Все пользователи</div>
+                        <div class="admin-users-stats"><span>Всего: <b id="totalUsers">0</b></span><span>Онлайн: <b id="onlineUsersCount">0</b></span><span>Забанено: <b id="bannedUsersCount">0</b></span></div>
                     </div>
                     <div class="admin-users-list" id="adminUsersList"></div>
                 </div>
             </div>
-
-            <!-- Contacts -->
             <div class="tab-content" id="contacts">
                 <h2 class="section-title">Контакты</h2>
                 <div class="contacts-grid" id="contactsGrid"></div>
             </div>
         </div>
     </div>
-
-    <!-- Cart Modal -->
     <div class="cart-modal" id="cartModal">
         <div class="cart-container">
-            <div class="cart-header">
-                <h2><i class="fas fa-shopping-cart"></i> Корзина</h2>
-                <button class="cart-close" onclick="closeCart()"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="cart-items" id="cartItems">
-                <div class="empty-cart">Корзина пуста</div>
-            </div>
+            <div class="cart-header"><h2><i class="fas fa-shopping-cart"></i> Корзина</h2><button class="cart-close" onclick="closeCart()"><i class="fas fa-times"></i></button></div>
+            <div class="cart-items" id="cartItems"><div class="empty-cart">Корзина пуста</div></div>
             <div class="cart-footer">
-                <div class="cart-total">
-                    <span>Итого:</span>
-                    <span id="cartTotal">0 ₽</span>
-                </div>
+                <div class="cart-total"><span>Итого:</span><span id="cartTotal">0 ₽</span></div>
                 <button class="checkout-btn" onclick="checkout()">Оформить заказ</button>
             </div>
         </div>
     </div>
-
+    <div class="badge-select-modal" id="badgeSelectModal">
+        <div class="badge-select-container">
+            <div class="badge-select-title">Выдать бейджик</div>
+            <div class="badge-select-grid" id="badgeSelectGrid"></div>
+            <div class="badge-select-actions">
+                <button class="badge-select-btn give" onclick="giveSelectedBadge()">Выдать</button>
+                <button class="badge-select-btn remove" onclick="removeSelectedBadge()">Забрать</button>
+                <button class="badge-select-btn cancel" onclick="closeBadgeModal()">Отмена</button>
+            </div>
+        </div>
+    </div>
     <script>
-        // ===== DATA =====
-        const playlist = [
-            { title: "FakeLavv - Передоз", artist: "FakeLavv", cover: "https://cdn.discordapp.com/attachments/1446528538684686541/1450312195547205672/cover.jpg", audio: "music/1.mp3" },
-            { title: "FakeLavv - Ганджа", artist: "FakeLavv", cover: "https://cdn.discordapp.com/attachments/1446528538684686541/1450312195547205672/cover.jpg", audio: "music/2.mp3" },
-            { title: "FakeLavv - Больно", artist: "FakeLavv", cover: "https://cdn.discordapp.com/attachments/1446528538684686541/1450312195547205672/cover.jpg", audio: "music/3.mp3" },
-            { title: "FakeLavv - кровавый", artist: "FakeLavv", cover: "https://cdn.discordapp.com/attachments/1446528538684686541/1450312195547205672/cover.jpg", audio: "music/4.mp3" },
-            { title: "FakeLavv - Never sober", artist: "FakeLavv", cover: "https://cdn.discordapp.com/attachments/1446528538684686541/1450312195547205672/cover.jpg", audio: "music/5.mp3" }
-        ];
-
-        const products = {
-            black: [
-                { id: 'b1', icon: 'fa-user-secret', title: 'Пробив по номеру', desc: 'Полная информация о владельце номера телефона', price: 1500 },
-                { id: 'b2', icon: 'fa-map-marker-alt', title: 'Геолокация по IP', desc: 'Точное местоположение по IP-адресу', price: 800 },
-                { id: 'b3', icon: 'fa-database', title: 'Пробив по базам', desc: 'Поиск информации в утечках баз данных', price: 2000 },
-                { id: 'b4', icon: 'fa-car', title: 'Пробив авто', desc: 'Информация о владельце транспортного средства', price: 2500 }
-            ],
-            programming: [
-                { id: 'p1', icon: 'fa-robot', title: 'Telegram бот', desc: 'Разработка бота любой сложности', price: 3000 },
-                { id: 'p2', icon: 'fa-globe', title: 'Веб-сайт', desc: 'Создание сайта под ключ', price: 10000 },
-                { id: 'p3', icon: 'fa-shield-alt', title: 'Аудит безопасности', desc: 'Проверка на уязвимости', price: 5000 },
-                { id: 'p4', icon: 'fa-bug', title: 'Парсер данных', desc: 'Сбор данных с любых сайтов', price: 4000 }
-            ],
-            design: [
-                { id: 'd1', icon: 'fa-palette', title: 'Дизайн логотипа', desc: 'Уникальный логотип для вашего бренда', price: 2000 },
-                { id: 'd2', icon: 'fa-image', title: 'Оформление соцсетей', desc: 'Шапки, аватарки, посты', price: 1500 },
-                { id: 'd3', icon: 'fa-video', title: 'Монтаж видео', desc: 'Профессиональный видеомонтаж', price: 3000 },
-                { id: 'd4', icon: 'fa-paint-brush', title: 'UI/UX дизайн', desc: 'Дизайн интерфейсов приложений', price: 8000 }
-            ],
-            packets: [
-                { id: 'pack1', icon: 'fa-starter', title: 'Стартовый', desc: 'Бот + Дизайн логотипа', price: 4000 },
-                { id: 'pack2', icon: 'fa-rocket', title: 'Бизнес', desc: 'Сайт + Бот + Дизайн', price: 18000 },
-                { id: 'pack3', icon: 'fa-crown', title: 'Премиум', desc: 'Всё включено + поддержка', price: 35000 }
-            ]
-        };
-
-        const contacts = [
-            { icon: 'fa-telegram', title: 'Telegram', value: '@fakelavv', url: 'https://t.me/fakelavv' },
-            { icon: 'fa-envelope', title: 'Email', value: 'fakelavv@proton.me', url: 'mailto:fakelavv@proton.me' },
-            { icon: 'fa-github', title: 'GitHub', value: 'github.com/fakelavv', url: '#' },
-            { icon: 'fa-bitcoin', title: 'Crypto', value: 'BTC/USDT', url: '#' }
-        ];
-
-        const badgeInfo = {
-            owner: { name: 'Owner', desc: 'Владелец проекта', icon: 'fa-crown' },
-            creator: { name: 'Creator', desc: 'Создатель контента', icon: 'fa-pen-nib' },
-            dev: { name: 'Developer', desc: 'Разработчик', icon: 'fa-code' },
-            sponsor: { name: 'Sponsor', desc: 'Спонсор', icon: 'fa-gem' },
-            premium: { name: 'Premium', desc: 'Премиум пользователь', icon: 'fa-star' },
-            buyer: { name: 'Buyer', desc: 'Покупатель', icon: 'fa-shopping-bag' },
-            vip: { name: 'VIP', desc: 'VIP статус', icon: 'fa-bolt' },
-            mod: { name: 'Moderator', desc: 'Модератор', icon: 'fa-gavel' },
-            helper: { name: 'Helper', desc: 'Помощник', icon: 'fa-hands-helping' },
-            new: { name: 'New', desc: 'Новый пользователь', icon: 'fa-seedling' }
-        };
-
-        // ===== STATE =====
-        let currentUser = null;
-        let socket = null;
-        let cart = JSON.parse(localStorage.getItem('cart')) || [];
-        let currentTrack = 0;
-        let isPlaying = false;
-        let audio = null;
-        let audioContext = null;
-        let analyser = null;
-        let messageCount = 0;
-
-        // ===== INIT =====
-        document.addEventListener('DOMContentLoaded', () => {
-            initParticles();
-            initLoader();
-            initCursor();
-            checkAuth();
-            initAuthForms();
-        });
-
-        // ===== PARTICLES =====
-        function initParticles() {
-            const container = document.getElementById('particles');
-            for (let i = 0; i < 20; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                particle.style.left = Math.random() * 100 + '%';
-                particle.style.animationDelay = Math.random() * 15 + 's';
-                particle.style.animationDuration = (10 + Math.random() * 10) + 's';
-                container.appendChild(particle);
-            }
-        }
-
-        // ===== LOADER =====
-        function initLoader() {
-            const loader = document.getElementById('loader');
-            const bar = document.getElementById('progressBar');
-            let progress = 0;
-            
-            const interval = setInterval(() => {
-                progress += Math.random() * 15 + 10;
-                if (progress > 100) progress = 100;
-                bar.style.width = progress + '%';
-                
-                if (progress >= 100) {
-                    clearInterval(interval);
-                    setTimeout(() => loader.classList.add('hidden'), 300);
-                }
-            }, 100);
-        }
-
-        // ===== CURSOR =====
-        function initCursor() {
-            if (window.matchMedia('(pointer: coarse)').matches) {
-                document.body.style.cursor = 'auto';
-                return;
-            }
-            
-            const cursor = document.getElementById('cursor');
-            let mouseX = 0, mouseY = 0;
-            let cursorX = 0, cursorY = 0;
-            
-            document.addEventListener('mousemove', (e) => {
-                mouseX = e.clientX;
-                mouseY = e.clientY;
-            }, { passive: true });
-            
-            document.addEventListener('mousedown', () => cursor.classList.add('click'));
-            document.addEventListener('mouseup', () => cursor.classList.remove('click'));
-            
-            function animate() {
-                cursorX += (mouseX - cursorX) * 0.15;
-                cursorY += (mouseY - cursorY) * 0.15;
-                cursor.style.left = cursorX + 'px';
-                cursor.style.top = cursorY + 'px';
-                requestAnimationFrame(animate);
-            }
-            animate();
-        }
-
-        // ===== AUTH =====
-        function initAuthForms() {
-            const loginForm = document.getElementById('loginForm');
-            const registerForm = document.getElementById('registerForm');
-            const toggleBtn = document.getElementById('toggleBtn');
-            const toggleText = document.getElementById('toggleText');
-            
-            toggleBtn.addEventListener('click', () => {
-                if (loginForm.classList.contains('active')) {
-                    loginForm.classList.remove('active');
-                    registerForm.classList.add('active');
-                    toggleText.textContent = 'Уже есть аккаунт?';
-                    toggleBtn.textContent = 'Войти';
-                } else {
-                    registerForm.classList.remove('active');
-                    loginForm.classList.add('active');
-                    toggleText.textContent = 'Нет аккаунта?';
-                    toggleBtn.textContent = 'Зарегистрироваться';
-                }
-            });
-            
-            loginForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const username = document.getElementById('loginUsername').value;
-                const password = document.getElementById('loginPassword').value;
-                
-                try {
-                    const res = await fetch('/api/login', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ username, password })
-                    });
-                    
-                    const data = await res.json();
-                    
-                    if (data.success) {
-                        currentUser = data;
-                        showMainApp();
-                    } else {
-                        showError(data.error);
-                    }
-                } catch (err) {
-                    showError('Ошибка соединения');
-                }
-            });
-            
-            registerForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const username = document.getElementById('regUsername').value;
-                const email = document.getElementById('regEmail').value;
-                const password = document.getElementById('regPassword').value;
-                
-                try {
-                    const res = await fetch('/api/register', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ username, email, password })
-                    });
-                    
-                    const data = await res.json();
-                    
-                    if (data.success) {
-                        currentUser = data;
-                        showMainApp();
-                    } else {
-                        showError(data.error);
-                    }
-                } catch (err) {
-                    showError('Ошибка соединения');
-                }
-            });
-        }
-
-        function showError(msg) {
-            document.getElementById('authError').textContent = msg;
-        }
-
-        async function checkAuth() {
-            try {
-                const res = await fetch('/api/me');
-                const data = await res.json();
-                
-                if (data.loggedIn) {
-                    currentUser = data;
-                    showMainApp();
-                } else {
-                    document.getElementById('authModal').style.display = 'flex';
-                }
-            } catch (e) {
-                document.getElementById('authModal').style.display = 'flex';
-            }
-        }
-
-        function showMainApp() {
-            document.getElementById('authModal').style.display = 'none';
-            document.getElementById('mainApp').style.display = 'block';
-            
-            document.getElementById('profileName').textContent = currentUser.username;
-            document.getElementById('badgesPageName').textContent = currentUser.username;
-            document.getElementById('chatUsername').textContent = currentUser.username;
-            
-            if (currentUser.isOwner) {
-                const navTabs = document.getElementById('navTabs');
-                if (!document.querySelector('[data-tab="users"]')) {
-                    const usersTab = document.createElement('button');
-                    usersTab.className = 'nav-tab admin-tab';
-                    usersTab.dataset.tab = 'users';
-                    usersTab.innerHTML = '<i class="fas fa-users"></i> Users';
-                    navTabs.appendChild(usersTab);
-                    initNavigation();
-                }
-            }
-            
-            updateBadges();
-            initChat();
-            initPlayer();
-            init3DTilt();
-            renderProducts();
-            renderFAQ();
-            renderContacts();
-            renderBadges();
-            initCart();
-            initNavigation();
-        }
-
-        // ===== NAVIGATION =====
-        function initNavigation() {
-            const tabs = document.querySelectorAll('.nav-tab');
-            const contents = document.querySelectorAll('.tab-content');
-            
-            tabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    const target = tab.dataset.tab;
-                    
-                    tabs.forEach(t => t.classList.remove('active'));
-                    tab.classList.add('active');
-                    
-                    contents.forEach(c => {
-                        c.classList.remove('active');
-                        if (c.id === target) {
-                            c.classList.add('active');
-                        }
-                    });
-                    
-                    if (target === 'users' && currentUser?.isOwner) {
-                        loadAdminUsers();
-                    }
-                });
-            });
-        }
-
-        // ===== PLAYER =====
-        function initPlayer() {
-            audio = new Audio();
-            audio.crossOrigin = "anonymous";
-            loadTrack(0);
-            
-            initVisualizer();
-            
-            document.getElementById('playBtn').addEventListener('click', togglePlay);
-            document.getElementById('nextBtn').addEventListener('click', () => changeTrack(1));
-            document.getElementById('prevBtn').addEventListener('click', () => changeTrack(-1));
-            document.getElementById('volumeSlider').addEventListener('input', updateVolume);
-            document.getElementById('progressContainer').addEventListener('click', seek);
-            
-            audio.addEventListener('timeupdate', updateProgress);
-            audio.addEventListener('ended', () => changeTrack(1));
-            audio.addEventListener('loadedmetadata', () => {
-                document.getElementById('duration').textContent = formatTime(audio.duration);
-            });
-        }
-
-        function initVisualizer() {
-            const container = document.getElementById('visualizer');
-            container.innerHTML = '';
-            for (let i = 0; i < 20; i++) {
-                const bar = document.createElement('div');
-                bar.className = 'visualizer-bar';
-                bar.style.height = '3px';
-                container.appendChild(bar);
-            }
-        }
-
-        function initAudioContext() {
-            if (!audioContext) {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                analyser = audioContext.createAnalyser();
-                analyser.fftSize = 64;
-                const source = audioContext.createMediaElementSource(audio);
-                source.connect(analyser);
-                analyser.connect(audioContext.destination);
-            }
-        }
-
-        function animateVisualizer() {
-            if (!isPlaying || !analyser) return;
-            
-            const dataArray = new Uint8Array(analyser.frequencyBinCount);
-            analyser.getByteFrequencyData(dataArray);
-            const bars = document.querySelectorAll('.visualizer-bar');
-            
-            for (let i = 0; i < bars.length; i++) {
-                const value = dataArray[i * 2] || 0;
-                bars[i].style.height = Math.max(3, (value / 255) * 50) + 'px';
-            }
-            
-            requestAnimationFrame(animateVisualizer);
-        }
-
-        function loadTrack(index) {
-            currentTrack = index;
-            const track = playlist[index];
-            document.getElementById('trackTitle').textContent = track.title;
-            document.getElementById('trackArtist').textContent = track.artist;
-            document.getElementById('coverImage').style.backgroundImage = `url('${track.cover}')`;
-            audio.src = track.audio;
-            if (isPlaying) {
-                audio.play();
-                initAudioContext();
-                animateVisualizer();
-            }
-        }
-
-        function togglePlay() {
-            isPlaying = !isPlaying;
-            const icon = document.getElementById('playIcon');
-            const cover = document.getElementById('coverContainer');
-            
-            if (isPlaying) {
-                audio.play();
-                icon.classList.replace('fa-play', 'fa-pause');
-                cover.classList.add('playing');
-                initAudioContext();
-                animateVisualizer();
-            } else {
-                audio.pause();
-                icon.classList.replace('fa-pause', 'fa-play');
-                cover.classList.remove('playing');
-            }
-        }
-
-        function changeTrack(dir) {
-            currentTrack = (currentTrack + dir + playlist.length) % playlist.length;
-            loadTrack(currentTrack);
-        }
-
-        function updateVolume(e) {
-            audio.volume = e.target.value / 100;
-        }
-
-        function updateProgress() {
-            const progress = (audio.currentTime / audio.duration) * 100 || 0;
-            document.getElementById('progressBarPlayer').style.width = progress + '%';
-            document.getElementById('currentTime').textContent = formatTime(audio.currentTime);
-        }
-
-        function seek(e) {
-            const rect = e.currentTarget.getBoundingClientRect();
-            const pos = (e.clientX - rect.left) / rect.width;
-            if (audio.duration) {
-                audio.currentTime = pos * audio.duration;
-            }
-        }
-
-        function formatTime(sec) {
-            if (isNaN(sec)) return '0:00';
-            const m = Math.floor(sec / 60);
-            const s = Math.floor(sec % 60);
-            return `${m}:${s.toString().padStart(2, '0')}`;
-        }
-
-        // ===== 3D TILT =====
-        function init3DTilt() {
-            const cards = document.querySelectorAll('.music-player, .product-card, .faq-card, .contact-card');
-            
-            cards.forEach(card => {
-                card.addEventListener('mousemove', (e) => {
-                    const rect = card.getBoundingClientRect();
-                    const x = e.clientX - rect.left;
-                    const y = e.clientY - rect.top;
-                    const centerX = rect.width / 2;
-                    const centerY = rect.height / 2;
-                    
-                    const rotateX = (y - centerY) / 10;
-                    const rotateY = (centerX - x) / 10;
-                    
-                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
-                });
-                
-                card.addEventListener('mouseleave', () => {
-                    card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)';
-                });
-            });
-        }
-
-        // ===== CHAT =====
-        function initChat() {
-            socket = io();
-            
-            socket.emit('joinChat', { username: currentUser.username });
-            
-            socket.on('chatHistory', (messages) => {
-                const container = document.getElementById('chatMessages');
-                container.innerHTML = '';
-                messages.forEach(msg => appendMessage(msg));
-            });
-            
-            socket.on('newMessage', (msg) => {
-                appendMessage(msg);
-                if (msg.username === currentUser.username) {
-                    messageCount++;
-                    document.getElementById('statMessages').textContent = messageCount;
-                }
-            });
-            
-            socket.on('onlineList', (users) => {
-                const list = document.getElementById('onlineList');
-                const count = document.getElementById('onlineCount');
-                list.innerHTML = '';
-                count.textContent = users.length;
-                
-                users.forEach(user => {
-                    const div = document.createElement('div');
-                    div.className = 'online-user';
-                    div.innerHTML = `
-                        <span class="online-indicator"></span>
-                        ${user.username}
-                        ${user.badges.map(b => `<span class="badge badge-${b} badge-small"><i class="fas ${badgeInfo[b]?.icon || 'fa-star'}"></i> ${badgeInfo[b]?.name || b}</span>`).join('')}
-                    `;
-                    list.appendChild(div);
-                });
-            });
-            
-            socket.on('error', (data) => {
-                alert(data.message);
-            });
-            
-            socket.on('banned', () => {
-                alert('Вы были забанены');
-                logout();
-            });
-            
-            socket.on('badgeUpdate', (badges) => {
-                currentUser.badges = badges;
-                updateBadges();
-            });
-            
-            document.getElementById('sendBtn').addEventListener('click', sendMessage);
-            document.getElementById('chatInput').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') sendMessage();
-            });
-        }
-
-        function sendMessage() {
-            const input = document.getElementById('chatInput');
-            const text = input.value.trim();
-            if (text && socket) {
-                socket.emit('sendMessage', { text });
-                input.value = '';
-            }
-        }
-
-        function appendMessage(msg) {
-            const container = document.getElementById('chatMessages');
-            const div = document.createElement('div');
-            div.className = `chat-message ${msg.username === currentUser.username ? 'own' : 'other'}`;
-            
-            const badgesHtml = msg.badges.map(b => 
-                `<span class="badge badge-${b} badge-small"><i class="fas ${badgeInfo[b]?.icon || 'fa-star'}"></i></span>`
-            ).join('');
-            
-            div.innerHTML = `
-                <div class="chat-message-header">
-                    <span class="chat-message-username">${msg.username}</span>
-                    ${badgesHtml}
-                    <span class="chat-message-time">${msg.time}</span>
-                </div>
-                <div class="chat-message-text">${escapeHtml(msg.text)}</div>
-            `;
-            
-            container.appendChild(div);
-            container.scrollTop = container.scrollHeight;
-        }
-
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        // ===== PRODUCTS =====
-        function renderProducts() {
-            renderProductGrid('blackProducts', products.black);
-            renderProductGrid('programmingProducts', products.programming);
-            renderProductGrid('designProducts', products.design);
-            renderProductGrid('packetsProducts', products.packets);
-        }
-
-        function renderProductGrid(id, items) {
-            const grid = document.getElementById(id);
-            if (!grid) return;
-            
-            grid.innerHTML = items.map(item => `
-                <div class="product-card">
-                    <div class="product-icon"><i class="fas ${item.icon}"></i></div>
-                    <h3 class="product-title">${item.title}</h3>
-                    <p class="product-desc">${item.desc}</p>
-                    <div class="product-price">${item.price.toLocaleString()} ₽</div>
-                    <button class="add-to-cart-btn" onclick="addToCart('${item.id}', '${item.title}', ${item.price})">
-                        <i class="fas fa-cart-plus"></i> В корзину
-                    </button>
-                </div>
-            `).join('');
-        }
-
-        // ===== CART =====
-        function initCart() {
-            document.getElementById('cartBtn').addEventListener('click', openCart);
-            updateCartCount();
-        }
-
-        function addToCart(id, title, price) {
-            const existing = cart.find(item => item.id === id);
-            if (existing) {
-                alert('Этот товар уже в корзине');
-                return;
-            }
-            
-            cart.push({ id, title, price });
-            localStorage.setItem('cart', JSON.stringify(cart));
-            updateCartCount();
-            
-            const btn = event.target;
-            const original = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-check"></i> Добавлено';
-            setTimeout(() => btn.innerHTML = original, 1500);
-        }
-
-        function updateCartCount() {
-            document.getElementById('cartCount').textContent = cart.length;
-        }
-
-        function openCart() {
-            const modal = document.getElementById('cartModal');
-            const items = document.getElementById('cartItems');
-            
-            if (cart.length === 0) {
-                items.innerHTML = '<div class="empty-cart"><i class="fas fa-shopping-basket" style="font-size: 3rem; margin-bottom: 1rem;"></i><br>Корзина пуста</div>';
-            } else {
-                items.innerHTML = cart.map((item, index) => `
-                    <div class="cart-item">
-                        <div class="cart-item-info">
-                            <h4>${item.title}</h4>
-                            <p>${item.price.toLocaleString()} ₽</p>
-                        </div>
-                        <button class="cart-item-remove" onclick="removeFromCart(${index})">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                `).join('');
-            }
-            
-            const total = cart.reduce((sum, item) => sum + item.price, 0);
-            document.getElementById('cartTotal').textContent = total.toLocaleString() + ' ₽';
-            
-            modal.classList.add('active');
-        }
-
-        function closeCart() {
-            document.getElementById('cartModal').classList.remove('active');
-        }
-
-        function removeFromCart(index) {
-            cart.splice(index, 1);
-            localStorage.setItem('cart', JSON.stringify(cart));
-            updateCartCount();
-            openCart();
-        }
-
-        function checkout() {
-            if (cart.length === 0) return;
-            alert('Для оформления заказа свяжитесь с нами в Telegram: @fakelavv');
-        }
-
-        // ===== FAQ =====
-        function renderFAQ() {
-            const faqs = [
-                { icon: 'fa-clock', q: 'Сколько выполняется заказ?', a: 'От 1 часа до 24 часов в зависимости от сложности.' },
-                { icon: 'fa-user-secret', q: 'Насколько анонимно?', a: 'Полная анонимность. Все данные шифруются и удаляются после работы.' },
-                { icon: 'fa-ban', q: 'Возврат средств?', a: 'ВОЗВРАТА НЕТ. Услуги цифровые, не подлежат возврату.' },
-                { icon: 'fa-headset', q: 'Есть ли поддержка?', a: 'Поддержка 24/7 в Telegram.' },
-                { icon: 'fa-shield-alt', q: 'Какие гарантии?', a: 'Гарантия 14 дней на исправление ошибок.' },
-                { icon: 'fa-credit-card', q: 'Способы оплаты?', a: 'ЮMoney, карты, криптовалюта (BTC, USDT).' }
-            ];
-            
-            const grid = document.getElementById('faqGrid');
-            grid.innerHTML = faqs.map((faq, i) => `
-                <div class="faq-card" style="animation-delay: ${i * 0.1}s">
-                    <h3><i class="fas ${faq.icon}"></i> ${faq.q}</h3>
-                    <p>${faq.a}</p>
-                </div>
-            `).join('');
-        }
-
-        // ===== CONTACTS =====
-        function renderContacts() {
-            const grid = document.getElementById('contactsGrid');
-            grid.innerHTML = contacts.map(c => `
-                <a href="${c.url}" class="contact-card" target="_blank">
-                    <div class="contact-icon"><i class="fab ${c.icon}"></i></div>
-                    <div class="contact-title">${c.title}</div>
-                    <div class="contact-value">${c.value}</div>
-                </a>
-            `).join('');
-        }
-
-        // ===== BADGES =====
-        function updateBadges() {
-            const badges = currentUser?.badges || ['new'];
-            const html = badges.map(b => 
-                `<span class="badge badge-${b}"><i class="fas ${badgeInfo[b]?.icon || 'fa-star'}"></i> ${badgeInfo[b]?.name || b}</span>`
-            ).join('');
-            
-            document.getElementById('profileBadges').innerHTML = html;
-            document.getElementById('chatBadges').innerHTML = html;
-            document.getElementById('badgesPageBadges').innerHTML = html;
-            document.getElementById('statBadges').textContent = badges.length;
-        }
-
-        function renderBadges() {
-            const grid = document.getElementById('badgesGrid');
-            grid.innerHTML = Object.entries(badgeInfo).map(([key, info]) => `
-                <div class="badge-item">
-                    <span class="badge badge-${key}"><i class="fas ${info.icon}"></i> ${info.name}</span>
-                    <div class="badge-desc">${info.desc}</div>
-                </div>
-            `).join('');
-        }
-
-        // ===== ADMIN =====
-        async function loadAdminUsers() {
-            try {
-                const res = await fetch('/api/admin/users');
-                const data = await res.json();
-                
-                document.getElementById('totalUsers').textContent = data.users.length;
-                document.getElementById('onlineUsersCount').textContent = data.users.filter(u => u.online).length;
-                document.getElementById('bannedUsersCount').textContent = data.users.filter(u => u.banned).length;
-                
-                const list = document.getElementById('adminUsersList');
-                list.innerHTML = data.users.map(user => `
-                    <div class="admin-user-card">
-                        <div class="admin-user-info">
-                            <div class="admin-user-avatar"><i class="fas fa-user"></i></div>
-                            <div class="admin-user-details">
-                                <h4>
-                                    ${user.username}
-                                    ${user.online ? '<span class="online-indicator"></span>' : ''}
-                                    ${user.badges.map(b => `<span class="badge badge-${b} badge-small"><i class="fas ${badgeInfo[b]?.icon || 'fa-star'}"></i></span>`).join('')}
-                                </h4>
-                                <p>${user.email} | IP: ${user.ips?.[0] || 'N/A'} | Сообщений: ${user.messagesCount || 0}</p>
-                            </div>
-                        </div>
-                        <div class="admin-user-actions">
-                            ${user.banned ? 
-                                `<button class="admin-btn admin-btn-mute" onclick="adminAction('unban', '${user.username}')">Разбанить</button>` :
-                                `<button class="admin-btn admin-btn-ban" onclick="adminAction('ban', '${user.username}')">Забанить</button>`
-                            }
-                            ${user.muted ?
-                                `<button class="admin-btn admin-btn-mute" onclick="adminAction('unmute', '${user.username}')">Размутить</button>` :
-                                `<button class="admin-btn admin-btn-mute" onclick="adminAction('mute', '${user.username}')">Замутить</button>`
-                            }
-                            <button class="admin-btn admin-btn-delete" onclick="adminAction('delete', '${user.username}')">Удалить</button>
-                        </div>
-                    </div>
-                `).join('');
-            } catch (e) {
-                console.error('Ошибка загрузки пользователей:', e);
-            }
-        }
-
-        async function adminAction(action, username) {
-            if (!confirm(`Вы уверены, что хотите ${action} пользователя ${username}?`)) return;
-            
-            try {
-                const res = await fetch('/api/admin/action', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action, targetUsername: username })
-                });
-                
-                const data = await res.json();
-                if (data.success) {
-                    loadAdminUsers();
-                } else {
-                    alert(data.error);
-                }
-            } catch (e) {
-                alert('Ошибка выполнения действия');
-            }
-        }
-
-        // ===== LOGOUT =====
-        async function logout() {
-            await fetch('/api/logout', { method: 'POST' });
-            localStorage.removeItem('cart');
-            location.reload();
-        }
-
-        // Close cart on outside click
-        document.getElementById('cartModal').addEventListener('click', (e) => {
-            if (e.target.id === 'cartModal') closeCart();
-        });
+        const playlist=[{title:"FakeLavv - Передоз",artist:"FakeLavv",cover:"https://cdn.discordapp.com/attachments/1446528538684686541/1450312195547205672/cover.jpg",audio:"music/1.mp3"},{title:"FakeLavv - Ганджа",artist:"FakeLavv",cover:"https://cdn.discordapp.com/attachments/1446528538684686541/1450312195547205672/cover.jpg",audio:"music/2.mp3"},{title:"FakeLavv - Больно",artist:"FakeLavv",cover:"https://cdn.discordapp.com/attachments/1446528538684686541/1450312195547205672/cover.jpg",audio:"music/3.mp3"},{title:"FakeLavv - кровавый",artist:"FakeLavv",cover:"https://cdn.discordapp.com/attachments/1446528538684686541/1450312195547205672/cover.jpg",audio:"music/4.mp3"},{title:"FakeLavv - Never sober",artist:"FakeLavv",cover:"https://cdn.discordapp.com/attachments/1446528538684686541/1450312195547205672/cover.jpg",audio:"music/5.mp3"}];
+        const products={programming:[{id:'p1',icon:'fa-robot',title:'Discord бот',desc:'Автоматизация сервера, модерация, игры, музыка',price:450},{id:'p2',icon:'fa-paper-plane',title:'Telegram бот',desc:'Бот для бизнеса, рассылки, автоматизация',price:400},{id:'p3',icon:'fa-globe',title:'Веб-сайт',desc:'Лендинг, магазин, портфолио под ключ',price:1200},{id:'p4',icon:'fa-desktop',title:'Desktop приложение',desc:'Программа для Windows/Linux/Mac',price:1800},{id:'p5',icon:'fa-gamepad',title:'Чит для игры',desc:'Приватный чит под вашу игру',price:800},{id:'p6',icon:'fa-server',title:'Хостинг 24/7',desc:'Надежный хостинг для ботов и сайтов',price:250},{id:'p7',icon:'fa-shield-alt',title:'Аудит безопасности',desc:'Проверка сайта/бота на уязвимости',price:600},{id:'p8',icon:'fa-database',title:'Парсер данных',desc:'Сбор данных с любых сайтов',price:900}],design:[{id:'d1',icon:'fa-image',title:'Аватарка',desc:'Уникальная аватарка для соцсетей',price:250},{id:'d2',icon:'fa-paint-brush',title:'Баннер',desc:'Оформление для YouTube/Twitter/Discord',price:350},{id:'d3',icon:'fa-palette',title:'Тема оформления',desc:'Полный комплект: аватарка + баннер + превью',price:800},{id:'d4',icon:'fa-film',title:'Оформление видео',desc:'Интро, аутро, переходы для видео',price:600},{id:'d5',icon:'fa-music',title:'Обложка трека',desc:'Обложка для музыкального трека',price:400},{id:'d6',icon:'fa-ad',title:'Рекламный баннер',desc:'Баннер для рекламы в соцсетях',price:500},{id:'d7',icon:'fa-file-alt',title:'Дизайн документа',desc:'Презентация, резюме, коммерческое предложение',price:700},{id:'d8',icon:'fa-icons',title:'Иконки',desc:'Набор иконок для приложения/сайта',price:550}],packets:[{id:'pack1',icon:'fa-rocket',title:'Стартовый',desc:'Telegram бот + Аватарка + Хостинг 1 мес',price:900},{id:'pack2',icon:'fa-fire',title:'Бизнес',desc:'Сайт + Бот + Дизайн + Хостинг 3 мес',price:2200},{id:'pack3',icon:'fa-crown',title:'Премиум',desc:'Всё включено + Поддержка 24/7',price:2500}]};
+        const contacts=[{icon:'fa-telegram',title:'Telegram',value:'@fakelavv',url:'https://t.me/fakelavv'},{icon:'fa-envelope',title:'Email',value:'fakelavv@proton.me',url:'mailto:fakelavv@proton.me'},{icon:'fa-github',title:'GitHub',value:'github.com/fakelavv',url:'#'},{icon:'fa-bitcoin',title:'Crypto',value:'BTC/USDT',url:'#'}];
+        const badgeInfo={owner:{name:'Owner',desc:'Владелец проекта',icon:'fa-crown'},creator:{name:'Creator',desc:'Создатель контента',icon:'fa-pen-nib'},dev:{name:'Developer',desc:'Разработчик',icon:'fa-code'},sponsor:{name:'Sponsor',desc:'Спонсор',icon:'fa-gem'},premium:{name:'Premium',desc:'Премиум пользователь',icon:'fa-star'},buyer:{name:'Buyer',desc:'Покупатель',icon:'fa-shopping-bag'},vip:{name:'VIP',desc:'VIP статус',icon:'fa-bolt'},mod:{name:'Moderator',desc:'Модератор',icon:'fa-gavel'},helper:{name:'Helper',desc:'Помощник',icon:'fa-hands-helping'},new:{name:'New',desc:'Новый пользователь',icon:'fa-seedling'}};
+        const CHAT_LIMIT=5,CHAT_COOLDOWN=10;let messagesRemaining=CHAT_LIMIT,cooldownActive=false,cooldownInterval=null,lastMessageTime=0;
+        let currentUser=null,socket=null,cart=JSON.parse(localStorage.getItem('cart'))||[],currentTrack=0,isPlaying=false,audio=null,audioContext=null,analyser=null,messageCount=0,selectedUserForBadge=null,selectedBadge=null;
+        document.addEventListener('DOMContentLoaded',()=>{initParticles();initLoader();initCursor();checkAuth();initAuthForms();});
+        function initParticles(){const c=document.getElementById('particles');for(let i=0;i<20;i++){const p=document.createElement('div');p.className='particle';p.style.left=Math.random()*100+'%';p.style.animationDelay=Math.random()*15+'s';p.style.animationDuration=(10+Math.random()*10)+'s';c.appendChild(p);}}
+        function initLoader(){const b=document.getElementById('progressBar');let p=0;const i=setInterval(()=>{p+=Math.random()*15+10;if(p>100)p=100;b.style.width=p+'%';if(p>=100){clearInterval(i);setTimeout(()=>document.getElementById('loader').classList.add('hidden'),300);}},100);}
+        function initCursor(){if(window.matchMedia('(pointer: coarse)').matches){document.body.style.cursor='auto';return;}const c=document.getElementById('cursor');let mx=0,my=0,cx=0,cy=0;document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;},{passive:true});document.addEventListener('mousedown',()=>c.classList.add('click'));document.addEventListener('mouseup',()=>c.classList.remove('click'));function a(){cx+=(mx-cx)*0.15;cy+=(my-cy)*0.15;c.style.left=cx+'px';c.style.top=cy+'px';requestAnimationFrame(a);}a();}
+        function initAuthForms(){const l=document.getElementById('loginForm'),r=document.getElementById('registerForm'),t=document.getElementById('toggleBtn'),x=document.getElementById('toggleText');t.addEventListener('click',()=>{if(l.classList.contains('active')){l.classList.remove('active');r.classList.add('active');x.textContent='Уже есть аккаунт?';t.textContent='Войти';}else{r.classList.remove('active');l.classList.add('active');x.textContent='Нет аккаунта?';t.textContent='Зарегистрироваться';}});l.addEventListener('submit',async e=>{e.preventDefault();const u=document.getElementById('loginUsername').value,p=document.getElementById('loginPassword').value;try{const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});const d=await r.json();if(d.success){currentUser=d;showMainApp();}else{showError(d.error);}}catch(err){showError('Ошибка соединения');}});r.addEventListener('submit',async e=>{e.preventDefault();const u=document.getElementById('regUsername').value,em=document.getElementById('regEmail').value,p=document.getElementById('regPassword').value;try{const r=await fetch('/api/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,email:em,password:p})});const d=await r.json();if(d.success){currentUser=d;showMainApp();}else{showError(d.error);}}catch(err){showError('Ошибка соединения');}});}
+        function showError(m){document.getElementById('authError').textContent=m;}
+        async function checkAuth(){try{const r=await fetch('/api/me'),d=await r.json();if(d.loggedIn){currentUser=d;showMainApp();}else{document.getElementById('authModal').style.display='flex';}}catch(e){document.getElementById('authModal').style.display='flex';}}
+        function showMainApp(){document.getElementById('authModal').style.display='none';document.getElementById('mainApp').style.display='block';document.getElementById('profileName').textContent=currentUser.username;document.getElementById('badgesPageName').textContent=currentUser.username;document.getElementById('chatUsername').textContent=currentUser.username;if(currentUser.isOwner){const n=document.getElementById('navTabs');if(!document.querySelector('[data-tab="users"]')){const u=document.createElement('button');u.className='nav-tab admin-tab';u.dataset.tab='users';u.innerHTML='<i class="fas fa-users"></i> Users';n.appendChild(u);initNavigation();}}updateBadges();initChat();initPlayer();init3DTilt();renderProducts();renderFAQ();renderContacts();renderBadges();initCart();initNavigation();}
+        function initNavigation(){document.querySelectorAll('.nav-tab').forEach(t=>{t.addEventListener('click',()=>{const d=t.dataset.tab;document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.tab-content').forEach(x=>x.classList.remove('active'));t.classList.add('active');document.getElementById(d).classList.add('active');if(d==='users'&&currentUser?.isOwner)loadAdminUsers();});});}
+        function initPlayer(){audio=new Audio();audio.crossOrigin="anonymous";loadTrack(0);initVisualizer();document.getElementById('playBtn').addEventListener('click',togglePlay);document.getElementById('nextBtn').addEventListener('click',()=>changeTrack(1));document.getElementById('prevBtn').addEventListener('click',()=>changeTrack(-1));document.getElementById('volumeSlider').addEventListener('input',updateVolume);document.getElementById('progressContainer').addEventListener('click',seek);audio.addEventListener('timeupdate',updateProgress);audio.addEventListener('ended',()=>changeTrack(1));audio.addEventListener('loadedmetadata',()=>{document.getElementById('duration').textContent=formatTime(audio.duration);});}
+        function initVisualizer(){const c=document.getElementById('visualizer');c.innerHTML='';for(let i=0;i<20;i++){const b=document.createElement('div');b.className='visualizer-bar';b.style.height='3px';c.appendChild(b);}}
+        function initAudioContext(){if(!audioContext){audioContext=new(window.AudioContext||window.webkitAudioContext)();analyser=audioContext.createAnalyser();analyser.fftSize=64;const s=audioContext.createMediaElementSource(audio);s.connect(analyser);analyser.connect(audioContext.destination);}}
+        function animateVisualizer(){if(!isPlaying||!analyser)return;const d=new Uint8Array(analyser.frequencyBinCount);analyser.getByteFrequencyData(d);document.querySelectorAll('.visualizer-bar').forEach((b,i)=>{b.style.height=Math.max(3,(d[i*2]/255)*50)+'px';});requestAnimationFrame(animateVisualizer);}
+        function loadTrack(i){currentTrack=i;const t=playlist[i];document.getElementById('trackTitle').textContent=t.title;document.getElementById('trackArtist').textContent=t.artist;document.getElementById('coverImage').style.backgroundImage=`url('${t.cover}')`;audio.src=t.audio;if(isPlaying){audio.play();initAudioContext();animateVisualizer();}}
+        function togglePlay(){isPlaying=!isPlaying;const i=document.getElementById('playIcon'),c=document.getElementById('coverContainer');if(isPlaying){audio.play();i.classList.replace('fa-play','fa-pause');c.classList.add('playing');initAudioContext();animateVisualizer();}else{audio.pause();i.classList.replace('fa-pause','fa-play');c.classList.remove('playing');}}
+        function changeTrack(d){currentTrack=(currentTrack+d+playlist.length)%playlist.length;loadTrack(currentTrack);}
+        function updateVolume(e){audio.volume=e.target.value/100;}
+        function updateProgress(){const p=(audio.currentTime/audio.duration)*100||0;document.getElementById('progressBarPlayer').style.width=p+'%';document.getElementById('currentTime').textContent=formatTime(audio.currentTime);}
+        function seek(e){const r=e.currentTarget.getBoundingClientRect();const p=(e.clientX-r.left)/r.width;if(audio.duration)audio.currentTime=p*audio.duration;}
+        function formatTime(s){if(isNaN(s))return'0:00';const m=Math.floor(s/60);const sec=Math.floor(s%60);return`${m}:${sec.toString().padStart(2,'0')}`;}
+        function init3DTilt(){document.querySelectorAll('.music-player,.product-card,.faq-card,.contact-card').forEach(c=>{c.addEventListener('mousemove',e=>{const r=c.getBoundingClientRect();const x=e.clientX-r.left,y=e.clientY-r.top;const rx=(y-r.height/2)/10,ry=(r.width/2-x)/10;c.style.transform=`perspective(1000px) rotateX(${rx}deg) rotateY(${ry}deg) scale3d(1.02,1.02,1.02)`;});c.addEventListener('mouseleave',()=>{c.style.transform='perspective(1000px) rotateX(0) rotateY(0) scale3d(1,1,1)';});});}
+        function initChat(){socket=io();socket.emit('joinChat',{username:currentUser.username});socket.on('chatHistory',m=>{const c=document.getElementById('chatMessages');c.innerHTML='';m.forEach(x=>appendMessage(x));});socket.on('newMessage',m=>{appendMessage(m);if(m.username===currentUser.username){messageCount++;document.getElementById('statMessages').textContent=messageCount;}});socket.on('onlineList',u=>{const l=document.getElementById('onlineList'),c=document.getElementById('onlineCount');l.innerHTML='';c.textContent=u.length;u.forEach(x=>{const d=document.createElement('div');d.className='online-user';d.innerHTML=`<span class="online-indicator"></span>${x.username}${x.badges.map(b=>`<span class="badge badge-${b} badge-small"><i class="fas ${badgeInfo[b]?.icon||'fa-star'}"></i> ${badgeInfo[b]?.name||b}</span>`).join('')}`;l.appendChild(d);});});socket.on('error',d=>alert(d.message));socket.on('banned',()=>{alert('Вы были забанены');logout();});socket.on('badgeUpdate',b=>{currentUser.badges=b;updateBadges();});document.getElementById('sendBtn').addEventListener('click',sendMessage);document.getElementById('chatInput').addEventListener('keypress',e=>{if(e.key==='Enter')sendMessage();});updateChatLimitDisplay();}
+        function updateChatLimitDisplay(){const i=document.getElementById('chatLimitInfo'),l=document.getElementById('messagesLeft');l.textContent=messagesRemaining;if(cooldownActive){i.classList.add('chat-limit-blocked');i.classList.remove('chat-limit-warning');}else if(messagesRemaining<=2){i.classList.add('chat-limit-warning');i.classList.remove('chat-limit-blocked');}else{i.classList.remove('chat-limit-warning','chat-limit-blocked');}}
+        function startCooldown(){cooldownActive=true;let r=CHAT_COOLDOWN;document.getElementById('chatInput').disabled=true;document.getElementById('sendBtn').disabled=true;cooldownInterval=setInterval(()=>{r--;document.getElementById('cooldownTime').textContent=r;updateChatLimitDisplay();if(r<=0){clearInterval(cooldownInterval);cooldownActive=false;messagesRemaining=CHAT_LIMIT;document.getElementById('chatInput').disabled=false;document.getElementById('sendBtn').disabled=false;document.getElementById('cooldownTime').textContent='0';updateChatLimitDisplay();}},1000);}
+        function sendMessage(){if(cooldownActive)return;const i=document.getElementById('chatInput'),t=i.value.trim();if(!t)return;if(t.length>200){alert('Сообщение слишком длинное (макс. 200 символов)');return;}const n=Date.now();if(n-lastMessageTime<1000){alert('Слишком быстро! Подождите секунду.');return;}lastMessageTime=n;if(socket){socket.emit('sendMessage',{text:t});i.value='';messagesRemaining--;updateChatLimitDisplay();if(messagesRemaining<=0)startCooldown();}}
+        function appendMessage(m){const c=document.getElementById('chatMessages'),d=document.createElement('div');d.className=`chat-message ${m.username===currentUser.username?'own':'other'}`;const b=m.badges.map(x=>`<span class="badge badge-${x} badge-small"><i class="fas ${badgeInfo[x]?.icon||'fa-star'}"></i></span>`).join('');d.innerHTML=`<div class="chat-message-header"><span class="chat-message-username">${escapeHtml(m.username)}</span>${b}<span class="chat-message-time">${m.time}</span></div><div class="chat-message-text">${escapeHtml(m.text)}</div>`;c.appendChild(d);c.scrollTop=c.scrollHeight;}
+        function escapeHtml(t){const d=document.createElement('div');d.textContent=t;return d.innerHTML;}
+        function renderProducts(){renderProductGrid('programmingProducts',products.programming);renderProductGrid('designProducts',products.design);renderProductGrid('packetsProducts',products.packets);}
+        function renderProductGrid(id,items){const g=document.getElementById(id);if(!g)return;g.innerHTML=items.map(i=>`<div class="product-card"><div class="product-icon"><i class="fas ${i.icon}"></i></div><h3 class="product-title">${i.title}</h3><p class="product-desc">${i.desc}</p><div class="product-price">${i.price.toLocaleString()} ₽</div><button class="add-to-cart-btn" onclick="addToCart('${i.id}','${i.title}',${i.price})"><i class="fas fa-cart-plus"></i> В корзину</button></div>`).join('');}
+        function initCart(){document.getElementById('cartBtn').addEventListener('click',openCart);updateCartCount();}
+        function addToCart(id,t,p){if(cart.find(x=>x.id===id)){alert('Этот товар уже в корзине');return;}cart.push({id,title:t,price:p});localStorage.setItem('cart',JSON.stringify(cart));updateCartCount();const b=event.target,orig=b.innerHTML;b.innerHTML='<i class="fas fa-check"></i> Добавлено';setTimeout(()=>b.innerHTML=orig,1500);}
+        function updateCartCount(){document.getElementById('cartCount').textContent=cart.length;}
+        function openCart(){const m=document.getElementById('cartModal'),i=document.getElementById('cartItems');if(cart.length===0){i.innerHTML='<div class="empty-cart"><i class="fas fa-shopping-basket" style="font-size:3rem;margin-bottom:1rem;"></i><br>Корзина пуста</div>';}else{i.innerHTML=cart.map((x,idx)=>`<div class="cart-item"><div class="cart-item-info"><h4>${x.title}</h4><p>${x.price.toLocaleString()} ₽</p></div><button class="cart-item-remove" onclick="removeFromCart(${idx})"><i class="fas fa-trash"></i></button></div>`).join('');}document.getElementById('cartTotal').textContent=cart.reduce((s,x)=>s+x.price,0).toLocaleString()+' ₽';m.classList.add('active');}
+        function closeCart(){document.getElementById('cartModal').classList.remove('active');}
+        function removeFromCart(i){cart.splice(i,1);localStorage.setItem('cart',JSON.stringify(cart));updateCartCount();openCart();}
+        function checkout(){if(cart.length===0)return;alert('Для оформления заказа свяжитесь с нами в Telegram: @fakelavv');}
+        function renderFAQ(){const f=[{icon:'fa-clock',q:'Сколько выполняется заказ?',a:'От 1 часа до 24 часов. Срочные заказы +50% к стоимости.'},{icon:'fa-user-secret',q:'Насколько анонимно?',a:'Полная анонимность. Все данные шифруются и удаляются после работы.'},{icon:'fa-ban',q:'Возврат средств?',a:'ВОЗВРАТА НЕТ. Услуги цифровые, не подлежат возврату.'},{icon:'fa-headset',q:'Есть ли поддержка?',a:'Поддержка 24/7 в Telegram. Ответ за 5-15 минут.'},{icon:'fa-shield-alt',q:'Какие гарантии?',a:'Гарантия 14 дней на исправление ошибок.'},{icon:'fa-credit-card',q:'Способы оплаты?',a:'ЮMoney, карты, криптовалюта (BTC, USDT).'}];document.getElementById('faqGrid').innerHTML=f.map((x,i)=>`<div class="faq-card" style="animation-delay:${i*0.1}s"><h3><i class="fas ${x.icon}"></i> ${x.q}</h3><p>${x.a}</p></div>`).join('');}
+        function renderContacts(){document.getElementById('contactsGrid').innerHTML=contacts.map(c=>`<a href="${c.url}" class="contact-card" target="_blank"><div class="contact-icon"><i class="${c.icon}"></i></div><div class="contact-title">${c.title}</div><div class="contact-value">${c.value}</div></a>`).join('');}
+        function updateBadges(){const b=currentUser?.badges||['new'],h=b.map(x=>`<span class="badge badge-${x}"><i class="fas ${badgeInfo[x]?.icon||'fa-star'}"></i> ${badgeInfo[x]?.name||x}</span>`).join('');document.getElementById('profileBadges').innerHTML=h;document.getElementById('chatBadges').innerHTML=h;document.getElementById('badgesPageBadges').innerHTML=h;document.getElementById('statBadges').textContent=b.length;}
+        function renderBadges(){document.getElementById('badgesGrid').innerHTML=Object.entries(badgeInfo).map(([k,v])=>`<div class="badge-item"><span class="badge badge-${k}"><i class="fas ${v.icon}"></i> ${v.name}</span><div class="badge-desc">${v.desc}</div></div>`).join('');}
+        async function loadAdminUsers(){try{const r=await fetch('/api/admin/users'),d=await r.json();document.getElementById('totalUsers').textContent=d.users.length;document.getElementById('onlineUsersCount').textContent=d.users.filter(x=>x.online).length;document.getElementById('bannedUsersCount').textContent=d.users.filter(x=>x.banned).length;document.getElementById('adminUsersList').innerHTML=d.users.map(u=>`<div class="admin-user-card"><div class="admin-user-info"><div class="admin-user-avatar"><i class="fas fa-user"></i></div><div class="admin-user-details"><h4>${u.username}${u.online?'<span class="online-indicator"></span>':''}${u.badges.map(b=>`<span class="badge badge-${b} badge-small"><i class="fas ${badgeInfo[b]?.icon||'fa-star'}"></i></span>`).join('')}</h4><p>${u.email} | IP: ${u.ips?.[0]||'N/A'} | Сообщений: ${u.messagesCount||0}</p></div></div><div class="admin-user-actions">${u.banned?`<button class="admin-btn admin-btn-mute" onclick="adminAction('unban','${u.username}')">Разбанить</button>`:`<button class="admin-btn admin-btn-ban" onclick="adminAction('ban','${u.username}')">Забанить</button>`}${u.muted?`<button class="admin-btn admin-btn-mute" onclick="adminAction('unmute','${u.username}')">Размутить</button>`:`<button class="admin-btn admin-btn-mute" onclick="adminAction('mute','${u.username}')">Замутить</button>`}<button class="admin-btn admin-btn-delete" onclick="adminAction('delete','${u.username}')">Удалить</button><button class="admin-btn admin-btn-badge" onclick="openBadgeModal('${u.username}')">Бейджик</button></div></div>`).join('');}catch(e){console.error(e);}}
+        async function adminAction(a,u){if(!confirm(`Вы уверены, что хотите ${a} пользователя ${u}?`))return;try{const r=await fetch('/api/admin/action',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:a,targetUsername:u})}),d=await r.json();if(d.success)loadAdminUsers();else alert(d.error);}catch(e){alert('Ошибка выполнения действия');}}
+        function openBadgeModal(u){selectedUserForBadge=u;selectedBadge=null;document.getElementById('badgeSelectGrid').innerHTML=Object.entries(badgeInfo).map(([k,v])=>`<div class="badge-select-item" onclick="selectBadge('${k}',this)"><span class="badge badge-${k}"><i class="fas ${v.icon}"></i> ${v.name}</span><div style="font-size:0.75rem;color:#888;margin-top:0.3rem;">${v.desc}</div></div>`).join('');document.getElementById('badgeSelectModal').classList.add('active');}
+        function closeBadgeModal(){document.getElementById('badgeSelectModal').classList.remove('active');selectedUserForBadge=null;selectedBadge=null;}
+        function selectBadge(b,e){selectedBadge=b;document.querySelectorAll('.badge-select-item').forEach(x=>x.classList.remove('selected'));e.classList.add('selected');}
+        async function giveSelectedBadge(){if(!selectedBadge||!selectedUserForBadge){alert('Выберите бейджик');return;}try{const r=await fetch('/api/admin/badge',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'give',targetUsername:selectedUserForBadge,badge:selectedBadge})}),d=await r.json();if(d.success){alert(`Бейджик ${badgeInfo[selectedBadge].name} выдан ${selectedUserForBadge}`);closeBadgeModal();loadAdminUsers();}else alert(d.error);}catch(e){alert('Ошибка выдачи бейджика');}}
+        async function removeSelectedBadge(){if(!selectedBadge||!selectedUserForBadge){alert('Выберите бейджик');return;}try{const r=await fetch('/api/admin/badge',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'remove',targetUsername:selectedUserForBadge,badge:selectedBadge})}),d=await r.json();if(d.success){alert(`Бейджик ${badgeInfo[selectedBadge].name} удален у ${selectedUserForBadge}`);closeBadgeModal();loadAdminUsers();}else alert(d.error);}catch(e){alert('Ошибка удаления бейджика');}}
+        async function logout(){await fetch('/api/logout',{method:'POST'});localStorage.removeItem('cart');location.reload();}
+        document.getElementById('cartModal').addEventListener('click',e=>{if(e.target.id==='cartModal')closeCart();});
+        document.getElementById('badgeSelectModal').addEventListener('click',e=>{if(e.target.id==='badgeSelectModal')closeBadgeModal();});
     </script>
 </body>
 </html>
