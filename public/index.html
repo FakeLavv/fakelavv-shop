@@ -1181,68 +1181,62 @@
 
     <script>
         // ===== DATA =====
-        const products = [
-            { category: 'black', name: 'Полный пробив', price: 1000, desc: 'Детальная информация по всем доступным источникам.' },
-            { category: 'black', name: 'Сватинг', price: 1500, desc: 'Организованный вызов экстренных служб.' },
-            { category: 'black', name: 'Снос аккаунта', price: 2000, desc: 'Полное удаление аккаунта в соцсетях.' },
-            { category: 'black', name: 'Защита от доксеров', price: 1500, desc: 'Комплексная защита от троллей и доксеров.' },
-            { category: 'black', name: 'Физическое воздействие', price: 5000, desc: 'Организация встречи для выяснения отношений.' },
-            { category: 'black', name: 'Таргетированный троллинг', price: 250, desc: 'Систематический троллинг цели в соцсетях.' },
-            { category: 'black', name: 'Физические номера', price: 100, desc: 'SIM-карты для регистрации аккаунтов.' },
-            { category: 'black', name: 'Обучение', price: 5000, desc: 'Полное обучение OSINT и безопасности.' },
-            
-            { category: 'programming', name: 'Discord бот', price: 250, desc: 'Разработка бота с любыми функциями.' },
-            { category: 'programming', name: 'Telegram бот', price: 250, desc: 'Боты для бизнеса и автоматизации.' },
-            { category: 'programming', name: 'Веб-сайт', price: 500, desc: 'Создание сайтов любой сложности.' },
-            { category: 'programming', name: 'Desktop приложения', price: 1000, desc: 'Разработка утилит для Windows/Linux.' },
-            { category: 'programming', name: 'Читы для игр', price: 1000, desc: 'Разработка читов для онлайн игр.' },
-            { category: 'programming', name: 'Хостинг 24/7', price: 150, desc: 'Надежный хостинг для проектов.' },
-            
-            { category: 'design', name: 'Аватарка премиум', price: 500, desc: 'Уникальный дизайн аватарки.' },
-            { category: 'design', name: 'Баннер для соцсетей', price: 500, desc: 'Создание баннеров для соцсетей.' },
-            { category: 'design', name: 'Тема оформления', price: 800, desc: 'Полный пакет оформления.' },
-            
-            { category: 'packets', name: 'Чёрнуха PRO', price: 8800, desc: 'Все услуги + поддержка + скидка 20%' },
-            { category: 'packets', name: 'Разработчик PRO', price: 2100, desc: 'Все услуги + хостинг + скидка 25%' },
-            { category: 'packets', name: 'Дизайн PRO', price: 1260, desc: 'Все услуги + правки + скидка 30%' },
-            { category: 'packets', name: 'ВСЁ ВКЛЮЧЕНО', price: 10075, desc: 'Все услуги + поддержка + скидка 35%' }
-        ];
+const playlist = [
+        { title: "FakeLavv - Передоз", artist: "FakeLavv", cover: "https://cdn.discordapp.com/attachments/1446528538684686541/1450312195547205672/cover.jpg", audio: "music/1.mp3" },
+        { title: "FakeLavv - Ганджа", artist: "FakeLavv", cover: "https://cdn.discordapp.com/attachments/1446528538684686541/1450312195547205672/cover.jpg", audio: "music/2.mp3" },
+        { title: "FakeLavv - Больно", artist: "FakeLavv", cover: "https://cdn.discordapp.com/attachments/1446528538684686541/1450312195547205672/cover.jpg", audio: "music/3.mp3" },
+        { title: "FakeLavv - кровавый", artist: "FakeLavv", cover: "https://cdn.discordapp.com/attachments/1446528538684686541/1450312195547205672/cover.jpg", audio: "music/4.mp3" },
+        { title: "FakeLavv - Never sober", artist: "FakeLavv", cover: "https://cdn.discordapp.com/attachments/1446528538684686541/1450312195547205672/cover.jpg", audio: "music/5.mp3" }
+    ];
 
-        const faqs = [
-            { icon: 'fa-clock', q: 'Сколько выполняется заказ?', a: 'От 1 часа до 24 часов. Срочные заказы +50% к стоимости.' },
-            { icon: 'fa-user-secret', q: 'Насколько анонимно?', a: 'Полная анонимность. Все данные шифруются и удаляются после работы.' },
-            { icon: 'fa-ban', q: 'Возврат средств?', a: 'ВОЗВРАТА НЕТ. Услуги цифровые, не подлежат возврату.' },
-            { icon: 'fa-headset', q: 'Есть ли поддержка?', a: 'Поддержка 24/7 в Telegram. Ответ за 5-15 минут.' },
-            { icon: 'fa-shield-alt', q: 'Какие гарантии?', a: 'Гарантия 14 дней. Бесплатно исправим проблемы по нашей вине.' },
-            { icon: 'fa-credit-card', q: 'Способы оплаты?', a: 'ЮMoney, карты, криптовалюта (BTC, USDT).' },
-            { icon: 'fa-lock', q: 'Конфиденциальность?', a: 'Данные не передаются третьим лицам. Чаты очищаются после проекта.' },
-            { icon: 'fa-exchange-alt', q: 'Можно ли правки?', a: 'До 3 правок включены (кроме Чёрнухи).' },
-            { icon: 'fa-exclamation-triangle', q: 'Юридическая ответственность?', a: 'Услуги для образовательных целей. Мы не несем ответственности за незаконное использование.' },
-            { icon: 'fa-file-contract', q: 'Нужен договор?', a: 'Нет. Все условия в Telegram. Работаем на репутации.' }
-        ];
+    const products = [
+        { category: 'black', name: 'Полный пробив', price: 1000, desc: 'Детальная информация по всем доступным источникам.', from: false },
+        { category: 'black', name: 'Сватинг', price: 1500, desc: 'Организованный вызов экстренных служб.', from: false },
+        { category: 'black', name: 'Снос аккаунта', price: 2000, desc: 'Полное удаление аккаунта в соцсетях.', from: false },
+        { category: 'black', name: 'Защита от доксеров', price: 1500, desc: 'Комплексная защита от троллей и доксеров.', from: false },
+        { category: 'black', name: 'Физическое воздействие', price: 5000, desc: 'Организация встречи для выяснения отношений.', from: false },
+        { category: 'black', name: 'Таргетированный троллинг', price: 250, desc: 'Систематический троллинг цели в соцсетях.', from: false },
+        { category: 'black', name: 'Физические номера', price: 100, desc: 'SIM-карты для регистрации аккаунтов.', from: true },
+        { category: 'black', name: 'Обучение', price: 5000, desc: 'Полное обучение OSINT и безопасности.', from: false },
+        
+        { category: 'programming', name: 'Discord бот', price: 250, desc: 'Разработка бота с любыми функциями.', from: true },
+        { category: 'programming', name: 'Telegram бот', price: 250, desc: 'Боты для бизнеса и автоматизации.', from: true },
+        { category: 'programming', name: 'Веб-сайт', price: 500, desc: 'Создание сайтов любой сложности.', from: true },
+        { category: 'programming', name: 'Desktop приложения', price: 1000, desc: 'Разработка утилит для Windows/Linux.', from: false },
+        { category: 'programming', name: 'Читы для игр', price: 1000, desc: 'Разработка читов для онлайн игр.', from: true },
+        { category: 'programming', name: 'Хостинг 24/7', price: 150, desc: 'Надежный хостинг для проектов.', from: true },
+        
+        { category: 'design', name: 'Аватарка премиум', price: 500, desc: 'Уникальный дизайн аватарки.', from: false },
+        { category: 'design', name: 'Баннер для соцсетей', price: 500, desc: 'Создание баннеров для соцсетей.', from: false },
+        { category: 'design', name: 'Тема оформления', price: 800, desc: 'Полный пакет оформления.', from: false },
+        
+        { category: 'packets', name: 'Чёрнуха PRO', price: 8800, desc: 'Все услуги + поддержка + скидка 20%', from: false },
+        { category: 'packets', name: 'Разработчик PRO', price: 2100, desc: 'Все услуги + хостинг + скидка 25%', from: false },
+        { category: 'packets', name: 'Дизайн PRO', price: 1260, desc: 'Все услуги + правки + скидка 30%', from: false },
+        { category: 'packets', name: 'ВСЁ ВКЛЮЧЕНО', price: 10075, desc: 'Все услуги + поддержка + скидка 35%', from: false }
+    ];
 
-        const contacts = [
-            { name: 'Discord', value: 'rootbios', url: 'https://discord.com/users/rootbios', icon: 'fab fa-discord', color: '#7289DA' },
-            { name: 'VK', value: '@fakelavv', url: 'https://vk.com/fakelavv', icon: 'fab fa-vk', color: '#4C75A3' },
-            { name: 'Telegram', value: '@FakeLavvMp3', url: 'https://t.me/FakeLavvMp3', icon: 'fab fa-telegram', color: '#0088CC' },
-            { name: 'Gmail', value: 'fakelavvofficial@gmail.com', url: 'mailto:fakelavvofficial@gmail.com', icon: 'fas fa-envelope', color: '#D44638' },
-            { name: 'GitHub', value: 'fakelavv', url: 'https://github.com/fakelavv', icon: 'fab fa-github', color: '#fff' },
-            { name: 'YouTube', value: 'fakelavv', url: 'https://youtube.com/@fakelavv', icon: 'fab fa-youtube', color: '#FF0000' }
-        ];
+    const faqs = [
+        { icon: 'fa-clock', q: 'Сколько выполняется заказ?', a: 'От 1 часа до 24 часов. Срочные заказы +50% к стоимости.' },
+        { icon: 'fa-user-secret', q: 'Насколько анонимно?', a: 'Полная анонимность. Все данные шифруются и удаляются после работы.' },
+        { icon: 'fa-ban', q: 'Возврат средств?', a: 'ВОЗВРАТА НЕТ. Услуги цифровые, не подлежат возврату.' },
+        { icon: 'fa-headset', q: 'Есть ли поддержка?', a: 'Поддержка 24/7 в Telegram. Ответ за 5-15 минут.' },
+        { icon: 'fa-shield-alt', q: 'Какие гарантии?', a: 'Гарантия 14 дней. Бесплатно исправим проблемы по нашей вине.' },
+        { icon: 'fa-credit-card', q: 'Способы оплаты?', a: 'ЮMoney, карты, криптовалюта (BTC, USDT).' },
+        { icon: 'fa-lock', q: 'Конфиденциальность?', a: 'Данные не передаются третьим лицам. Чаты очищаются после проекта.' },
+        { icon: 'fa-exchange-alt', q: 'Можно ли правки?', a: 'До 3 правок включены (кроме Чёрнухи).' },
+        { icon: 'fa-exclamation-triangle', q: 'Юридическая ответственность?', a: 'Услуги для образовательных целей. Мы не несем ответственности за незаконное использование.' },
+        { icon: 'fa-file-contract', q: 'Нужен договор?', a: 'Нет. Все условия в Telegram. Работаем на репутации.' }
+    ];
 
-        const badgeDefs = {
-            owner: { name: 'Owner', icon: 'fa-crown', color: '#ff4444' },
-            creator: { name: 'Creator', icon: 'fa-star', color: '#ff8800' },
-            dev: { name: 'Dev', icon: 'fa-code', color: '#4488ff' },
-            sponsor: { name: 'Sponsor', icon: 'fa-gem', color: '#ffdd00' },
-            premium: { name: 'Premium', icon: 'fa-crown', color: '#aa44ff' },
-            buyer: { name: 'Buyer', icon: 'fa-shopping-bag', color: '#44ff88' },
-            vip: { name: 'VIP', icon: 'fa-star', color: '#ff44aa' },
-            mod: { name: 'Mod', icon: 'fa-shield-alt', color: '#44aaff' },
-            helper: { name: 'Helper', icon: 'fa-hands-helping', color: '#44ffaa' },
-            new: { name: 'New', icon: 'fa-user', color: '#888888' }
-        };
-
+    const contacts = [
+        { name: 'Discord', value: 'rootbios', url: 'https://discord.com/users/rootbios', icon: 'fab fa-discord', color: '#7289DA' },
+        { name: 'VK', value: '@fakelavv', url: 'https://vk.com/fakelavv', icon: 'fab fa-vk', color: '#4C75A3' },
+        { name: 'Telegram', value: '@FakeLavvMp3', url: 'https://t.me/FakeLavvMp3', icon: 'fab fa-telegram', color: '#0088CC' },
+        { name: 'Gmail', value: 'fakelavvofficial@gmail.com', url: 'mailto:fakelavvofficial@gmail.com', icon: 'fas fa-envelope', color: '#D44638' },
+        { name: 'GitHub', value: 'fakelavv', url: 'https://github.com/fakelavv', icon: 'fab fa-github', color: '#fff' },
+        { name: 'YouTube', value: 'fakelavv', url: 'https://youtube.com/@fakelavv', icon: 'fab fa-youtube', color: '#FF0000' }
+    ];
         // ===== STATE =====
         let currentUser = null;
         let socket = null;
