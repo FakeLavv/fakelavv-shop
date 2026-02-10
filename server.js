@@ -23,6 +23,7 @@ const DB_DIR = path.join(__dirname, 'data');
 const USERS_FILE = path.join(DB_DIR, 'users.json');
 const BANNED_FILE = path.join(DB_DIR, 'banned.json');
 const MUTED_FILE = path.join(DB_DIR, 'muted.json');
+const REVIEWS_FILE = path.join(DB_DIR, 'reviews.json');
 
 // Создаём папку data если нет
 if (!fs.existsSync(DB_DIR)) {
@@ -46,6 +47,11 @@ function loadData() {
         if (fs.existsSync(MUTED_FILE)) {
             const data = JSON.parse(fs.readFileSync(MUTED_FILE, 'utf8'));
             data.forEach(u => mutedUsers.add(u));
+        }
+        if (fs.existsSync(REVIEWS_FILE)) {
+            const data = JSON.parse(fs.readFileSync(REVIEWS_FILE, 'utf8'));
+            data.forEach(r => reviews.push(r));
+            console.log(`📁 Загружено ${reviews.length} отзывов`);
         }
     } catch (e) {
         console.error('Ошибка загрузки данных:', e);
@@ -78,6 +84,14 @@ function saveMuted() {
     }
 }
 
+function saveReviews() {
+    try {
+        fs.writeFileSync(REVIEWS_FILE, JSON.stringify(reviews, null, 2));
+    } catch (e) {
+        console.error('Ошибка сохранения reviews:', e);
+    }
+}
+
 // Хранилище в памяти
 const users = new Map();
 const sessions = new Map();
@@ -85,6 +99,7 @@ const messages = [];
 const onlineUsers = new Map();
 const bannedUsers = new Set();
 const mutedUsers = new Set();
+const reviews = [];
 
 // Загружаем данные при старте
 loadData();
@@ -157,7 +172,7 @@ app.post('/api/register', async (req, res) => {
     };
     
     users.set(username, newUser);
-    saveUsers(); // Сохраняем в файл
+    saveUsers();
     
     req.session.username = username;
     
@@ -195,7 +210,7 @@ app.post('/api/login', async (req, res) => {
         user.ips.push(ip);
     }
     
-    saveUsers(); // Сохраняем обновлённые данные
+    saveUsers();
     
     req.session.username = username;
     
@@ -222,6 +237,125 @@ app.get('/api/me', (req, res) => {
     } else {
         res.json({ loggedIn: false });
     }
+});
+
+// Reviews API
+app.get('/api/reviews', (req, res) => {
+    if (!req.session.username) {
+        return res.status(401).json({ error: 'Не авторизован' });
+    }
+    
+    const userReview = reviews.find(r => r.username === req.session.username);
+    const otherReviews = reviews.filter(r => r.username !== req.session.username).reverse();
+    
+    res.json({
+        reviews: otherReviews,
+        userReview: userReview || null
+    });
+});
+
+app.post('/api/reviews', (req, res) => {
+    if (!req.session.username) {
+        return res.status(401).json({ error: 'Не авторизован' });
+    }
+    
+    const { rating, text } = req.body;
+    const username = req.session.username;
+    
+    if (!rating || rating < 1 || rating > 5) {
+        return res.status(400).json({ error: 'Оценка должна быть от 1 до 5' });
+    }
+    
+    const existingIndex = reviews.findIndex(r => r.username === username);
+    if (existingIndex !== -1) {
+        return res.status(400).json({ error: 'Вы уже оставили отзыв' });
+    }
+    
+    const review = {
+        id: uuidv4(),
+        username,
+        rating: parseInt(rating),
+        text: text || '',
+        date: Date.now(),
+        isAdminEdit: false
+    };
+    
+    reviews.push(review);
+    saveReviews();
+    
+    console.log(`⭐ Новый отзыв от ${username}: ${rating} звёзд`);
+    
+    res.json({ success: true, review });
+});
+
+app.put('/api/reviews/:id', (req, res) => {
+    if (!req.session.username) {
+        return res.status(401).json({ error: 'Не авторизован' });
+    }
+    
+    const { rating, text } = req.body;
+    const reviewId = req.params.id;
+    const username = req.session.username;
+    const user = users.get(username);
+    const isOwner = user && user.badges.includes('owner');
+    
+    const reviewIndex = reviews.findIndex(r => r.id === reviewId);
+    if (reviewIndex === -1) {
+        return res.status(404).json({ error: 'Отзыв не найден' });
+    }
+    
+    const review = reviews[reviewIndex];
+    
+    // Только владелец отзыва или админ может редактировать
+    if (review.username !== username && !isOwner) {
+        return res.status(403).json({ error: 'Нет прав' });
+    }
+    
+    if (rating && (rating < 1 || rating > 5)) {
+        return res.status(400).json({ error: 'Оценка должна быть от 1 до 5' });
+    }
+    
+    review.rating = rating !== undefined ? parseInt(rating) : review.rating;
+    review.text = text !== undefined ? text : review.text;
+    review.isAdminEdit = isOwner && review.username !== username;
+    review.date = Date.now();
+    
+    reviews[reviewIndex] = review;
+    saveReviews();
+    
+    console.log(`✏️ Отзыв ${reviewId} отредактирован ${isOwner ? 'админом' : 'пользователем'}`);
+    
+    res.json({ success: true, review });
+});
+
+app.delete('/api/reviews/:id', (req, res) => {
+    if (!req.session.username) {
+        return res.status(401).json({ error: 'Не авторизован' });
+    }
+    
+    const reviewId = req.params.id;
+    const username = req.session.username;
+    const user = users.get(username);
+    const isOwner = user && user.badges.includes('owner');
+    
+    const reviewIndex = reviews.findIndex(r => r.id === reviewId);
+    if (reviewIndex === -1) {
+        return res.status(404).json({ error: 'Отзыв не найден' });
+    }
+    
+    const review = reviews[reviewIndex];
+    
+    // Владелец отзыва или админ может удалить
+    if (review.username !== username && !isOwner) {
+        return res.status(403).json({ error: 'Нет прав' });
+    }
+    
+    reviews.splice(reviewIndex, 1);
+    saveReviews();
+    
+    console.log(`🗑️ Отзыв ${reviewId} удалён ${isOwner ? 'админом' : 'пользователем'}`);
+    
+    res.json({ success: true });
 });
 
 app.get('/api/admin/users', (req, res) => {
@@ -318,6 +452,37 @@ app.post('/api/admin/action', (req, res) => {
     res.json({ success: true, message: 'Действие выполнено' });
 });
 
+app.post('/api/admin/badge', (req, res) => {
+    const admin = req.session.username ? users.get(req.session.username) : null;
+    if (!admin || !admin.badges.includes('owner')) {
+        return res.status(403).json({ error: 'Нет прав' });
+    }
+    
+    const { action, targetUsername, badge } = req.body;
+    const target = users.get(targetUsername);
+    
+    if (!target) {
+        return res.status(404).json({ error: 'Пользователь не найден' });
+    }
+    
+    if (action === 'give') {
+        if (!target.badges.includes(badge)) {
+            target.badges.push(badge);
+            saveUsers();
+            updateUserBadges(targetUsername, target.badges);
+        }
+    } else if (action === 'remove') {
+        if (badge === 'owner') {
+            return res.status(403).json({ error: 'Нельзя забрать Owner' });
+        }
+        target.badges = target.badges.filter(b => b !== badge);
+        saveUsers();
+        updateUserBadges(targetUsername, target.badges);
+    }
+    
+    res.json({ success: true });
+});
+
 app.post('/api/logout', (req, res) => {
     req.session.destroy();
     res.json({ success: true });
@@ -384,7 +549,7 @@ io.on('connection', (socket) => {
         
         const user = users.get(username);
         user.messagesCount = (user.messagesCount || 0) + 1;
-        saveUsers(); // Сохраняем счётчик сообщений
+        saveUsers();
         
         const message = {
             id: uuidv4(),
@@ -422,13 +587,13 @@ io.on('connection', (socket) => {
         if (command === 'giveBadge') {
             if (!target.badges.includes(badge)) {
                 target.badges.push(badge);
-                saveUsers(); // Сохраняем
+                saveUsers();
                 updateUserBadges(targetUsername, target.badges);
                 socket.emit('success', `Бейджик ${badge} выдан ${targetUsername}`);
             }
         } else if (command === 'removeBadge') {
             target.badges = target.badges.filter(b => b !== badge);
-            saveUsers(); // Сохраняем
+            saveUsers();
             updateUserBadges(targetUsername, target.badges);
             socket.emit('success', `Бейджик ${badge} удалён у ${targetUsername}`);
         }
