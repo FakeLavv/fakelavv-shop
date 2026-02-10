@@ -10,8 +10,8 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
         :root { --black: #000; --dark: #0a0a0a; --gray: #1a1a1a; --white: #fff; --badge-owner: #ff4444; --badge-creator: #ff8800; --badge-dev: #4488ff; --badge-sponsor: #ffdd00; --badge-premium: #aa44ff; --badge-buyer: #44ff88; --badge-vip: #ff44aa; --badge-mod: #44aaff; --badge-helper: #44ffaa; --badge-new: #666; }
         html { scroll-behavior: smooth; }
-        body { background: var(--black); color: var(--white); min-height: 100vh; overflow-x: hidden; font-size: 14px; line-height: 1.6; cursor: none; }
-        .cursor { position: fixed; width: 24px; height: 24px; border: 2px solid rgba(255,255,255,0.8); border-radius: 50%; z-index: 9999; pointer-events: none; transform: translate(-50%,-50%); transition: all 0.2s; mix-blend-mode: difference; }
+        body { background: var(--black); color: var(--white); min-height: 100vh; overflow-x: hidden; font-size: 14px; line-height: 1.6; }
+        .cursor { position: fixed; width: 24px; height: 24px; border: 2px solid rgba(255,255,255,0.8); border-radius: 50%; z-index: 9999; pointer-events: none; transform: translate(-50%,-50%); transition: all 0.15s ease-out; mix-blend-mode: difference; display: none; }
         .cursor.hover { width: 50px; height: 50px; background: rgba(255,255,255,0.1); }
         .cursor.click { width: 15px; height: 15px; background: rgba(255,255,255,0.9); }
         .loader { position: fixed; inset: 0; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10000; transition: opacity 0.5s, visibility 0.5s; }
@@ -45,6 +45,8 @@
         .nav-tab:hover::before { left: 100%; }
         .nav-tab:hover, .nav-tab.active { background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.3); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
         .nav-tab.admin-tab { background: rgba(255,68,68,0.15); border-color: rgba(255,68,68,0.3); color: #ff8888; }
+        .nav-tab.black-tab { background: rgba(139,0,0,0.3); border-color: rgba(139,0,0,0.5); color: #ff6666; }
+        .nav-tab.black-tab:hover, .nav-tab.black-tab.active { background: rgba(139,0,0,0.5); border-color: #8b0000; color: #ff4444; }
         .user-menu { display: flex; align-items: center; gap: 1rem; }
         .cart-btn { position: relative; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s; }
         .cart-btn:hover { background: rgba(255,255,255,0.1); transform: scale(1.1); }
@@ -150,12 +152,18 @@
         .products-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(280px,1fr)); gap: 1.5rem; margin-top: 2rem; }
         .product-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 15px; padding: 1.8rem; text-align: center; transition: all 0.3s; transform-style: preserve-3d; }
         .product-card:hover { transform: perspective(1000px) rotateX(2deg) rotateY(2deg) scale3d(1.02,1.02,1.02); box-shadow: 0 20px 40px rgba(0,0,0,0.4); border-color: rgba(255,255,255,0.15); }
+        .product-card.black-card { background: rgba(139,0,0,0.1); border-color: rgba(139,0,0,0.3); }
+        .product-card.black-card:hover { border-color: rgba(139,0,0,0.5); box-shadow: 0 20px 40px rgba(139,0,0,0.3); }
         .product-icon { font-size: 3rem; margin-bottom: 1rem; color: #888; }
+        .product-card.black-card .product-icon { color: #ff6666; }
         .product-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .product-card.black-card .product-title { color: #ff6666; }
         .product-desc { color: #888; font-size: 0.9rem; margin-bottom: 1rem; line-height: 1.5; }
         .product-price { font-size: 1.5rem; font-weight: 800; color: #fff; margin-bottom: 1rem; }
+        .product-card.black-card .product-price { color: #ff4444; }
         .add-to-cart-btn { background: linear-gradient(90deg,#444,#666); border: none; padding: 0.8rem 1.5rem; border-radius: 25px; color: #fff; font-weight: 700; cursor: pointer; transition: all 0.3s; width: 100%; }
         .add-to-cart-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(255,255,255,0.1); }
+        .product-card.black-card .add-to-cart-btn { background: linear-gradient(90deg,#8b0000,#ff4444); }
         .faq-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(350px,1fr)); gap: 1.5rem; margin-top: 2rem; }
         .faq-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 1.8rem; transition: all 0.4s; }
         .faq-card:hover { transform: translateY(-5px); border-color: rgba(255,255,255,0.15); box-shadow: 0 15px 30px rgba(0,0,0,0.3); }
@@ -223,7 +231,57 @@
         .badge-item:hover { transform: translateY(-3px); border-color: rgba(255,255,255,0.15); }
         .badge-item .badge { margin-bottom: 0.5rem; }
         .badge-desc { color: #888; font-size: 0.85rem; margin-top: 0.5rem; }
-        @media (max-width: 768px) { .cursor { display: none; } body { cursor: auto; } .hero-content { flex-direction: column; } .music-player-main { flex: 1; width: 100%; } .navbar { padding: 1rem; } .chat-container { flex-direction: column; height: 60vh; } .chat-sidebar { width: 100%; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.1); } .admin-users-header { flex-direction: column; text-align: center; } .admin-user-card { flex-direction: column; text-align: center; } .chat-message { max-width: 95%; } }
+        
+        /* Reviews Styles */
+        .reviews-section { max-width: 1200px; margin: 2rem auto 0; }
+        .reviews-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem; margin-bottom: 3rem; }
+        .review-card { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 15px; padding: 1.5rem; transition: all 0.3s ease; backdrop-filter: blur(5px); }
+        .review-card:hover { border-color: rgba(255, 255, 255, 0.15); transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); }
+        .review-card.admin-review { border-color: rgba(255, 215, 0, 0.3); background: rgba(255, 215, 0, 0.05); }
+        .review-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .review-user { display: flex; align-items: center; gap: 0.8rem; }
+        .review-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #333, #555); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+        .review-username { font-weight: 700; color: #fff; }
+        .review-date { font-size: 0.75rem; color: #666; }
+        .review-rating { display: flex; gap: 0.2rem; }
+        .review-rating .star { color: #ffd700; font-size: 1rem; }
+        .review-rating .star.empty { color: #444; }
+        .review-text { color: #ccc; line-height: 1.6; margin-top: 0.5rem; }
+        .review-actions { display: flex; gap: 0.5rem; margin-top: 1rem; }
+        .review-btn { padding: 0.4rem 0.8rem; border-radius: 15px; border: none; font-size: 0.75rem; cursor: pointer; transition: all 0.3s; }
+        .review-btn.edit { background: rgba(100, 150, 255, 0.2); color: #88aaff; border: 1px solid rgba(100, 150, 255, 0.3); }
+        .review-btn.delete { background: rgba(255, 68, 68, 0.2); color: #ff8888; border: 1px solid rgba(255, 68, 68, 0.3); }
+        .review-btn:hover { transform: scale(1.05); filter: brightness(1.2); }
+        
+        .add-review-form { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 2rem; margin-bottom: 2rem; max-width: 600px; margin-left: auto; margin-right: auto; }
+        .add-review-form h3 { text-align: center; margin-bottom: 1.5rem; color: #fff; }
+        .rating-input { display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 1.5rem; }
+        .rating-input .star-btn { background: none; border: none; color: #444; font-size: 2rem; cursor: pointer; transition: all 0.2s; }
+        .rating-input .star-btn:hover, .rating-input .star-btn.active { color: #ffd700; transform: scale(1.2); }
+        .review-textarea { width: 100%; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 1rem; color: #fff; font-size: 1rem; resize: vertical; min-height: 100px; margin-bottom: 1rem; }
+        .review-textarea:focus { outline: none; border-color: rgba(255, 255, 255, 0.3); }
+        .submit-review-btn { width: 100%; background: linear-gradient(90deg, #444, #666); border: none; padding: 1rem; border-radius: 10px; color: #fff; font-weight: 700; cursor: pointer; transition: all 0.3s; }
+        .submit-review-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(255, 255, 255, 0.1); }
+        .submit-review-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .reviews-stats { display: flex; justify-content: center; gap: 3rem; margin-bottom: 2rem; flex-wrap: wrap; }
+        .reviews-stat { text-align: center; }
+        .reviews-stat-value { font-size: 2.5rem; font-weight: 800; color: #fff; }
+        .reviews-stat-label { font-size: 0.9rem; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .edit-review-modal { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.9); backdrop-filter: blur(10px); z-index: 10001; display: none; align-items: center; justify-content: center; }
+        .edit-review-modal.active { display: flex; }
+        .edit-review-container { background: rgba(20, 20, 20, 0.95); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 2rem; width: 90%; max-width: 500px; }
+        .edit-review-container h3 { text-align: center; margin-bottom: 1.5rem; }
+        .edit-rating-input { display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 1rem; }
+        .edit-rating-input .star-btn { background: none; border: none; color: #444; font-size: 1.5rem; cursor: pointer; transition: all 0.2s; }
+        .edit-rating-input .star-btn:hover, .edit-rating-input .star-btn.active { color: #ffd700; }
+        .edit-review-actions { display: flex; gap: 1rem; margin-top: 1.5rem; }
+        .edit-review-actions button { flex: 1; padding: 0.8rem; border-radius: 10px; border: none; cursor: pointer; font-weight: 700; transition: all 0.3s; }
+        .save-edit-btn { background: linear-gradient(90deg, #444, #666); color: #fff; }
+        .cancel-edit-btn { background: rgba(255, 255, 255, 0.05); color: #888; border: 1px solid rgba(255, 255, 255, 0.1); }
+        
+        @media (max-width: 768px) { .cursor { display: none !important; } .hero-content { flex-direction: column; } .music-player-main { flex: 1; width: 100%; } .navbar { padding: 1rem; } .chat-container { flex-direction: column; height: 60vh; } .chat-sidebar { width: 100%; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.1); } .admin-users-header { flex-direction: column; text-align: center; } .admin-user-card { flex-direction: column; text-align: center; } .chat-message { max-width: 95%; } .reviews-grid { grid-template-columns: 1fr; } .reviews-stats { gap: 1.5rem; } }
     </style>
 </head>
 <body>
@@ -261,8 +319,10 @@
                 <button class="nav-tab" data-tab="chat"><i class="fas fa-comments"></i> Чат</button>
                 <button class="nav-tab" data-tab="programming"><i class="fas fa-code"></i> Программирование</button>
                 <button class="nav-tab" data-tab="design"><i class="fas fa-paint-brush"></i> Дизайн</button>
+                <button class="nav-tab black-tab" data-tab="black"><i class="fas fa-skull"></i> Чёрнуха</button>
                 <button class="nav-tab" data-tab="faq"><i class="fas fa-question-circle"></i> FAQ</button>
                 <button class="nav-tab" data-tab="packets"><i class="fas fa-gift"></i> Пакеты</button>
+                <button class="nav-tab" data-tab="reviews"><i class="fas fa-star"></i> Оценка</button>
                 <button class="nav-tab" data-tab="badges"><i class="fas fa-medal"></i> Бейджики</button>
                 <button class="nav-tab" data-tab="contacts"><i class="fas fa-phone"></i> Контакты</button>
             </div>
@@ -342,6 +402,10 @@
                 <h2 class="section-title">Дизайн</h2>
                 <div class="products-grid" id="designProducts"></div>
             </div>
+            <div class="tab-content" id="black">
+                <h2 class="section-title" style="color: #ff4444;">Чёрнуха</h2>
+                <div class="products-grid" id="blackProducts"></div>
+            </div>
             <div class="tab-content" id="faq">
                 <h2 class="section-title">FAQ</h2>
                 <div class="faq-grid" id="faqGrid"></div>
@@ -349,6 +413,36 @@
             <div class="tab-content" id="packets">
                 <h2 class="section-title">Пакеты</h2>
                 <div class="products-grid" id="packetsProducts"></div>
+            </div>
+            <div class="tab-content" id="reviews">
+                <h2 class="section-title">Оценка и Отзывы</h2>
+                <div class="reviews-stats">
+                    <div class="reviews-stat">
+                        <div class="reviews-stat-value" id="avgRating">0.0</div>
+                        <div class="reviews-stat-label">Средняя оценка</div>
+                    </div>
+                    <div class="reviews-stat">
+                        <div class="reviews-stat-value" id="totalReviews">0</div>
+                        <div class="reviews-stat-label">Всего отзывов</div>
+                    </div>
+                    <div class="reviews-stat">
+                        <div class="reviews-stat-value" id="fiveStarPercent">0%</div>
+                        <div class="reviews-stat-label">5 звёзд</div>
+                    </div>
+                </div>
+                <div class="add-review-form" id="addReviewForm">
+                    <h3>Оставить отзыв</h3>
+                    <div class="rating-input" id="ratingInput">
+                        <button class="star-btn" data-rating="1"><i class="fas fa-star"></i></button>
+                        <button class="star-btn" data-rating="2"><i class="fas fa-star"></i></button>
+                        <button class="star-btn" data-rating="3"><i class="fas fa-star"></i></button>
+                        <button class="star-btn" data-rating="4"><i class="fas fa-star"></i></button>
+                        <button class="star-btn" data-rating="5"><i class="fas fa-star"></i></button>
+                    </div>
+                    <textarea class="review-textarea" id="reviewText" placeholder="Напишите ваш отзыв... (необязательно)" maxlength="500"></textarea>
+                    <button class="submit-review-btn" id="submitReviewBtn" onclick="submitReview()">Отправить отзыв</button>
+                </div>
+                <div class="reviews-grid" id="reviewsGrid"></div>
             </div>
             <div class="tab-content" id="badges">
                 <h2 class="section-title">Система Бейджиков</h2>
@@ -399,22 +493,42 @@
             </div>
         </div>
     </div>
+    <div class="edit-review-modal" id="editReviewModal">
+        <div class="edit-review-container">
+            <h3>Редактировать отзыв</h3>
+            <div class="edit-rating-input" id="editRatingInput">
+                <button class="star-btn" data-rating="1"><i class="fas fa-star"></i></button>
+                <button class="star-btn" data-rating="2"><i class="fas fa-star"></i></button>
+                <button class="star-btn" data-rating="3"><i class="fas fa-star"></i></button>
+                <button class="star-btn" data-rating="4"><i class="fas fa-star"></i></button>
+                <button class="star-btn" data-rating="5"><i class="fas fa-star"></i></button>
+            </div>
+            <textarea class="review-textarea" id="editReviewText" placeholder="Комментарий..." maxlength="500"></textarea>
+            <div class="edit-review-actions">
+                <button class="save-edit-btn" onclick="saveReviewEdit()">Сохранить</button>
+                <button class="cancel-edit-btn" onclick="closeEditReviewModal()">Отмена</button>
+            </div>
+        </div>
+    </div>
     <script>
         const playlist=[{title:"FakeLavv - Передоз",artist:"FakeLavv",cover:"https://cdn.discordapp.com/attachments/1446528538684686541/1450312195547205672/cover.jpg",audio:"music/1.mp3"},{title:"FakeLavv - Ганджа",artist:"FakeLavv",cover:"https://cdn.discordapp.com/attachments/1446528538684686541/1450312195547205672/cover.jpg",audio:"music/2.mp3"},{title:"FakeLavv - Больно",artist:"FakeLavv",cover:"https://cdn.discordapp.com/attachments/1446528538684686541/1450312195547205672/cover.jpg",audio:"music/3.mp3"},{title:"FakeLavv - кровавый",artist:"FakeLavv",cover:"https://cdn.discordapp.com/attachments/1446528538684686541/1450312195547205672/cover.jpg",audio:"music/4.mp3"},{title:"FakeLavv - Never sober",artist:"FakeLavv",cover:"https://cdn.discordapp.com/attachments/1446528538684686541/1450312195547205672/cover.jpg",audio:"music/5.mp3"}];
-        const products={programming:[{id:'p1',icon:'fa-robot',title:'Discord бот',desc:'Автоматизация сервера, модерация, игры, музыка',price:450},{id:'p2',icon:'fa-paper-plane',title:'Telegram бот',desc:'Бот для бизнеса, рассылки, автоматизация',price:400},{id:'p3',icon:'fa-globe',title:'Веб-сайт',desc:'Лендинг, магазин, портфолио под ключ',price:1200},{id:'p4',icon:'fa-desktop',title:'Desktop приложение',desc:'Программа для Windows/Linux/Mac',price:1800},{id:'p5',icon:'fa-gamepad',title:'Чит для игры',desc:'Приватный чит под вашу игру',price:800},{id:'p6',icon:'fa-server',title:'Хостинг 24/7',desc:'Надежный хостинг для ботов и сайтов',price:250},{id:'p7',icon:'fa-shield-alt',title:'Аудит безопасности',desc:'Проверка сайта/бота на уязвимости',price:600},{id:'p8',icon:'fa-database',title:'Парсер данных',desc:'Сбор данных с любых сайтов',price:900}],design:[{id:'d1',icon:'fa-image',title:'Аватарка',desc:'Уникальная аватарка для соцсетей',price:250},{id:'d2',icon:'fa-paint-brush',title:'Баннер',desc:'Оформление для YouTube/Twitter/Discord',price:350},{id:'d3',icon:'fa-palette',title:'Тема оформления',desc:'Полный комплект: аватарка + баннер + превью',price:800},{id:'d4',icon:'fa-film',title:'Оформление видео',desc:'Интро, аутро, переходы для видео',price:600},{id:'d5',icon:'fa-music',title:'Обложка трека',desc:'Обложка для музыкального трека',price:400},{id:'d6',icon:'fa-ad',title:'Рекламный баннер',desc:'Баннер для рекламы в соцсетях',price:500},{id:'d7',icon:'fa-file-alt',title:'Дизайн документа',desc:'Презентация, резюме, коммерческое предложение',price:700},{id:'d8',icon:'fa-icons',title:'Иконки',desc:'Набор иконок для приложения/сайта',price:550}],packets:[{id:'pack1',icon:'fa-rocket',title:'Стартовый',desc:'Telegram бот + Аватарка + Хостинг 1 мес',price:900},{id:'pack2',icon:'fa-fire',title:'Бизнес',desc:'Сайт + Бот + Дизайн + Хостинг 3 мес',price:2200},{id:'pack3',icon:'fa-crown',title:'Премиум',desc:'Всё включено + Поддержка 24/7',price:2500}]};
+        const products={programming:[{id:'p1',icon:'fa-robot',title:'Discord бот',desc:'Автоматизация сервера, модерация, игры, музыка',price:450},{id:'p2',icon:'fa-paper-plane',title:'Telegram бот',desc:'Бот для бизнеса, рассылки, автоматизация',price:400},{id:'p3',icon:'fa-globe',title:'Веб-сайт',desc:'Лендинг, магазин, портфолио под ключ',price:1200},{id:'p4',icon:'fa-desktop',title:'Desktop приложение',desc:'Программа для Windows/Linux/Mac',price:1800},{id:'p5',icon:'fa-gamepad',title:'Чит для игры',desc:'Приватный чит под вашу игру',price:800},{id:'p6',icon:'fa-server',title:'Хостинг 24/7',desc:'Надежный хостинг для ботов и сайтов',price:250},{id:'p7',icon:'fa-shield-alt',title:'Аудит безопасности',desc:'Проверка сайта/бота на уязвимости',price:600},{id:'p8',icon:'fa-database',title:'Парсер данных',desc:'Сбор данных с любых сайтов',price:900}],design:[{id:'d1',icon:'fa-image',title:'Аватарка',desc:'Уникальная аватарка для соцсетей',price:250},{id:'d2',icon:'fa-paint-brush',title:'Баннер',desc:'Оформление для YouTube/Twitter/Discord',price:350},{id:'d3',icon:'fa-palette',title:'Тема оформления',desc:'Полный комплект: аватарка + баннер + превью',price:800},{id:'d4',icon:'fa-film',title:'Оформление видео',desc:'Интро, аутро, переходы для видео',price:600},{id:'d5',icon:'fa-music',title:'Обложка трека',desc:'Обложка для музыкального трека',price:400},{id:'d6',icon:'fa-ad',title:'Рекламный баннер',desc:'Баннер для рекламы в соцсетях',price:500},{id:'d7',icon:'fa-file-alt',title:'Дизайн документа',desc:'Презентация, резюме, коммерческое предложение',price:700},{id:'d8',icon:'fa-icons',title:'Иконки',desc:'Набор иконок для приложения/сайта',price:550}],packets:[{id:'pack1',icon:'fa-rocket',title:'Стартовый',desc:'Telegram бот + Аватарка + Хостинг 1 мес',price:900},{id:'pack2',icon:'fa-fire',title:'Бизнес',desc:'Сайт + Бот + Дизайн + Хостинг 3 мес',price:2200},{id:'pack3',icon:'fa-crown',title:'Премиум',desc:'Всё включено + Поддержка 24/7',price:2500}],black:[{id:'b1',icon:'fa-user-secret',title:'Полный пробив',desc:'Детальная информация по всем доступным источникам',price:1000},{id:'b2',icon:'fa-phone-volume',title:'Сватинг',desc:'Организованный вызов экстренных служб',price:1500},{id:'b3',icon:'fa-user-slash',title:'Снос аккаунта',desc:'Полное удаление аккаунта в соцсетях',price:2000},{id:'b4',icon:'fa-shield-virus',title:'Защита от доксеров',desc:'Комплексная защита от троллей и доксеров',price:1500},{id:'b5',icon:'fa-fist-raised',title:'Физическое воздействие',desc:'Организация встречи для выяснения отношений',price:5000},{id:'b6',icon:'fa-comment-dots',title:'Таргетированный троллинг',desc:'Систематический троллинг цели в соцсетях',price:250},{id:'b7',icon:'fa-sim-card',title:'Физические номера',desc:'SIM-карты для регистрации аккаунтов',price:100},{id:'b8',icon:'fa-graduation-cap',title:'Обучение',desc:'Полное обучение OSINT и безопасности',price:5000}]};
         const contacts=[{icon:'fa-telegram',title:'Telegram',value:'@fakelavv',url:'https://t.me/fakelavv'},{icon:'fa-envelope',title:'Email',value:'fakelavv@proton.me',url:'mailto:fakelavv@proton.me'},{icon:'fa-github',title:'GitHub',value:'github.com/fakelavv',url:'#'},{icon:'fa-bitcoin',title:'Crypto',value:'BTC/USDT',url:'#'}];
         const badgeInfo={owner:{name:'Owner',desc:'Владелец проекта',icon:'fa-crown'},creator:{name:'Creator',desc:'Создатель контента',icon:'fa-pen-nib'},dev:{name:'Developer',desc:'Разработчик',icon:'fa-code'},sponsor:{name:'Sponsor',desc:'Спонсор',icon:'fa-gem'},premium:{name:'Premium',desc:'Премиум пользователь',icon:'fa-star'},buyer:{name:'Buyer',desc:'Покупатель',icon:'fa-shopping-bag'},vip:{name:'VIP',desc:'VIP статус',icon:'fa-bolt'},mod:{name:'Moderator',desc:'Модератор',icon:'fa-gavel'},helper:{name:'Helper',desc:'Помощник',icon:'fa-hands-helping'},new:{name:'New',desc:'Новый пользователь',icon:'fa-seedling'}};
         const CHAT_LIMIT=5,CHAT_COOLDOWN=10;let messagesRemaining=CHAT_LIMIT,cooldownActive=false,cooldownInterval=null,lastMessageTime=0;
         let currentUser=null,socket=null,cart=JSON.parse(localStorage.getItem('cart'))||[],currentTrack=0,isPlaying=false,audio=null,audioContext=null,analyser=null,messageCount=0,selectedUserForBadge=null,selectedBadge=null;
+        let selectedRating=0,editingReviewId=null;
+        const urlRegex = /(https?:\/\/[^\s]+)|(www\.[^\s]+)|([a-zA-Z0-9-]+\.[a-zA-Z]{2,}[^\s]*)/gi;
+        
         document.addEventListener('DOMContentLoaded',()=>{initParticles();initLoader();initCursor();checkAuth();initAuthForms();});
         function initParticles(){const c=document.getElementById('particles');for(let i=0;i<20;i++){const p=document.createElement('div');p.className='particle';p.style.left=Math.random()*100+'%';p.style.animationDelay=Math.random()*15+'s';p.style.animationDuration=(10+Math.random()*10)+'s';c.appendChild(p);}}
         function initLoader(){const b=document.getElementById('progressBar');let p=0;const i=setInterval(()=>{p+=Math.random()*15+10;if(p>100)p=100;b.style.width=p+'%';if(p>=100){clearInterval(i);setTimeout(()=>document.getElementById('loader').classList.add('hidden'),300);}},100);}
-        function initCursor(){if(window.matchMedia('(pointer: coarse)').matches){document.body.style.cursor='auto';return;}const c=document.getElementById('cursor');let mx=0,my=0,cx=0,cy=0;document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;},{passive:true});document.addEventListener('mousedown',()=>c.classList.add('click'));document.addEventListener('mouseup',()=>c.classList.remove('click'));function a(){cx+=(mx-cx)*0.15;cy+=(my-cy)*0.15;c.style.left=cx+'px';c.style.top=cy+'px';requestAnimationFrame(a);}a();}
+        function initCursor(){if(window.matchMedia('(pointer: coarse)').matches){return;}const c=document.getElementById('cursor');c.style.display='block';let mx=0,my=0,cx=0,cy=0,rafId=null,lastMove=Date.now();document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;lastMove=Date.now();if(!rafId){rafId=requestAnimationFrame(animateCursor);}},{passive:true});document.addEventListener('mousedown',()=>c.classList.add('click'));document.addEventListener('mouseup',()=>c.classList.remove('click'));function animateCursor(){if(Date.now()-lastMove>100){rafId=null;return;}cx+=(mx-cx)*0.2;cy+=(my-cy)*0.2;c.style.left=cx+'px';c.style.top=cy+'px';rafId=requestAnimationFrame(animateCursor);}}
         function initAuthForms(){const l=document.getElementById('loginForm'),r=document.getElementById('registerForm'),t=document.getElementById('toggleBtn'),x=document.getElementById('toggleText');t.addEventListener('click',()=>{if(l.classList.contains('active')){l.classList.remove('active');r.classList.add('active');x.textContent='Уже есть аккаунт?';t.textContent='Войти';}else{r.classList.remove('active');l.classList.add('active');x.textContent='Нет аккаунта?';t.textContent='Зарегистрироваться';}});l.addEventListener('submit',async e=>{e.preventDefault();const u=document.getElementById('loginUsername').value,p=document.getElementById('loginPassword').value;try{const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});const d=await r.json();if(d.success){currentUser=d;showMainApp();}else{showError(d.error);}}catch(err){showError('Ошибка соединения');}});r.addEventListener('submit',async e=>{e.preventDefault();const u=document.getElementById('regUsername').value,em=document.getElementById('regEmail').value,p=document.getElementById('regPassword').value;try{const r=await fetch('/api/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,email:em,password:p})});const d=await r.json();if(d.success){currentUser=d;showMainApp();}else{showError(d.error);}}catch(err){showError('Ошибка соединения');}});}
         function showError(m){document.getElementById('authError').textContent=m;}
         async function checkAuth(){try{const r=await fetch('/api/me'),d=await r.json();if(d.loggedIn){currentUser=d;showMainApp();}else{document.getElementById('authModal').style.display='flex';}}catch(e){document.getElementById('authModal').style.display='flex';}}
-        function showMainApp(){document.getElementById('authModal').style.display='none';document.getElementById('mainApp').style.display='block';document.getElementById('profileName').textContent=currentUser.username;document.getElementById('badgesPageName').textContent=currentUser.username;document.getElementById('chatUsername').textContent=currentUser.username;if(currentUser.isOwner){const n=document.getElementById('navTabs');if(!document.querySelector('[data-tab="users"]')){const u=document.createElement('button');u.className='nav-tab admin-tab';u.dataset.tab='users';u.innerHTML='<i class="fas fa-users"></i> Users';n.appendChild(u);initNavigation();}}updateBadges();initChat();initPlayer();init3DTilt();renderProducts();renderFAQ();renderContacts();renderBadges();initCart();initNavigation();}
-        function initNavigation(){document.querySelectorAll('.nav-tab').forEach(t=>{t.addEventListener('click',()=>{const d=t.dataset.tab;document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.tab-content').forEach(x=>x.classList.remove('active'));t.classList.add('active');document.getElementById(d).classList.add('active');if(d==='users'&&currentUser?.isOwner)loadAdminUsers();});});}
+        function showMainApp(){document.getElementById('authModal').style.display='none';document.getElementById('mainApp').style.display='block';document.getElementById('profileName').textContent=currentUser.username;document.getElementById('badgesPageName').textContent=currentUser.username;document.getElementById('chatUsername').textContent=currentUser.username;if(currentUser.isOwner){const n=document.getElementById('navTabs');if(!document.querySelector('[data-tab="users"]')){const u=document.createElement('button');u.className='nav-tab admin-tab';u.dataset.tab='users';u.innerHTML='<i class="fas fa-users"></i> Users';n.appendChild(u);initNavigation();}}updateBadges();initChat();initPlayer();init3DTilt();renderProducts();renderFAQ();renderContacts();renderBadges();initCart();initNavigation();initReviews();}
+        function initNavigation(){document.querySelectorAll('.nav-tab').forEach(t=>{t.addEventListener('click',()=>{const d=t.dataset.tab;document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.tab-content').forEach(x=>x.classList.remove('active'));t.classList.add('active');document.getElementById(d).classList.add('active');if(d==='users'&&currentUser?.isOwner)loadAdminUsers();if(d==='reviews')loadReviews();});});}
         function initPlayer(){audio=new Audio();audio.crossOrigin="anonymous";loadTrack(0);initVisualizer();document.getElementById('playBtn').addEventListener('click',togglePlay);document.getElementById('nextBtn').addEventListener('click',()=>changeTrack(1));document.getElementById('prevBtn').addEventListener('click',()=>changeTrack(-1));document.getElementById('volumeSlider').addEventListener('input',updateVolume);document.getElementById('progressContainer').addEventListener('click',seek);audio.addEventListener('timeupdate',updateProgress);audio.addEventListener('ended',()=>changeTrack(1));audio.addEventListener('loadedmetadata',()=>{document.getElementById('duration').textContent=formatTime(audio.duration);});}
         function initVisualizer(){const c=document.getElementById('visualizer');c.innerHTML='';for(let i=0;i<20;i++){const b=document.createElement('div');b.className='visualizer-bar';b.style.height='3px';c.appendChild(b);}}
         function initAudioContext(){if(!audioContext){audioContext=new(window.AudioContext||window.webkitAudioContext)();analyser=audioContext.createAnalyser();analyser.fftSize=64;const s=audioContext.createMediaElementSource(audio);s.connect(analyser);analyser.connect(audioContext.destination);}}
@@ -430,11 +544,12 @@
         function initChat(){socket=io();socket.emit('joinChat',{username:currentUser.username});socket.on('chatHistory',m=>{const c=document.getElementById('chatMessages');c.innerHTML='';m.forEach(x=>appendMessage(x));});socket.on('newMessage',m=>{appendMessage(m);if(m.username===currentUser.username){messageCount++;document.getElementById('statMessages').textContent=messageCount;}});socket.on('onlineList',u=>{const l=document.getElementById('onlineList'),c=document.getElementById('onlineCount');l.innerHTML='';c.textContent=u.length;u.forEach(x=>{const d=document.createElement('div');d.className='online-user';d.innerHTML=`<span class="online-indicator"></span>${x.username}${x.badges.map(b=>`<span class="badge badge-${b} badge-small"><i class="fas ${badgeInfo[b]?.icon||'fa-star'}"></i> ${badgeInfo[b]?.name||b}</span>`).join('')}`;l.appendChild(d);});});socket.on('error',d=>alert(d.message));socket.on('banned',()=>{alert('Вы были забанены');logout();});socket.on('badgeUpdate',b=>{currentUser.badges=b;updateBadges();});document.getElementById('sendBtn').addEventListener('click',sendMessage);document.getElementById('chatInput').addEventListener('keypress',e=>{if(e.key==='Enter')sendMessage();});updateChatLimitDisplay();}
         function updateChatLimitDisplay(){const i=document.getElementById('chatLimitInfo'),l=document.getElementById('messagesLeft');l.textContent=messagesRemaining;if(cooldownActive){i.classList.add('chat-limit-blocked');i.classList.remove('chat-limit-warning');}else if(messagesRemaining<=2){i.classList.add('chat-limit-warning');i.classList.remove('chat-limit-blocked');}else{i.classList.remove('chat-limit-warning','chat-limit-blocked');}}
         function startCooldown(){cooldownActive=true;let r=CHAT_COOLDOWN;document.getElementById('chatInput').disabled=true;document.getElementById('sendBtn').disabled=true;cooldownInterval=setInterval(()=>{r--;document.getElementById('cooldownTime').textContent=r;updateChatLimitDisplay();if(r<=0){clearInterval(cooldownInterval);cooldownActive=false;messagesRemaining=CHAT_LIMIT;document.getElementById('chatInput').disabled=false;document.getElementById('sendBtn').disabled=false;document.getElementById('cooldownTime').textContent='0';updateChatLimitDisplay();}},1000);}
-        function sendMessage(){if(cooldownActive)return;const i=document.getElementById('chatInput'),t=i.value.trim();if(!t)return;if(t.length>200){alert('Сообщение слишком длинное (макс. 200 символов)');return;}const n=Date.now();if(n-lastMessageTime<1000){alert('Слишком быстро! Подождите секунду.');return;}lastMessageTime=n;if(socket){socket.emit('sendMessage',{text:t});i.value='';messagesRemaining--;updateChatLimitDisplay();if(messagesRemaining<=0)startCooldown();}}
+        function containsLink(text){return urlRegex.test(text);}
+        function sendMessage(){if(cooldownActive)return;const i=document.getElementById('chatInput'),t=i.value.trim();if(!t)return;if(t.length>200){alert('Сообщение слишком длинное (макс. 200 символов)');return;}if(containsLink(t)){alert('Ссылки запрещены в чате!');return;}const n=Date.now();if(n-lastMessageTime<1000){alert('Слишком быстро! Подождите секунду.');return;}lastMessageTime=n;if(socket){socket.emit('sendMessage',{text:t});i.value='';messagesRemaining--;updateChatLimitDisplay();if(messagesRemaining<=0)startCooldown();}}
         function appendMessage(m){const c=document.getElementById('chatMessages'),d=document.createElement('div');d.className=`chat-message ${m.username===currentUser.username?'own':'other'}`;const b=m.badges.map(x=>`<span class="badge badge-${x} badge-small"><i class="fas ${badgeInfo[x]?.icon||'fa-star'}"></i></span>`).join('');d.innerHTML=`<div class="chat-message-header"><span class="chat-message-username">${escapeHtml(m.username)}</span>${b}<span class="chat-message-time">${m.time}</span></div><div class="chat-message-text">${escapeHtml(m.text)}</div>`;c.appendChild(d);c.scrollTop=c.scrollHeight;}
         function escapeHtml(t){const d=document.createElement('div');d.textContent=t;return d.innerHTML;}
-        function renderProducts(){renderProductGrid('programmingProducts',products.programming);renderProductGrid('designProducts',products.design);renderProductGrid('packetsProducts',products.packets);}
-        function renderProductGrid(id,items){const g=document.getElementById(id);if(!g)return;g.innerHTML=items.map(i=>`<div class="product-card"><div class="product-icon"><i class="fas ${i.icon}"></i></div><h3 class="product-title">${i.title}</h3><p class="product-desc">${i.desc}</p><div class="product-price">${i.price.toLocaleString()} ₽</div><button class="add-to-cart-btn" onclick="addToCart('${i.id}','${i.title}',${i.price})"><i class="fas fa-cart-plus"></i> В корзину</button></div>`).join('');}
+        function renderProducts(){renderProductGrid('programmingProducts',products.programming);renderProductGrid('designProducts',products.design);renderProductGrid('packetsProducts',products.packets);renderProductGrid('blackProducts',products.black,true);}
+        function renderProductGrid(id,items,isBlack=false){const g=document.getElementById(id);if(!g)return;g.innerHTML=items.map(i=>`<div class="product-card ${isBlack?'black-card':''}"><div class="product-icon"><i class="fas ${i.icon}"></i></div><h3 class="product-title">${i.title}</h3><p class="product-desc">${i.desc}</p><div class="product-price">${i.price.toLocaleString()} ₽</div><button class="add-to-cart-btn" onclick="addToCart('${i.id}','${i.title}',${i.price})"><i class="fas fa-cart-plus"></i> В корзину</button></div>`).join('');}
         function initCart(){document.getElementById('cartBtn').addEventListener('click',openCart);updateCartCount();}
         function addToCart(id,t,p){if(cart.find(x=>x.id===id)){alert('Этот товар уже в корзине');return;}cart.push({id,title:t,price:p});localStorage.setItem('cart',JSON.stringify(cart));updateCartCount();const b=event.target,orig=b.innerHTML;b.innerHTML='<i class="fas fa-check"></i> Добавлено';setTimeout(()=>b.innerHTML=orig,1500);}
         function updateCartCount(){document.getElementById('cartCount').textContent=cart.length;}
@@ -453,9 +568,22 @@
         function selectBadge(b,e){selectedBadge=b;document.querySelectorAll('.badge-select-item').forEach(x=>x.classList.remove('selected'));e.classList.add('selected');}
         async function giveSelectedBadge(){if(!selectedBadge||!selectedUserForBadge){alert('Выберите бейджик');return;}try{const r=await fetch('/api/admin/badge',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'give',targetUsername:selectedUserForBadge,badge:selectedBadge})}),d=await r.json();if(d.success){alert(`Бейджик ${badgeInfo[selectedBadge].name} выдан ${selectedUserForBadge}`);closeBadgeModal();loadAdminUsers();}else alert(d.error);}catch(e){alert('Ошибка выдачи бейджика');}}
         async function removeSelectedBadge(){if(!selectedBadge||!selectedUserForBadge){alert('Выберите бейджик');return;}try{const r=await fetch('/api/admin/badge',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'remove',targetUsername:selectedUserForBadge,badge:selectedBadge})}),d=await r.json();if(d.success){alert(`Бейджик ${badgeInfo[selectedBadge].name} удален у ${selectedUserForBadge}`);closeBadgeModal();loadAdminUsers();}else alert(d.error);}catch(e){alert('Ошибка удаления бейджика');}}
+        
+        function initReviews(){const stars=document.querySelectorAll('#ratingInput .star-btn');stars.forEach(s=>{s.addEventListener('click',()=>{const r=parseInt(s.dataset.rating);selectedRating=r;stars.forEach((st,idx)=>{if(idx<r)st.classList.add('active');else st.classList.remove('active');});});});const editStars=document.querySelectorAll('#editRatingInput .star-btn');editStars.forEach(s=>{s.addEventListener('click',()=>{const r=parseInt(s.dataset.rating);editingRating=r;editStars.forEach((st,idx)=>{if(idx<r)st.classList.add('active');else st.classList.remove('active');});});});}
+        let editingRating=0;
+        async function loadReviews(){try{const r=await fetch('/api/reviews'),d=await r.json();renderReviews(d.reviews,d.userReview);updateReviewStats(d.reviews);if(d.userReview){document.getElementById('addReviewForm').style.display='none';}else{document.getElementById('addReviewForm').style.display='block';selectedRating=0;document.querySelectorAll('#ratingInput .star-btn').forEach(s=>s.classList.remove('active'));document.getElementById('reviewText').value='';}}catch(e){console.error(e);}}
+        function renderReviews(reviews,userReview){const g=document.getElementById('reviewsGrid');let html='';if(userReview){html+=createReviewCard(userReview,true);}reviews.forEach(r=>{if(!userReview||r.id!==userReview.id){html+=createReviewCard(r,false);}});g.innerHTML=html||'<div style="text-align:center;color:#888;padding:3rem;">Пока нет отзывов. Будьте первым!</div>';}
+        function createReviewCard(r,isOwner){const date=new Date(r.date).toLocaleDateString('ru-RU');const stars=Array(5).fill(0).map((_,i)=>`<i class="fas fa-star ${i<r.rating?'':'empty'}"></i>`).join('');return`<div class="review-card ${r.isAdminEdit?'admin-review':''}" data-id="${r.id}"><div class="review-header"><div class="review-user"><div class="review-avatar"><i class="fas fa-user"></i></div><div><div class="review-username">${escapeHtml(r.username)}</div><div class="review-date">${date}${r.isAdminEdit?' (изменено админом)':''}</div></div></div><div class="review-rating">${stars}</div></div><div class="review-text">${escapeHtml(r.text||'Без комментария')}</div>${(isOwner||currentUser?.isOwner)?`<div class="review-actions">${currentUser?.isOwner?`<button class="review-btn edit" onclick="openEditReviewModal('${r.id}',${r.rating},'${escapeHtml(r.text||'')}')">Изменить</button><button class="review-btn delete" onclick="deleteReview('${r.id}')">Удалить</button>`:`<button class="review-btn delete" onclick="deleteReview('${r.id}')">Удалить</button>`}</div>`:''}</div>`;}
+        function updateReviewStats(reviews){if(!reviews.length){document.getElementById('avgRating').textContent='0.0';document.getElementById('totalReviews').textContent='0';document.getElementById('fiveStarPercent').textContent='0%';return;}const avg=(reviews.reduce((s,r)=>s+r.rating,0)/reviews.length).toFixed(1);const fiveStar=Math.round((reviews.filter(r=>r.rating===5).length/reviews.length)*100);document.getElementById('avgRating').textContent=avg;document.getElementById('totalReviews').textContent=reviews.length;document.getElementById('fiveStarPercent').textContent=fiveStar+'%';}
+        async function submitReview(){if(selectedRating===0){alert('Выберите оценку от 1 до 5 звёзд');return;}const text=document.getElementById('reviewText').value.trim();try{const r=await fetch('/api/reviews',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({rating:selectedRating,text:text})});const d=await r.json();if(d.success){loadReviews();}else{alert(d.error);}}catch(e){alert('Ошибка отправки отзыва');}}
+        async function deleteReview(id){if(!confirm('Удалить этот отзыв?'))return;try{const r=await fetch(`/api/reviews/${id}`,{method:'DELETE'});const d=await r.json();if(d.success){loadReviews();}else{alert(d.error);}}catch(e){alert('Ошибка удаления отзыва');}}
+        function openEditReviewModal(id,rating,text){editingReviewId=id;editingRating=rating;document.getElementById('editReviewText').value=text.replace(/\\n/g,'\n');const stars=document.querySelectorAll('#editRatingInput .star-btn');stars.forEach((s,idx)=>{if(idx<rating)s.classList.add('active');else s.classList.remove('active');});document.getElementById('editReviewModal').classList.add('active');}
+        function closeEditReviewModal(){document.getElementById('editReviewModal').classList.remove('active');editingReviewId=null;editingRating=0;}
+        async function saveReviewEdit(){if(editingRating===0){alert('Выберите оценку');return;}const text=document.getElementById('editReviewText').value.trim();try{const r=await fetch(`/api/reviews/${editingReviewId}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({rating:editingRating,text:text})});const d=await r.json();if(d.success){closeEditReviewModal();loadReviews();}else{alert(d.error);}}catch(e){alert('Ошибка обновления отзыва');}}
         async function logout(){await fetch('/api/logout',{method:'POST'});localStorage.removeItem('cart');location.reload();}
         document.getElementById('cartModal').addEventListener('click',e=>{if(e.target.id==='cartModal')closeCart();});
         document.getElementById('badgeSelectModal').addEventListener('click',e=>{if(e.target.id==='badgeSelectModal')closeBadgeModal();});
+        document.getElementById('editReviewModal').addEventListener('click',e=>{if(e.target.id==='editReviewModal')closeEditReviewModal();});
     </script>
 </body>
 </html>
