@@ -8,300 +8,1179 @@
     <script src="/socket.io/socket.io.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
-        :root { --black: #000; --dark: #0a0a0a; --gray: #1a1a1a; --white: #fff; --badge-owner: #ff4444; --badge-creator: #ff8800; --badge-dev: #4488ff; --badge-sponsor: #ffdd00; --badge-premium: #aa44ff; --badge-buyer: #44ff88; --badge-vip: #ff44aa; --badge-mod: #44aaff; --badge-helper: #44ffaa; --badge-new: #666; }
+        :root { 
+            --black: #000; --dark: #0a0a0a; --gray: #1a1a1a; --white: #fff; 
+            --badge-owner: #ff4444; --badge-creator: #ff8800; --badge-dev: #4488ff; 
+            --badge-sponsor: #ffdd00; --badge-premium: #aa44ff; --badge-buyer: #44ff88; 
+            --badge-vip: #ff44aa; --badge-mod: #44aaff; --badge-helper: #44ffaa; --badge-new: #666; 
+        }
         html { scroll-behavior: smooth; }
-        body { background: var(--black); color: var(--white); min-height: 100vh; overflow-x: hidden; font-size: 14px; line-height: 1.6; }
-        .cursor { position: fixed; width: 24px; height: 24px; border: 2px solid rgba(255,255,255,0.8); border-radius: 50%; z-index: 9999; pointer-events: none; transform: translate(-50%,-50%); transition: all 0.15s ease-out; mix-blend-mode: difference; display: none; }
+        body { 
+            background: var(--black); color: var(--white); min-height: 100vh; 
+            overflow-x: hidden; font-size: 14px; line-height: 1.6; 
+        }
+        
+        /* ===== КУРСОР СО СЛЕДАМИ ===== */
+        .cursor { 
+            position: fixed; width: 24px; height: 24px; 
+            border: 2px solid rgba(255,255,255,0.8); border-radius: 50%; 
+            z-index: 9999; pointer-events: none; transform: translate(-50%,-50%); 
+            transition: all 0.15s ease-out; mix-blend-mode: difference; display: none; 
+            box-shadow: 0 0 20px rgba(255,255,255,0.3);
+        }
         .cursor.hover { width: 50px; height: 50px; background: rgba(255,255,255,0.1); }
         .cursor.click { width: 15px; height: 15px; background: rgba(255,255,255,0.9); }
-        .loader { position: fixed; inset: 0; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10000; transition: opacity 0.5s, visibility 0.5s; }
+        
+        .cursor-trail {
+            position: fixed; width: 8px; height: 8px; background: rgba(255,255,255,0.3);
+            border-radius: 50%; pointer-events: none; z-index: 9998;
+            transform: translate(-50%,-50%); transition: opacity 0.5s;
+        }
+        
+        /* ===== ЗАГРУЗКА ===== */
+        .loader { 
+            position: fixed; inset: 0; background: #000; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            z-index: 10000; transition: opacity 0.5s, visibility 0.5s; 
+        }
         .loader.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-        .loader-logo { font-size: 3rem; font-weight: 900; background: linear-gradient(90deg,#333,#888,#fff,#888,#333); background-size: 200% auto; -webkit-background-clip: text; background-clip: text; color: transparent; animation: shine 2s linear infinite; margin-bottom: 2rem; }
+        .loader-logo { 
+            font-size: 3rem; font-weight: 900; 
+            background: linear-gradient(90deg,#333,#888,#fff,#888,#333); 
+            background-size: 200% auto; -webkit-background-clip: text; background-clip: text; 
+            color: transparent; animation: shine 2s linear infinite; margin-bottom: 2rem; 
+        }
         @keyframes shine { to { background-position: 200% center; } }
-        .loader-spinner { width: 50px; height: 50px; border: 3px solid rgba(255,255,255,0.1); border-top-color: #888; border-radius: 50%; animation: spin 1s linear infinite; }
+        .loader-spinner { 
+            width: 50px; height: 50px; border: 3px solid rgba(255,255,255,0.1); 
+            border-top-color: #888; border-radius: 50%; animation: spin 1s linear infinite; 
+        }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .loader-progress { width: 250px; height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; margin-top: 1.5rem; }
-        .loader-progress-bar { height: 100%; background: linear-gradient(90deg,#444,#888); width: 0%; transition: width 0.2s; }
-        #authModal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: flex; align-items: center; justify-content: center; z-index: 99999; backdrop-filter: blur(10px); }
-        .auth-container { background: rgba(20,20,20,0.95); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 2.5rem; width: 90%; max-width: 400px; text-align: center; }
+        .loader-progress { 
+            width: 250px; height: 3px; background: rgba(255,255,255,0.1); 
+            border-radius: 2px; overflow: hidden; margin-top: 1.5rem; 
+        }
+        .loader-progress-bar { 
+            height: 100%; background: linear-gradient(90deg,#444,#888); 
+            width: 0%; transition: width 0.2s; 
+        }
+        
+        /* ===== АВТОРИЗАЦИЯ ===== */
+        #authModal { 
+            position: fixed; inset: 0; background: rgba(0,0,0,0.95); 
+            display: flex; align-items: center; justify-content: center; 
+            z-index: 99999; backdrop-filter: blur(10px); 
+        }
+        .auth-container { 
+            background: rgba(20,20,20,0.95); border: 1px solid rgba(255,255,255,0.1); 
+            border-radius: 20px; padding: 2.5rem; width: 90%; max-width: 400px; text-align: center;
+            transform: perspective(1000px) rotateX(0deg); animation: authAppear 0.6s ease;
+        }
+        @keyframes authAppear {
+            from { opacity: 0; transform: perspective(1000px) rotateX(-20deg) translateY(-50px); }
+            to { opacity: 1; transform: perspective(1000px) rotateX(0deg) translateY(0); }
+        }
         .auth-container h2 { margin-bottom: 0.5rem; font-size: 1.8rem; }
         .auth-container p { color: #888; margin-bottom: 2rem; }
         .auth-form { display: none; flex-direction: column; gap: 1rem; }
-        .auth-form.active { display: flex; }
-        .auth-input { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 1rem; border-radius: 10px; color: #fff; font-size: 1rem; outline: none; transition: all 0.3s; }
-        .auth-input:focus { border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.08); }
-        .auth-btn { background: linear-gradient(90deg,#444,#666); border: none; padding: 1rem; border-radius: 10px; color: #fff; font-weight: 700; cursor: pointer; transition: all 0.3s; }
-        .auth-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(255,255,255,0.1); }
+        .auth-form.active { display: flex; animation: formSlide 0.4s ease; }
+        @keyframes formSlide {
+            from { opacity: 0; transform: translateX(30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .auth-input { 
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); 
+            padding: 1rem; border-radius: 10px; color: #fff; font-size: 1rem; 
+            outline: none; transition: all 0.3s; 
+        }
+        .auth-input:focus { 
+            border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.08); 
+            box-shadow: 0 0 20px rgba(255,255,255,0.1);
+        }
+        .auth-btn { 
+            background: linear-gradient(90deg,#444,#666); border: none; 
+            padding: 1rem; border-radius: 10px; color: #fff; font-weight: 700; 
+            cursor: pointer; transition: all 0.3s; position: relative; overflow: hidden;
+        }
+        .auth-btn:hover { 
+            transform: translateY(-2px); box-shadow: 0 5px 20px rgba(255,255,255,0.1); 
+        }
+        .auth-btn::after {
+            content: ''; position: absolute; top: 50%; left: 50%; width: 0; height: 0;
+            background: rgba(255,255,255,0.2); border-radius: 50%; transform: translate(-50%,-50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        .auth-btn:active::after { width: 300px; height: 300px; }
         .auth-toggle { margin-top: 1.5rem; color: #888; }
-        .auth-toggle button { background: none; border: none; color: #fff; text-decoration: underline; cursor: pointer; margin-left: 0.5rem; }
+        .auth-toggle button { 
+            background: none; border: none; color: #fff; text-decoration: underline; 
+            cursor: pointer; margin-left: 0.5rem; transition: all 0.3s;
+        }
+        .auth-toggle button:hover { text-shadow: 0 0 10px rgba(255,255,255,0.5); }
         .auth-error { color: #ff4444; margin-top: 1rem; font-size: 0.9rem; min-height: 20px; }
-        .navbar { position: fixed; top: 0; left: 0; right: 0; background: rgba(10,10,10,0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.1); padding: 1rem 2rem; z-index: 1000; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; animation: slideDown 0.6s ease; }
-        @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .logo { font-size: 1.8rem; font-weight: 900; letter-spacing: 2px; background: linear-gradient(90deg,#fff,#888); -webkit-background-clip: text; background-clip: text; color: transparent; animation: pulse 2s ease-in-out infinite; }
+        
+        /* ===== НАВИГАЦИЯ ===== */
+        .navbar { 
+            position: fixed; top: 0; left: 0; right: 0; 
+            background: rgba(10,10,10,0.95); backdrop-filter: blur(10px); 
+            border-bottom: 1px solid rgba(255,255,255,0.1); 
+            padding: 1rem 2rem; z-index: 1000; display: flex; 
+            justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; 
+            animation: slideDown 0.6s ease; 
+        }
+        @keyframes slideDown { 
+            from { transform: translateY(-100%); opacity: 0; } 
+            to { transform: translateY(0); opacity: 1; } 
+        }
+        .logo { 
+            font-size: 1.8rem; font-weight: 900; letter-spacing: 2px; 
+            background: linear-gradient(90deg,#fff,#888); -webkit-background-clip: text; 
+            background-clip: text; color: transparent; animation: pulse 2s ease-in-out infinite; 
+        }
         @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.8; } }
         .nav-tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-        .nav-tab { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #aaa; padding: 0.5rem 1rem; border-radius: 20px; transition: all 0.3s; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; position: relative; overflow: hidden; }
-        .nav-tab::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent); transition: left 0.5s; }
+        .nav-tab { 
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); 
+            color: #aaa; padding: 0.5rem 1rem; border-radius: 20px; 
+            transition: all 0.3s; font-size: 0.85rem; cursor: pointer; 
+            display: flex; align-items: center; gap: 0.5rem; position: relative; overflow: hidden;
+            transform: perspective(500px) translateZ(0);
+        }
+        .nav-tab::before { 
+            content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; 
+            background: linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent); 
+            transition: left 0.5s; 
+        }
         .nav-tab:hover::before { left: 100%; }
-        .nav-tab:hover, .nav-tab.active { background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.3); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-        .nav-tab.admin-tab { background: rgba(255,68,68,0.15); border-color: rgba(255,68,68,0.3); color: #ff8888; }
-        .nav-tab.black-tab { background: rgba(139,0,0,0.3); border-color: rgba(139,0,0,0.5); color: #ff6666; }
-        .nav-tab.black-tab:hover, .nav-tab.black-tab.active { background: rgba(139,0,0,0.5); border-color: #8b0000; color: #ff4444; }
+        .nav-tab:hover, .nav-tab.active { 
+            background: rgba(255,255,255,0.1); color: #fff; 
+            border-color: rgba(255,255,255,0.3); transform: perspective(500px) translateZ(10px) translateY(-2px); 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3); 
+        }
+        .nav-tab.admin-tab { 
+            background: rgba(255,68,68,0.15); border-color: rgba(255,68,68,0.3); color: #ff8888; 
+        }
+        .nav-tab.black-tab { 
+            background: rgba(139,0,0,0.3); border-color: rgba(139,0,0,0.5); color: #ff6666; 
+        }
+        .nav-tab.black-tab:hover, .nav-tab.black-tab.active { 
+            background: rgba(139,0,0,0.5); border-color: #8b0000; color: #ff4444; 
+        }
         .user-menu { display: flex; align-items: center; gap: 1rem; }
-        .cart-btn { position: relative; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s; }
-        .cart-btn:hover { background: rgba(255,255,255,0.1); transform: scale(1.1); }
-        .cart-count { position: absolute; top: -5px; right: -5px; background: #ff4444; color: #fff; font-size: 0.7rem; font-weight: 700; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-        .logout-btn { background: rgba(255,68,68,0.2); border: 1px solid rgba(255,68,68,0.3); color: #ff8888; padding: 0.5rem 1rem; border-radius: 20px; cursor: pointer; transition: all 0.3s; }
-        .logout-btn:hover { background: rgba(255,68,68,0.3); }
-        .badge { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; border: 1px solid; box-shadow: 0 0 8px currentColor; line-height: 1.2; }
-        .badge i { font-size: 0.65rem; }
-        .badge-owner { border-color: var(--badge-owner); color: #ff6666; background: rgba(255,68,68,0.08); box-shadow: 0 0 8px rgba(255,68,68,0.4); }
-        .badge-creator { border-color: var(--badge-creator); color: #ffaa44; background: rgba(255,136,0,0.08); box-shadow: 0 0 8px rgba(255,136,0,0.4); }
-        .badge-dev { border-color: var(--badge-dev); color: #66aaff; background: rgba(68,136,255,0.08); box-shadow: 0 0 8px rgba(68,136,255,0.4); }
-        .badge-sponsor { border-color: var(--badge-sponsor); color: #ffee44; background: rgba(255,221,0,0.08); box-shadow: 0 0 8px rgba(255,221,0,0.4); }
-        .badge-premium { border-color: var(--badge-premium); color: #cc88ff; background: rgba(170,68,255,0.08); box-shadow: 0 0 8px rgba(170,68,255,0.4); }
-        .badge-buyer { border-color: var(--badge-buyer); color: #66ffaa; background: rgba(68,255,136,0.08); box-shadow: 0 0 8px rgba(68,255,136,0.4); }
-        .badge-vip { border-color: var(--badge-vip); color: #ff88cc; background: rgba(255,68,170,0.08); box-shadow: 0 0 8px rgba(255,68,170,0.4); }
-        .badge-mod { border-color: var(--badge-mod); color: #88ccff; background: rgba(68,170,255,0.08); box-shadow: 0 0 8px rgba(68,170,255,0.4); }
-        .badge-helper { border-color: var(--badge-helper); color: #88ffcc; background: rgba(68,255,170,0.08); box-shadow: 0 0 8px rgba(68,255,170,0.4); }
-        .badge-new { border-color: var(--badge-new); color: #999; background: rgba(136,136,136,0.08); box-shadow: 0 0 8px rgba(136,136,136,0.3); }
-        .badge-small { padding: 0.1rem 0.4rem; font-size: 0.6rem; }
+        .cart-btn { 
+            position: relative; background: rgba(255,255,255,0.05); 
+            border: 1px solid rgba(255,255,255,0.1); width: 40px; height: 40px; 
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+            cursor: pointer; transition: all 0.3s; 
+        }
+        .cart-btn:hover { 
+            background: rgba(255,255,255,0.1); transform: scale(1.1) rotate(5deg); 
+        }
+        .cart-count { 
+            position: absolute; top: -5px; right: -5px; background: #ff4444; 
+            color: #fff; font-size: 0.7rem; font-weight: 700; width: 20px; height: 20px; 
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+            animation: bounce 1s ease infinite;
+        }
+        @keyframes bounce { 0%,100% { transform: scale(1); } 50% { transform: scale(1.2); } }
+        .logout-btn { 
+            background: rgba(255,68,68,0.2); border: 1px solid rgba(255,68,68,0.3); 
+            color: #ff8888; padding: 0.5rem 1rem; border-radius: 20px; 
+            cursor: pointer; transition: all 0.3s; 
+        }
+        .logout-btn:hover { background: rgba(255,68,68,0.3); transform: translateY(-2px); }
+        
+        /* ===== БЕЙДЖИКИ (ШИРЕ) ===== */
+        .badge { 
+            display: inline-flex; align-items: center; gap: 0.4rem; 
+            padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.75rem; 
+            font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; 
+            border: 1px solid; box-shadow: 0 0 8px currentColor; line-height: 1.2; 
+            min-width: 80px; justify-content: center;
+        }
+        .badge i { font-size: 0.7rem; }
+        .badge-owner { 
+            border-color: var(--badge-owner); color: #ff6666; 
+            background: rgba(255,68,68,0.08); box-shadow: 0 0 8px rgba(255,68,68,0.4); 
+        }
+        .badge-creator { 
+            border-color: var(--badge-creator); color: #ffaa44; 
+            background: rgba(255,136,0,0.08); box-shadow: 0 0 8px rgba(255,136,0,0.4); 
+        }
+        .badge-dev { 
+            border-color: var(--badge-dev); color: #66aaff; 
+            background: rgba(68,136,255,0.08); box-shadow: 0 0 8px rgba(68,136,255,0.4); 
+        }
+        .badge-sponsor { 
+            border-color: var(--badge-sponsor); color: #ffee44; 
+            background: rgba(255,221,0,0.08); box-shadow: 0 0 8px rgba(255,221,0,0.4); 
+        }
+        .badge-premium { 
+            border-color: var(--badge-premium); color: #cc88ff; 
+            background: rgba(170,68,255,0.08); box-shadow: 0 0 8px rgba(170,68,255,0.4); 
+        }
+        .badge-buyer { 
+            border-color: var(--badge-buyer); color: #66ffaa; 
+            background: rgba(68,255,136,0.08); box-shadow: 0 0 8px rgba(68,255,136,0.4); 
+        }
+        .badge-vip { 
+            border-color: var(--badge-vip); color: #ff88cc; 
+            background: rgba(255,68,170,0.08); box-shadow: 0 0 8px rgba(255,68,170,0.4); 
+        }
+        .badge-mod { 
+            border-color: var(--badge-mod); color: #88ccff; 
+            background: rgba(68,170,255,0.08); box-shadow: 0 0 8px rgba(68,170,255,0.4); 
+        }
+        .badge-helper { 
+            border-color: var(--badge-helper); color: #88ffcc; 
+            background: rgba(68,255,170,0.08); box-shadow: 0 0 8px rgba(68,255,170,0.4); 
+        }
+        .badge-new { 
+            border-color: var(--badge-new); color: #999; 
+            background: rgba(136,136,136,0.08); box-shadow: 0 0 8px rgba(136,136,136,0.3); 
+        }
+        .badge-small { padding: 0.15rem 0.5rem; font-size: 0.65rem; min-width: 60px; }
+        
         .container { max-width: 1200px; margin: 80px auto 0; padding: 2rem; }
-        .tab-content { display: none; opacity: 0; transform: translateY(20px); transition: opacity 0.4s, transform 0.4s; }
-        .tab-content.active { display: block; opacity: 1; transform: translateY(0); animation: fadeInUp 0.5s ease; }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-        .section-title { text-align: center; font-size: 2.2rem; margin-bottom: 2rem; font-weight: 800; text-transform: uppercase; position: relative; padding-bottom: 1rem; animation: glow 2s ease-in-out infinite alternate; }
-        @keyframes glow { from { text-shadow: 0 0 10px rgba(255,255,255,0.1); } to { text-shadow: 0 0 20px rgba(255,255,255,0.3), 0 0 30px rgba(255,255,255,0.1); } }
-        .section-title::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 60px; height: 2px; background: linear-gradient(90deg,transparent,#888,transparent); }
+        
+        /* ===== ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК С АНИМАЦИЕЙ ===== */
+        .tab-content { 
+            display: none; opacity: 0; 
+            transform: translateY(30px) scale(0.95); 
+            transition: opacity 0.5s ease, transform 0.5s ease; 
+        }
+        .tab-content.active { 
+            display: block; opacity: 1; transform: translateY(0) scale(1); 
+            animation: tabEnter 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes tabEnter {
+            0% { opacity: 0; transform: translateY(40px) scale(0.9) rotateX(-10deg); }
+            100% { opacity: 1; transform: translateY(0) scale(1) rotateX(0deg); }
+        }
+        
+        .section-title { 
+            text-align: center; font-size: 2.2rem; margin-bottom: 2rem; 
+            font-weight: 800; text-transform: uppercase; position: relative; 
+            padding-bottom: 1rem; animation: glow 2s ease-in-out infinite alternate; 
+        }
+        @keyframes glow { 
+            from { text-shadow: 0 0 10px rgba(255,255,255,0.1); } 
+            to { text-shadow: 0 0 20px rgba(255,255,255,0.3), 0 0 30px rgba(255,255,255,0.1); } 
+        }
+        .section-title::after { 
+            content: ''; position: absolute; bottom: 0; left: 50%; 
+            transform: translateX(-50%); width: 60px; height: 2px; 
+            background: linear-gradient(90deg,transparent,#888,transparent); 
+        }
+        
+        /* ===== ГЛАВНАЯ ===== */
         .hero { padding: 2rem 0; }
         .hero-content { display: flex; gap: 3rem; align-items: center; margin-bottom: 3rem; }
         @media (max-width: 900px) { .hero-content { flex-direction: column; } }
         .hero-text { flex: 1; animation: slideInLeft 0.8s ease; }
-        @keyframes slideInLeft { from { opacity: 0; transform: translateX(-50px); } to { opacity: 1; transform: translateX(0); } }
-        .hero-title { font-size: 3rem; font-weight: 900; margin-bottom: 1rem; background: linear-gradient(90deg,#fff,#888); -webkit-background-clip: text; background-clip: text; color: transparent; }
-        .hero-subtitle { font-size: 1.3rem; color: #888; margin-bottom: 1.5rem; letter-spacing: 3px; text-transform: uppercase; }
-        .hero-description { font-size: 1.1rem; color: #aaa; line-height: 1.8; padding-left: 1rem; border-left: 2px solid rgba(255,255,255,0.1); }
-        .hero-highlight { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 2rem; border-radius: 15px; text-align: center; color: #bbb; font-style: italic; position: relative; overflow: hidden; animation: slideInUp 0.8s ease 0.2s both; }
-        @keyframes slideInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-        .hero-highlight::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 2px; background: linear-gradient(90deg,transparent,#888,transparent); animation: scan 3s linear infinite; }
+        @keyframes slideInLeft { 
+            from { opacity: 0; transform: translateX(-50px); } 
+            to { opacity: 1; transform: translateX(0); } 
+        }
+        .hero-title { 
+            font-size: 3rem; font-weight: 900; margin-bottom: 1rem; 
+            background: linear-gradient(90deg,#fff,#888); -webkit-background-clip: text; 
+            background-clip: text; color: transparent; 
+        }
+        .hero-subtitle { 
+            font-size: 1.3rem; color: #888; margin-bottom: 1.5rem; 
+            letter-spacing: 3px; text-transform: uppercase; 
+        }
+        .hero-description { 
+            font-size: 1.1rem; color: #aaa; line-height: 1.8; 
+            padding-left: 1rem; border-left: 2px solid rgba(255,255,255,0.1); 
+        }
+        .hero-highlight { 
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); 
+            padding: 2rem; border-radius: 15px; text-align: center; 
+            color: #bbb; font-style: italic; position: relative; overflow: hidden; 
+            animation: slideInUp 0.8s ease 0.2s both; 
+        }
+        @keyframes slideInUp { 
+            from { opacity: 0; transform: translateY(30px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        .hero-highlight::before { 
+            content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 2px; 
+            background: linear-gradient(90deg,transparent,#888,transparent); 
+            animation: scan 3s linear infinite; 
+        }
         @keyframes scan { 0% { left: -100%; } 100% { left: 100%; } }
-        .user-profile { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 2rem; margin-bottom: 2rem; text-align: center; position: relative; overflow: hidden; }
-        .user-profile::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg,var(--badge-owner),var(--badge-dev),var(--badge-premium)); }
-        .user-avatar { width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg,#333,#555); margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; border: 3px solid rgba(255,255,255,0.1); position: relative; }
-        .user-avatar::after { content: ''; position: absolute; inset: -5px; border-radius: 50%; border: 2px solid transparent; border-top-color: var(--badge-premium); border-right-color: var(--badge-dev); animation: avatar-rotate 4s linear infinite; }
+        
+        .user-profile { 
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); 
+            border-radius: 20px; padding: 2rem; margin-bottom: 2rem; 
+            text-align: center; position: relative; overflow: hidden;
+            transform: perspective(1000px) rotateX(0deg);
+            transition: transform 0.3s ease;
+        }
+        .user-profile:hover {
+            transform: perspective(1000px) rotateX(2deg) translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        .user-profile::before { 
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; 
+            background: linear-gradient(90deg,var(--badge-owner),var(--badge-dev),var(--badge-premium)); 
+        }
+        .user-avatar { 
+            width: 100px; height: 100px; border-radius: 50%; 
+            background: linear-gradient(135deg,#333,#555); margin: 0 auto 1rem; 
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 2.5rem; border: 3px solid rgba(255,255,255,0.1); position: relative; 
+            transition: all 0.3s ease;
+        }
+        .user-avatar:hover {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 0 30px rgba(255,255,255,0.2);
+        }
+        .user-avatar::after { 
+            content: ''; position: absolute; inset: -5px; border-radius: 50%; 
+            border: 2px solid transparent; border-top-color: var(--badge-premium); 
+            border-right-color: var(--badge-dev); animation: avatar-rotate 4s linear infinite; 
+        }
         @keyframes avatar-rotate { to { transform: rotate(360deg); } }
-        .user-name { font-size: 1.5rem; font-weight: 800; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; flex-wrap: wrap; }
-        .user-badges { display: flex; gap: 0.4rem; justify-content: center; flex-wrap: wrap; margin-top: 0.8rem; }
-        .user-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); }
-        .user-stat { text-align: center; }
+        .user-name { 
+            font-size: 1.5rem; font-weight: 800; margin-bottom: 0.5rem; 
+            display: flex; align-items: center; justify-content: center; gap: 0.5rem; flex-wrap: wrap; 
+        }
+        .user-badges { 
+            display: flex; gap: 0.4rem; justify-content: center; flex-wrap: wrap; margin-top: 0.8rem; 
+        }
+        .user-stats { 
+            display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; 
+            margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); 
+        }
+        .user-stat { text-align: center; transition: transform 0.3s ease; }
+        .user-stat:hover { transform: translateY(-5px); }
         .user-stat-value { font-size: 1.5rem; font-weight: 800; color: #fff; }
         .user-stat-label { font-size: 0.8rem; color: #888; text-transform: uppercase; letter-spacing: 1px; }
-        .music-player-main { flex: 0 0 400px; perspective: 1000px; animation: slideInRight 0.8s ease; }
-        @keyframes slideInRight { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
-        .music-player { background: rgba(20,20,20,0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 2rem; backdrop-filter: blur(10px); transform-style: preserve-3d; transition: transform 0.1s ease-out; will-change: transform; }
-        .cover-container { width: 220px; height: 220px; margin: 0 auto 1.5rem; border-radius: 15px; overflow: hidden; border: 2px solid rgba(255,255,255,0.1); position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        
+        /* ===== МУЗЫКАЛЬНЫЙ ПЛЕЕР ===== */
+        .music-player-main { 
+            flex: 0 0 400px; perspective: 1000px; animation: slideInRight 0.8s ease; 
+        }
+        @keyframes slideInRight { 
+            from { opacity: 0; transform: translateX(50px); } 
+            to { opacity: 1; transform: translateX(0); } 
+        }
+        .music-player { 
+            background: rgba(20,20,20,0.8); border: 1px solid rgba(255,255,255,0.1); 
+            border-radius: 20px; padding: 2rem; backdrop-filter: blur(10px); 
+            transform-style: preserve-3d; transition: transform 0.1s ease-out; will-change: transform; 
+        }
+        .cover-container { 
+            width: 220px; height: 220px; margin: 0 auto 1.5rem; border-radius: 15px; 
+            overflow: hidden; border: 2px solid rgba(255,255,255,0.1); position: relative; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: all 0.3s ease;
+        }
+        .cover-container:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+        }
         .cover-container.playing .cover-image { animation: rotate 10s linear infinite; }
         @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .cover-image { width: 100%; height: 100%; background-size: cover; background-position: center; border-radius: 15px; }
-        .cover-image::after { content: ''; position: absolute; top: 50%; left: 50%; width: 50px; height: 50px; background: rgba(0,0,0,0.8); border-radius: 50%; transform: translate(-50%,-50%); border: 2px solid rgba(255,255,255,0.2); }
-        .visualizer-container { display: flex; align-items: flex-end; justify-content: center; gap: 3px; height: 50px; margin: 1rem 0; padding: 0 1rem; }
-        .visualizer-bar { width: 6px; background: linear-gradient(to top,rgba(255,255,255,0.8),rgba(255,255,255,0.2)); border-radius: 3px; transition: height 0.05s ease; min-height: 3px; max-height: 50px; }
+        .cover-image { 
+            width: 100%; height: 100%; background-size: cover; background-position: center; 
+            border-radius: 15px; 
+        }
+        .cover-image::after { 
+            content: ''; position: absolute; top: 50%; left: 50%; width: 50px; height: 50px; 
+            background: rgba(0,0,0,0.8); border-radius: 50%; transform: translate(-50%,-50%); 
+            border: 2px solid rgba(255,255,255,0.2); 
+        }
+        .visualizer-container { 
+            display: flex; align-items: flex-end; justify-content: center; gap: 3px; 
+            height: 50px; margin: 1rem 0; padding: 0 1rem; 
+        }
+        .visualizer-bar { 
+            width: 6px; background: linear-gradient(to top,rgba(255,255,255,0.8),rgba(255,255,255,0.2)); 
+            border-radius: 3px; transition: height 0.05s ease; min-height: 3px; max-height: 50px; 
+        }
         .track-info { text-align: center; margin-bottom: 1rem; }
         .track-title { font-size: 1.3rem; font-weight: 700; color: #fff; margin-bottom: 0.3rem; }
         .track-artist { color: #888; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; }
-        .progress-container { width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin: 1rem 0; cursor: pointer; position: relative; }
-        .progress-bar { height: 100%; background: linear-gradient(90deg,#666,#fff); width: 0%; border-radius: 2px; transition: width 0.1s linear; box-shadow: 0 0 10px rgba(255,255,255,0.3); }
-        .time-display { display: flex; justify-content: space-between; color: #666; font-size: 0.75rem; margin-bottom: 1rem; font-family: monospace; }
-        .player-controls { display: flex; justify-content: center; align-items: center; gap: 1rem; margin-bottom: 1rem; }
-        .control-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; font-size: 1.1rem; }
-        .control-btn:hover { background: rgba(255,255,255,0.1); transform: scale(1.1); box-shadow: 0 0 20px rgba(255,255,255,0.1); }
-        .play-btn { width: 60px; height: 60px; font-size: 1.3rem; animation: pulse-btn 2s ease-in-out infinite; }
-        @keyframes pulse-btn { 0%,100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.2); } 50% { box-shadow: 0 0 0 10px rgba(255,255,255,0); } }
+        .progress-container { 
+            width: 100%; height: 4px; background: rgba(255,255,255,0.1); 
+            border-radius: 2px; margin: 1rem 0; cursor: pointer; position: relative; 
+        }
+        .progress-bar { 
+            height: 100%; background: linear-gradient(90deg,#666,#fff); width: 0%; 
+            border-radius: 2px; transition: width 0.1s linear; box-shadow: 0 0 10px rgba(255,255,255,0.3); 
+        }
+        .time-display { 
+            display: flex; justify-content: space-between; color: #666; 
+            font-size: 0.75rem; margin-bottom: 1rem; font-family: monospace; 
+        }
+        .player-controls { 
+            display: flex; justify-content: center; align-items: center; gap: 1rem; margin-bottom: 1rem; 
+        }
+        .control-btn { 
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); 
+            color: #fff; width: 45px; height: 45px; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; 
+            cursor: pointer; transition: all 0.2s; font-size: 1.1rem; 
+        }
+        .control-btn:hover { 
+            background: rgba(255,255,255,0.1); transform: scale(1.1); 
+            box-shadow: 0 0 20px rgba(255,255,255,0.1); 
+        }
+        .play-btn { 
+            width: 60px; height: 60px; font-size: 1.3rem; 
+            animation: pulse-btn 2s ease-in-out infinite; 
+        }
+        @keyframes pulse-btn { 
+            0%,100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.2); } 
+            50% { box-shadow: 0 0 0 10px rgba(255,255,255,0); } 
+        }
         .volume-control { display: flex; align-items: center; gap: 0.8rem; }
-        .volume-slider { flex: 1; height: 4px; -webkit-appearance: none; background: rgba(255,255,255,0.1); border-radius: 2px; outline: none; cursor: pointer; }
-        .volume-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: #fff; cursor: pointer; box-shadow: 0 0 10px rgba(255,255,255,0.5); }
-        .particles { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
-        .particle { position: absolute; width: 4px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 50%; animation: float-particle 15s infinite; }
-        @keyframes float-particle { 0%,100% { transform: translateY(100vh); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { transform: translateY(-100vh); opacity: 0; } }
-        .chat-container { display: flex; height: 70vh; background: rgba(20,20,20,0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; overflow: hidden; }
-        .chat-sidebar { width: 280px; background: rgba(0,0,0,0.3); border-right: 1px solid rgba(255,255,255,0.1); padding: 1.5rem; display: flex; flex-direction: column; }
+        .volume-slider { 
+            flex: 1; height: 4px; -webkit-appearance: none; 
+            background: rgba(255,255,255,0.1); border-radius: 2px; outline: none; cursor: pointer; 
+        }
+        .volume-slider::-webkit-slider-thumb { 
+            -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; 
+            background: #fff; cursor: pointer; box-shadow: 0 0 10px rgba(255,255,255,0.5); 
+        }
+        
+        /* ===== ЧАТ С АНИМАЦИЕЙ ПЕЧАТАНИЯ ===== */
+        .chat-container { 
+            display: flex; height: 70vh; background: rgba(20,20,20,0.8); 
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; overflow: hidden; 
+        }
+        .chat-sidebar { 
+            width: 280px; background: rgba(0,0,0,0.3); border-right: 1px solid rgba(255,255,255,0.1); 
+            padding: 1.5rem; display: flex; flex-direction: column; 
+        }
         .online-list { margin-top: auto; max-height: 300px; overflow-y: auto; }
-        .online-title { font-size: 0.8rem; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .online-user { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; margin-bottom: 0.5rem; background: rgba(255,255,255,0.03); border-radius: 10px; font-size: 0.9rem; }
+        .online-title { 
+            font-size: 0.8rem; color: #888; text-transform: uppercase; letter-spacing: 1px; 
+            margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); 
+        }
+        .online-user { 
+            display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; 
+            margin-bottom: 0.5rem; background: rgba(255,255,255,0.03); border-radius: 10px; 
+            font-size: 0.9rem; transition: all 0.3s ease;
+        }
+        .online-user:hover {
+            background: rgba(255,255,255,0.08);
+            transform: translateX(5px);
+        }
         .online-user .badge { margin-left: auto; }
         .chat-main { flex: 1; display: flex; flex-direction: column; }
-        .chat-messages { flex: 1; overflow-y: auto; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
-        .chat-message { max-width: 80%; padding: 1rem; border-radius: 15px; animation: messageAppear 0.3s; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; }
-        @keyframes messageAppear { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .chat-message.own { align-self: flex-end; background: rgba(100,100,255,0.2); border: 1px solid rgba(100,100,255,0.3); }
-        .chat-message.other { align-self: flex-start; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); }
-        .chat-message-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; font-size: 0.85rem; flex-wrap: wrap; }
+        .chat-messages { 
+            flex: 1; overflow-y: auto; padding: 1.5rem; 
+            display: flex; flex-direction: column; gap: 1rem; 
+        }
+        .chat-message { 
+            max-width: 80%; padding: 1rem; border-radius: 15px; 
+            animation: messageAppear 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); 
+            word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; 
+            transition: transform 0.2s ease;
+        }
+        .chat-message:hover {
+            transform: scale(1.02);
+        }
+        @keyframes messageAppear { 
+            from { opacity: 0; transform: translateY(20px) scale(0.9); } 
+            to { opacity: 1; transform: translateY(0) scale(1); } 
+        }
+        .chat-message.own { 
+            align-self: flex-end; background: rgba(100,100,255,0.2); 
+            border: 1px solid rgba(100,100,255,0.3); 
+        }
+        .chat-message.other { 
+            align-self: flex-start; background: rgba(255,255,255,0.05); 
+            border: 1px solid rgba(255,255,255,0.1); 
+        }
+        .chat-message-header { 
+            display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; 
+            font-size: 0.85rem; flex-wrap: wrap; 
+        }
         .chat-message-username { font-weight: 700; color: #fff; }
         .chat-message-time { color: #666; font-size: 0.75rem; }
         .chat-message-text { color: #ddd; line-height: 1.5; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; max-width: 100%; }
-        .chat-input-area { display: flex; gap: 1rem; padding: 1.5rem; background: rgba(0,0,0,0.3); border-top: 1px solid rgba(255,255,255,0.1); }
-        .chat-input { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 1rem; border-radius: 10px; color: #fff; font-size: 1rem; outline: none; }
-        .chat-input:focus { border-color: rgba(255,255,255,0.3); }
+        
+        /* АНИМАЦИЯ ПЕЧАТАНИЯ */
+        .typing-indicator {
+            display: none; align-self: flex-start; background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 15px;
+            padding: 1rem 1.5rem; margin-bottom: 1rem;
+            animation: messageAppear 0.3s ease;
+        }
+        .typing-indicator.active { display: flex; }
+        .typing-indicator span {
+            width: 8px; height: 8px; background: rgba(255,255,255,0.5);
+            border-radius: 50%; margin: 0 2px; animation: typing 1.4s infinite;
+        }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+        
+        .chat-input-area { 
+            display: flex; gap: 1rem; padding: 1.5rem; 
+            background: rgba(0,0,0,0.3); border-top: 1px solid rgba(255,255,255,0.1); 
+        }
+        .chat-input { 
+            flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); 
+            padding: 1rem; border-radius: 10px; color: #fff; font-size: 1rem; outline: none; 
+            transition: all 0.3s ease;
+        }
+        .chat-input:focus { 
+            border-color: rgba(255,255,255,0.3); 
+            box-shadow: 0 0 20px rgba(255,255,255,0.1);
+            transform: translateY(-2px);
+        }
         .chat-input:disabled { opacity: 0.5; cursor: not-allowed; }
-        .chat-send-btn { background: linear-gradient(90deg,#444,#666); border: none; padding: 0 1.5rem; border-radius: 10px; color: #fff; cursor: pointer; transition: all 0.3s; }
-        .chat-send-btn:hover { transform: scale(1.05); box-shadow: 0 5px 20px rgba(255,255,255,0.1); }
+        .chat-send-btn { 
+            background: linear-gradient(90deg,#444,#666); border: none; 
+            padding: 0 1.5rem; border-radius: 10px; color: #fff; cursor: pointer; 
+            transition: all 0.3s; position: relative; overflow: hidden;
+        }
+        .chat-send-btn:hover { 
+            transform: scale(1.05); box-shadow: 0 5px 20px rgba(255,255,255,0.1); 
+        }
+        .chat-send-btn:active { transform: scale(0.95); }
         .chat-send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .chat-limit-info { padding: 0.5rem 1.5rem; background: rgba(0,0,0,0.3); border-top: 1px solid rgba(255,255,255,0.05); font-size: 0.8rem; color: #666; text-align: center; }
+        .chat-limit-info { 
+            padding: 0.5rem 1.5rem; background: rgba(0,0,0,0.3); 
+            border-top: 1px solid rgba(255,255,255,0.05); font-size: 0.8rem; 
+            color: #666; text-align: center; 
+        }
         .chat-limit-warning { color: #ffaa44; }
         .chat-limit-blocked { color: #ff4444; }
-        .products-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(280px,1fr)); gap: 1.5rem; margin-top: 2rem; }
-        .product-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 15px; padding: 1.8rem; text-align: center; transition: all 0.3s; transform-style: preserve-3d; }
-        .product-card:hover { transform: perspective(1000px) rotateX(2deg) rotateY(2deg) scale3d(1.02,1.02,1.02); box-shadow: 0 20px 40px rgba(0,0,0,0.4); border-color: rgba(255,255,255,0.15); }
-        .product-card.black-card { background: rgba(139,0,0,0.1); border-color: rgba(139,0,0,0.3); }
-        .product-card.black-card:hover { border-color: rgba(139,0,0,0.5); box-shadow: 0 20px 40px rgba(139,0,0,0.3); }
-        .product-icon { font-size: 3rem; margin-bottom: 1rem; color: #888; }
+        
+        /* ===== ТОВАРЫ С 3D АНИМАЦИЕЙ ===== */
+        .products-grid { 
+            display: grid; grid-template-columns: repeat(auto-fill,minmax(280px,1fr)); 
+            gap: 1.5rem; margin-top: 2rem; perspective: 1000px;
+        }
+        .product-card { 
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); 
+            border-radius: 15px; padding: 1.8rem; text-align: center; 
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); 
+            transform-style: preserve-3d; transform: perspective(1000px) rotateX(0) rotateY(0) translateZ(0);
+            position: relative; overflow: hidden;
+        }
+        .product-card::before {
+            content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.7s;
+        }
+        .product-card:hover::before { left: 100%; }
+        .product-card:hover { 
+            transform: perspective(1000px) rotateX(5deg) rotateY(5deg) translateZ(20px) scale(1.05); 
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5); border-color: rgba(255,255,255,0.2); 
+        }
+        .product-card.black-card { 
+            background: rgba(139,0,0,0.1); border-color: rgba(139,0,0,0.3); 
+        }
+        .product-card.black-card:hover { 
+            border-color: rgba(139,0,0,0.6); box-shadow: 0 25px 50px rgba(139,0,0,0.4); 
+            transform: perspective(1000px) rotateX(5deg) rotateY(5deg) translateZ(20px) scale(1.05);
+        }
+        .product-icon { 
+            font-size: 3rem; margin-bottom: 1rem; color: #888; 
+            transition: all 0.3s ease;
+        }
+        .product-card:hover .product-icon {
+            transform: scale(1.2) rotate(10deg);
+            color: #fff;
+        }
         .product-card.black-card .product-icon { color: #ff6666; }
-        .product-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .product-card.black-card:hover .product-icon {
+            color: #ff4444;
+            text-shadow: 0 0 20px rgba(255,68,68,0.5);
+        }
+        .product-title { 
+            font-size: 1.3rem; font-weight: 700; margin-bottom: 0.5rem;
+            transition: transform 0.3s ease;
+        }
+        .product-card:hover .product-title {
+            transform: translateZ(30px);
+        }
         .product-card.black-card .product-title { color: #ff6666; }
-        .product-desc { color: #888; font-size: 0.9rem; margin-bottom: 1rem; line-height: 1.5; }
-        .product-price { font-size: 1.5rem; font-weight: 800; color: #fff; margin-bottom: 1rem; }
+        .product-desc { 
+            color: #888; font-size: 0.9rem; margin-bottom: 1rem; line-height: 1.5;
+            transition: transform 0.3s ease;
+        }
+        .product-card:hover .product-desc {
+            transform: translateZ(20px);
+        }
+        .product-price { 
+            font-size: 1.5rem; font-weight: 800; color: #fff; margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+        .product-card:hover .product-price {
+            transform: translateZ(40px) scale(1.1);
+            text-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
         .product-card.black-card .product-price { color: #ff4444; }
-        .add-to-cart-btn { background: linear-gradient(90deg,#444,#666); border: none; padding: 0.8rem 1.5rem; border-radius: 25px; color: #fff; font-weight: 700; cursor: pointer; transition: all 0.3s; width: 100%; }
-        .add-to-cart-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(255,255,255,0.1); }
-        .product-card.black-card .add-to-cart-btn { background: linear-gradient(90deg,#8b0000,#ff4444); }
-        .faq-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(350px,1fr)); gap: 1.5rem; margin-top: 2rem; }
-        .faq-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 1.8rem; transition: all 0.4s; }
-        .faq-card:hover { transform: translateY(-5px); border-color: rgba(255,255,255,0.15); box-shadow: 0 15px 30px rgba(0,0,0,0.3); }
-        .faq-card h3 { color: #fff; margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem; font-size: 1.2rem; }
-        .faq-card h3 i { color: #888; }
-        .faq-card p { color: #aaa; line-height: 1.6; }
-        .contacts-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(250px,1fr)); gap: 1.5rem; margin-top: 2rem; }
-        .contact-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 15px; padding: 2rem; text-align: center; transition: all 0.3s; text-decoration: none; color: #fff; display: block; }
-        .contact-card:hover { transform: translateY(-5px); border-color: rgba(255,255,255,0.15); box-shadow: 0 15px 30px rgba(0,0,0,0.3); }
-        .contact-icon { font-size: 2.5rem; margin-bottom: 1rem; color: #888; }
-        .contact-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; }
-        .contact-value { color: #888; font-size: 0.9rem; }
-        .cart-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); z-index: 9999; display: none; align-items: center; justify-content: center; }
-        .cart-modal.active { display: flex; }
-        .cart-container { background: rgba(20,20,20,0.95); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; width: 90%; max-width: 600px; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; }
-        .cart-header { padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .add-to-cart-btn { 
+            background: linear-gradient(90deg,#444,#666); border: none; 
+            padding: 0.8rem 1.5rem; border-radius: 25px; color: #fff; 
+            font-weight: 700; cursor: pointer; transition: all 0.3s; width: 100%;
+            position: relative; overflow: hidden; transform: translateZ(0);
+        }
+        .add-to-cart-btn::after {
+            content: ''; position: absolute; top: 50%; left: 50%; width: 0; height: 0;
+            background: rgba(255,255,255,0.3); border-radius: 50%; transform: translate(-50%,-50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        .add-to-cart-btn:active::after { width: 300px; height: 300px; }
+        .add-to-cart-btn:hover { 
+            transform: translateY(-3px) translateZ(30px) scale(1.05); 
+            box-shadow: 0 10px 30px rgba(255,255,255,0.2); 
+        }
+        .add-to-cart-btn:active {
+            transform: translateY(-1px) translateZ(30px) scale(0.98);
+        }
+        .add-to-cart-btn.added {
+            background: linear-gradient(90deg, #44aa44, #66cc66);
+            animation: addedPulse 0.5s ease;
+        }
+        @keyframes addedPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        .product-card.black-card .add-to-cart-btn { 
+            background: linear-gradient(90deg,#8b0000,#ff4444); 
+        }
+        .product-card.black-card .add-to-cart-btn:hover {
+            box-shadow: 0 10px 30px rgba(139,0,0,0.4);
+        }
+        
+        /* ===== FAQ ===== */
+        .faq-grid { 
+            display: grid; grid-template-columns: repeat(auto-fill,minmax(350px,1fr)); 
+            gap: 1.5rem; margin-top: 2rem; perspective: 1000px;
+        }
+        .faq-card { 
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); 
+            border-radius: 20px; padding: 1.8rem; transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform-style: preserve-3d;
+        }
+        .faq-card:hover { 
+            transform: perspective(1000px) rotateX(3deg) rotateY(3deg) translateZ(20px) translateY(-5deg); 
+            border-color: rgba(255,255,255,0.15); box-shadow: 0 20px 40px rgba(0,0,0,0.4); 
+        }
+        .faq-card h3 { 
+            color: #fff; margin-bottom: 1rem; display: flex; align-items: center; 
+            gap: 1rem; font-size: 1.2rem; transition: transform 0.3s ease;
+        }
+        .faq-card:hover h3 {
+            transform: translateZ(30px);
+        }
+        .faq-card h3 i { 
+            color: #888; transition: all 0.3s ease;
+        }
+        .faq-card:hover h3 i {
+            transform: scale(1.2) rotate(15deg);
+            color: #fff;
+        }
+        .faq-card p { 
+            color: #aaa; line-height: 1.6;
+            transition: transform 0.3s ease;
+        }
+        .faq-card:hover p {
+            transform: translateZ(15px);
+        }
+        
+        /* ===== КОНТАКТЫ ===== */
+        .contacts-grid { 
+            display: grid; grid-template-columns: repeat(auto-fill,minmax(250px,1fr)); 
+            gap: 1.5rem; margin-top: 2rem; perspective: 1000px;
+        }
+        .contact-card { 
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); 
+            border-radius: 15px; padding: 2rem; text-align: center; 
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); 
+            text-decoration: none; color: #fff; display: block;
+            transform-style: preserve-3d;
+        }
+        .contact-card:hover { 
+            transform: perspective(1000px) rotateX(5deg) rotateY(5deg) translateZ(30px) translateY(-5deg); 
+            border-color: rgba(255,255,255,0.15); box-shadow: 0 20px 40px rgba(0,0,0,0.4); 
+        }
+        .contact-icon { 
+            font-size: 2.5rem; margin-bottom: 1rem; color: #888; 
+            transition: all 0.3s ease;
+        }
+        .contact-card:hover .contact-icon {
+            transform: scale(1.3) translateZ(40px);
+            color: #fff;
+        }
+        .contact-title { 
+            font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem;
+            transition: transform 0.3s ease;
+        }
+        .contact-card:hover .contact-title {
+            transform: translateZ(20px);
+        }
+        .contact-value { 
+            color: #888; font-size: 0.9rem;
+            transition: transform 0.3s ease;
+        }
+        .contact-card:hover .contact-value {
+            transform: translateZ(15px);
+        }
+        
+        /* ===== КОРЗИНА ===== */
+        .cart-modal { 
+            position: fixed; inset: 0; background: rgba(0,0,0,0.8); 
+            backdrop-filter: blur(10px); z-index: 9999; display: none; 
+            align-items: center; justify-content: center; opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .cart-modal.active { 
+            display: flex; opacity: 1;
+            animation: cartAppear 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes cartAppear {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .cart-container { 
+            background: rgba(20,20,20,0.95); border: 1px solid rgba(255,255,255,0.1); 
+            border-radius: 20px; width: 90%; max-width: 600px; max-height: 90vh; 
+            overflow: hidden; display: flex; flex-direction: column;
+            transform: perspective(1000px) rotateX(0);
+            animation: cartSlide 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes cartSlide {
+            from { opacity: 0; transform: perspective(1000px) rotateX(-20deg) translateY(-50px); }
+            to { opacity: 1; transform: perspective(1000px) rotateX(0) translateY(0); }
+        }
+        .cart-header { 
+            padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); 
+            display: flex; justify-content: space-between; align-items: center; 
+        }
         .cart-header h2 { margin: 0; }
-        .cart-close { background: none; border: none; color: #888; font-size: 1.5rem; cursor: pointer; transition: color 0.3s; }
-        .cart-close:hover { color: #fff; }
+        .cart-close { 
+            background: none; border: none; color: #888; font-size: 1.5rem; 
+            cursor: pointer; transition: all 0.3s; 
+        }
+        .cart-close:hover { 
+            color: #fff; transform: rotate(90deg); 
+        }
         .cart-items { flex: 1; overflow-y: auto; padding: 1.5rem; }
-        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 10px; margin-bottom: 1rem; }
+        .cart-item { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 10px; 
+            margin-bottom: 1rem; transition: all 0.3s ease;
+            animation: itemSlide 0.3s ease;
+        }
+        @keyframes itemSlide {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .cart-item:hover {
+            background: rgba(255,255,255,0.06);
+            transform: translateX(5px);
+        }
         .cart-item-info h4 { margin: 0 0 0.3rem 0; }
         .cart-item-info p { margin: 0; color: #888; font-size: 0.9rem; }
-        .cart-item-remove { background: rgba(255,68,68,0.2); border: none; color: #ff8888; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; transition: all 0.3s; }
-        .cart-item-remove:hover { background: rgba(255,68,68,0.4); }
+        .cart-item-remove { 
+            background: rgba(255,68,68,0.2); border: none; color: #ff8888; 
+            width: 30px; height: 30px; border-radius: 50%; cursor: pointer; 
+            transition: all 0.3s; 
+        }
+        .cart-item-remove:hover { 
+            background: rgba(255,68,68,0.4); transform: scale(1.1) rotate(90deg); 
+        }
         .cart-footer { padding: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); }
-        .cart-total { display: flex; justify-content: space-between; font-size: 1.3rem; font-weight: 700; margin-bottom: 1rem; }
+        .cart-total { 
+            display: flex; justify-content: space-between; font-size: 1.3rem; 
+            font-weight: 700; margin-bottom: 1rem; 
+        }
         
-        /* Payment Styles */
+        /* ===== ОПЛАТА ===== */
         .payment-section { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); }
-        .payment-title { font-size: 1rem; color: #fff; margin-bottom: 1rem; text-align: center; font-weight: 600; }
+        .payment-title { 
+            font-size: 1rem; color: #fff; margin-bottom: 1rem; text-align: center; font-weight: 600; 
+        }
         .payment-options { display: flex; flex-direction: column; gap: 0.8rem; }
-        .payment-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 1rem; border-radius: 12px; color: #fff; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 1rem; font-size: 1rem; text-align: left; }
-        .payment-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); transform: translateY(-2px); }
+        .payment-btn { 
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); 
+            padding: 1rem; border-radius: 12px; color: #fff; cursor: pointer; 
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); 
+            display: flex; align-items: center; gap: 1rem; font-size: 1rem; text-align: left;
+            position: relative; overflow: hidden;
+        }
+        .payment-btn::after {
+            content: ''; position: absolute; top: 50%; left: 50%; width: 0; height: 0;
+            background: rgba(255,255,255,0.2); border-radius: 50%; transform: translate(-50%,-50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        .payment-btn:active::after { width: 400px; height: 400px; }
+        .payment-btn:hover { 
+            transform: translateY(-3px) scale(1.02); 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
         .payment-btn i { font-size: 1.5rem; width: 40px; text-align: center; }
         .payment-btn.yoomoney i { color: #8b5cf6; }
         .payment-btn.telegram i { color: #0088cc; }
-        .payment-btn.card i { color: #10b981; }
         .payment-info { font-size: 0.75rem; color: #888; margin-top: 0.3rem; }
         
-        .yoomoney-card { background: rgba(139,92,246,0.1); border-color: rgba(139,92,246,0.3); }
-        .yoomoney-card:hover { border-color: rgba(139,92,246,0.5); background: rgba(139,92,246,0.15); }
+        .yoomoney-card { 
+            background: rgba(139,92,246,0.1); border-color: rgba(139,92,246,0.3); 
+        }
+        .yoomoney-card:hover { 
+            border-color: rgba(139,92,246,0.6); background: rgba(139,92,246,0.2); 
+            box-shadow: 0 10px 30px rgba(139,92,246,0.3);
+        }
         
-        .telegram-card { background: rgba(0,136,204,0.1); border-color: rgba(0,136,204,0.3); }
-        .telegram-card:hover { border-color: rgba(0,136,204,0.5); background: rgba(0,136,204,0.15); }
-        
-        .card-payment { background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.3); }
-        .card-payment:hover { border-color: rgba(16,185,129,0.5); background: rgba(16,185,129,0.15); }
+        .telegram-card { 
+            background: rgba(0,136,204,0.1); border-color: rgba(0,136,204,0.3); 
+        }
+        .telegram-card:hover { 
+            border-color: rgba(0,136,204,0.6); background: rgba(0,136,204,0.2); 
+            box-shadow: 0 10px 30px rgba(0,136,204,0.3);
+        }
         
         .empty-cart { text-align: center; color: #888; padding: 3rem; }
-        .admin-users-panel { background: rgba(20,20,20,0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; overflow: hidden; }
-        .admin-users-header { padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        
+        /* ===== АДМИНКА ===== */
+        .admin-users-panel { 
+            background: rgba(20,20,20,0.8); border: 1px solid rgba(255,255,255,0.1); 
+            border-radius: 20px; overflow: hidden; 
+        }
+        .admin-users-header { 
+            padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); 
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; 
+        }
         .admin-users-stats { display: flex; gap: 2rem; color: #888; }
         .admin-users-stats b { color: #fff; }
         .admin-users-list { max-height: 60vh; overflow-y: auto; padding: 1rem; }
-        .admin-user-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 15px; padding: 1.5rem; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .admin-user-card { 
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); 
+            border-radius: 15px; padding: 1.5rem; margin-bottom: 1rem; 
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;
+            transition: all 0.3s ease;
+        }
+        .admin-user-card:hover {
+            background: rgba(255,255,255,0.06);
+            transform: translateX(10px);
+            border-color: rgba(255,255,255,0.15);
+        }
         .admin-user-info { display: flex; align-items: center; gap: 1rem; }
-        .admin-user-avatar { width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg,#333,#555); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
-        .admin-user-details h4 { margin: 0 0 0.3rem 0; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+        .admin-user-avatar { 
+            width: 50px; height: 50px; border-radius: 50%; 
+            background: linear-gradient(135deg,#333,#555); 
+            display: flex; align-items: center; justify-content: center; font-size: 1.5rem; 
+        }
+        .admin-user-details h4 { 
+            margin: 0 0 0.3rem 0; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; 
+        }
         .admin-user-details p { margin: 0; color: #888; font-size: 0.85rem; }
         .admin-user-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-        .admin-btn { padding: 0.5rem 1rem; border-radius: 20px; border: none; cursor: pointer; font-size: 0.8rem; transition: all 0.3s; }
-        .admin-btn-ban { background: rgba(255,68,68,0.2); color: #ff8888; border: 1px solid rgba(255,68,68,0.3); }
-        .admin-btn-mute { background: rgba(255,170,0,0.2); color: #ffaa44; border: 1px solid rgba(255,170,0,0.3); }
-        .admin-btn-delete { background: rgba(255,0,0,0.2); color: #ff6666; border: 1px solid rgba(255,0,0,0.3); }
-        .admin-btn-badge { background: rgba(170,68,255,0.2); color: #cc88ff; border: 1px solid rgba(170,68,255,0.3); }
-        .admin-btn:hover { transform: scale(1.05); filter: brightness(1.2); }
-        .online-indicator { width: 8px; height: 8px; background: #44ff88; border-radius: 50%; display: inline-block; margin-right: 0.5rem; box-shadow: 0 0 10px #44ff88; }
-        .badge-select-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); z-index: 10000; display: none; align-items: center; justify-content: center; }
-        .badge-select-modal.active { display: flex; }
-        .badge-select-container { background: rgba(20,20,20,0.95); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 2rem; width: 90%; max-width: 400px; max-height: 80vh; overflow-y: auto; }
+        .admin-btn { 
+            padding: 0.5rem 1rem; border-radius: 20px; border: none; cursor: pointer; 
+            font-size: 0.8rem; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .admin-btn:hover { transform: scale(1.1); filter: brightness(1.2); }
+        .admin-btn-ban { 
+            background: rgba(255,68,68,0.2); color: #ff8888; border: 1px solid rgba(255,68,68,0.3); 
+        }
+        .admin-btn-mute { 
+            background: rgba(255,170,0,0.2); color: #ffaa44; border: 1px solid rgba(255,170,0,0.3); 
+        }
+        .admin-btn-delete { 
+            background: rgba(255,0,0,0.2); color: #ff6666; border: 1px solid rgba(255,0,0,0.3); 
+        }
+        .admin-btn-badge { 
+            background: rgba(170,68,255,0.2); color: #cc88ff; border: 1px solid rgba(170,68,255,0.3); 
+        }
+        .online-indicator { 
+            width: 8px; height: 8px; background: #44ff88; border-radius: 50%; 
+            display: inline-block; margin-right: 0.5rem; box-shadow: 0 0 10px #44ff88; 
+            animation: onlinePulse 2s ease-in-out infinite;
+        }
+        @keyframes onlinePulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.2); }
+        }
+        
+        /* ===== МОДАЛКИ ===== */
+        .badge-select-modal { 
+            position: fixed; inset: 0; background: rgba(0,0,0,0.9); 
+            backdrop-filter: blur(10px); z-index: 10000; display: none; 
+            align-items: center; justify-content: center; opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .badge-select-modal.active { 
+            display: flex; opacity: 1;
+            animation: modalAppear 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes modalAppear {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .badge-select-container { 
+            background: rgba(20,20,20,0.95); border: 1px solid rgba(255,255,255,0.1); 
+            border-radius: 20px; padding: 2rem; width: 90%; max-width: 400px; max-height: 80vh; 
+            overflow-y: auto;
+            animation: modalSlide 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes modalSlide {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
         .badge-select-title { text-align: center; margin-bottom: 1.5rem; font-size: 1.3rem; }
         .badge-select-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 0.8rem; margin-bottom: 1.5rem; }
-        .badge-select-item { padding: 0.8rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; cursor: pointer; transition: all 0.3s; text-align: center; }
-        .badge-select-item:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); }
-        .badge-select-item.selected { background: rgba(100,100,255,0.2); border-color: rgba(100,100,255,0.5); }
+        .badge-select-item { 
+            padding: 0.8rem; background: rgba(255,255,255,0.05); 
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; 
+            cursor: pointer; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); text-align: center; 
+        }
+        .badge-select-item:hover { 
+            background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); 
+            transform: translateY(-3px) scale(1.02);
+        }
+        .badge-select-item.selected { 
+            background: rgba(100,100,255,0.2); border-color: rgba(100,100,255,0.5); 
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(100,100,255,0.3);
+        }
         .badge-select-actions { display: flex; gap: 1rem; }
-        .badge-select-btn { flex: 1; padding: 0.8rem; border-radius: 10px; border: none; cursor: pointer; font-weight: 700; transition: all 0.3s; }
+        .badge-select-btn { 
+            flex: 1; padding: 0.8rem; border-radius: 10px; border: none; 
+            cursor: pointer; font-weight: 700; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .badge-select-btn:hover { transform: translateY(-2px); }
         .badge-select-btn.give { background: linear-gradient(90deg,#444,#666); color: #fff; }
-        .badge-select-btn.remove { background: rgba(255,68,68,0.2); color: #ff8888; border: 1px solid rgba(255,68,68,0.3); }
-        .badge-select-btn.cancel { background: rgba(255,255,255,0.05); color: #888; border: 1px solid rgba(255,255,255,0.1); }
-        .badges-info { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 2rem; margin-top: 2rem; }
+        .badge-select-btn.remove { 
+            background: rgba(255,68,68,0.2); color: #ff8888; border: 1px solid rgba(255,68,68,0.3); 
+        }
+        .badge-select-btn.cancel { 
+            background: rgba(255,255,255,0.05); color: #888; border: 1px solid rgba(255,255,255,0.1); 
+        }
+        
+        .badges-info { 
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); 
+            border-radius: 20px; padding: 2rem; margin-top: 2rem; 
+        }
         .badges-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(200px,1fr)); gap: 1rem; margin-top: 1.5rem; }
-        .badge-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 15px; padding: 1.5rem; text-align: center; transition: all 0.3s; }
-        .badge-item:hover { transform: translateY(-3px); border-color: rgba(255,255,255,0.15); }
+        .badge-item { 
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); 
+            border-radius: 15px; padding: 1.5rem; text-align: center; 
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .badge-item:hover { 
+            transform: translateY(-5px) scale(1.05); border-color: rgba(255,255,255,0.15); 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
         .badge-item .badge { margin-bottom: 0.5rem; }
         .badge-desc { color: #888; font-size: 0.85rem; margin-top: 0.5rem; }
         
-        /* Reviews Styles */
+        /* ===== ОТЗЫВЫ ===== */
         .reviews-section { max-width: 1200px; margin: 2rem auto 0; }
-        .reviews-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem; margin-bottom: 3rem; }
-        .review-card { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 15px; padding: 1.5rem; transition: all 0.3s ease; backdrop-filter: blur(5px); }
-        .review-card:hover { border-color: rgba(255, 255, 255, 0.15); transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); }
-        .review-card.admin-review { border-color: rgba(255, 215, 0, 0.3); background: rgba(255, 215, 0, 0.05); }
-        .review-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .reviews-grid { 
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); 
+            gap: 1.5rem; margin-bottom: 3rem; 
+        }
+        .review-card { 
+            background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); 
+            border-radius: 15px; padding: 1.5rem; 
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            backdrop-filter: blur(5px);
+        }
+        .review-card:hover { 
+            border-color: rgba(255, 255, 255, 0.15); 
+            transform: translateY(-5px) scale(1.02); 
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); 
+        }
+        .review-card.admin-review { 
+            border-color: rgba(255, 215, 0, 0.3); background: rgba(255, 215, 0, 0.05); 
+        }
+        .review-header { 
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; 
+        }
         .review-user { display: flex; align-items: center; gap: 0.8rem; }
-        .review-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #333, #555); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+        .review-avatar { 
+            width: 40px; height: 40px; border-radius: 50%; 
+            background: linear-gradient(135deg, #333, #555); 
+            display: flex; align-items: center; justify-content: center; font-size: 1.2rem; 
+        }
         .review-username { font-weight: 700; color: #fff; }
         .review-date { font-size: 0.75rem; color: #666; }
         .review-rating { display: flex; gap: 0.2rem; }
-        .review-rating .star { color: #ffd700; font-size: 1rem; }
+        .review-rating .star { color: #ffd700; font-size: 1rem; transition: transform 0.2s ease; }
+        .review-rating .star:hover { transform: scale(1.3); }
         .review-rating .star.empty { color: #444; }
         .review-text { color: #ccc; line-height: 1.6; margin-top: 0.5rem; }
         .review-actions { display: flex; gap: 0.5rem; margin-top: 1rem; }
-        .review-btn { padding: 0.4rem 0.8rem; border-radius: 15px; border: none; font-size: 0.75rem; cursor: pointer; transition: all 0.3s; }
-        .review-btn.edit { background: rgba(100, 150, 255, 0.2); color: #88aaff; border: 1px solid rgba(100, 150, 255, 0.3); }
-        .review-btn.delete { background: rgba(255, 68, 68, 0.2); color: #ff8888; border: 1px solid rgba(255, 68, 68, 0.3); }
-        .review-btn:hover { transform: scale(1.05); filter: brightness(1.2); }
+        .review-btn { 
+            padding: 0.4rem 0.8rem; border-radius: 15px; border: none; 
+            font-size: 0.75rem; cursor: pointer; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .review-btn:hover { transform: scale(1.1); }
+        .review-btn.edit { 
+            background: rgba(100, 150, 255, 0.2); color: #88aaff; border: 1px solid rgba(100, 150, 255, 0.3); 
+        }
+        .review-btn.delete { 
+            background: rgba(255, 68, 68, 0.2); color: #ff8888; border: 1px solid rgba(255, 68, 68, 0.3); 
+        }
         
-        .add-review-form { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 2rem; margin-bottom: 2rem; max-width: 600px; margin-left: auto; margin-right: auto; }
+        .add-review-form { 
+            background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); 
+            border-radius: 20px; padding: 2rem; margin-bottom: 2rem; 
+            max-width: 600px; margin-left: auto; margin-right: auto;
+            transition: all 0.3s ease;
+        }
+        .add-review-form:hover {
+            border-color: rgba(255,255,255,0.2);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
         .add-review-form h3 { text-align: center; margin-bottom: 1.5rem; color: #fff; }
-        .rating-input { display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 1.5rem; }
-        .rating-input .star-btn { background: none; border: none; color: #444; font-size: 2rem; cursor: pointer; transition: all 0.2s; }
-        .rating-input .star-btn:hover, .rating-input .star-btn.active { color: #ffd700; transform: scale(1.2); }
-        .review-textarea { width: 100%; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 1rem; color: #fff; font-size: 1rem; resize: vertical; min-height: 100px; margin-bottom: 1rem; }
-        .review-textarea:focus { outline: none; border-color: rgba(255, 255, 255, 0.3); }
-        .submit-review-btn { width: 100%; background: linear-gradient(90deg, #444, #666); border: none; padding: 1rem; border-radius: 10px; color: #fff; font-weight: 700; cursor: pointer; transition: all 0.3s; }
-        .submit-review-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(255, 255, 255, 0.1); }
+        .rating-input { 
+            display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 1.5rem; 
+        }
+        .rating-input .star-btn { 
+            background: none; border: none; color: #444; font-size: 2rem; 
+            cursor: pointer; transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .rating-input .star-btn:hover, .rating-input .star-btn.active { 
+            color: #ffd700; transform: scale(1.3); 
+        }
+        .review-textarea { 
+            width: 100%; background: rgba(255, 255, 255, 0.05); 
+            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; 
+            padding: 1rem; color: #fff; font-size: 1rem; resize: vertical; 
+            min-height: 100px; margin-bottom: 1rem; transition: all 0.3s ease;
+        }
+        .review-textarea:focus { 
+            outline: none; border-color: rgba(255, 255, 255, 0.3); 
+            box-shadow: 0 0 20px rgba(255,255,255,0.1);
+            transform: translateY(-2px);
+        }
+        .submit-review-btn { 
+            width: 100%; background: linear-gradient(90deg, #444, #666); 
+            border: none; padding: 1rem; border-radius: 10px; color: #fff; 
+            font-weight: 700; cursor: pointer; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative; overflow: hidden;
+        }
+        .submit-review-btn::after {
+            content: ''; position: absolute; top: 50%; left: 50%; width: 0; height: 0;
+            background: rgba(255,255,255,0.3); border-radius: 50%; transform: translate(-50%,-50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        .submit-review-btn:active::after { width: 400px; height: 400px; }
+        .submit-review-btn:hover { 
+            transform: translateY(-3px); box-shadow: 0 5px 20px rgba(255, 255, 255, 0.1); 
+        }
         .submit-review-btn:disabled { opacity: 0.5; cursor: not-allowed; }
         
-        .reviews-stats { display: flex; justify-content: center; gap: 3rem; margin-bottom: 2rem; flex-wrap: wrap; }
-        .reviews-stat { text-align: center; }
+        .reviews-stats { 
+            display: flex; justify-content: center; gap: 3rem; margin-bottom: 2rem; flex-wrap: wrap; 
+        }
+        .reviews-stat { text-align: center; transition: transform 0.3s ease; }
+        .reviews-stat:hover { transform: translateY(-5px); }
         .reviews-stat-value { font-size: 2.5rem; font-weight: 800; color: #fff; }
         .reviews-stat-label { font-size: 0.9rem; color: #888; text-transform: uppercase; letter-spacing: 1px; }
         
-        .edit-review-modal { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.9); backdrop-filter: blur(10px); z-index: 10001; display: none; align-items: center; justify-content: center; }
-        .edit-review-modal.active { display: flex; }
-        .edit-review-container { background: rgba(20, 20, 20, 0.95); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 2rem; width: 90%; max-width: 500px; }
+        .edit-review-modal { 
+            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.9); 
+            backdrop-filter: blur(10px); z-index: 10001; display: none; 
+            align-items: center; justify-content: center; opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .edit-review-modal.active { 
+            display: flex; opacity: 1;
+            animation: modalAppear 0.4s ease;
+        }
+        .edit-review-container { 
+            background: rgba(20, 20, 20, 0.95); border: 1px solid rgba(255, 255, 255, 0.1); 
+            border-radius: 20px; padding: 2rem; width: 90%; max-width: 500px;
+            animation: modalSlide 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
         .edit-review-container h3 { text-align: center; margin-bottom: 1.5rem; }
-        .edit-rating-input { display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 1rem; }
-        .edit-rating-input .star-btn { background: none; border: none; color: #444; font-size: 1.5rem; cursor: pointer; transition: all 0.2s; }
-        .edit-rating-input .star-btn:hover, .edit-rating-input .star-btn.active { color: #ffd700; }
+        .edit-rating-input { 
+            display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 1rem; 
+        }
+        .edit-rating-input .star-btn { 
+            background: none; border: none; color: #444; font-size: 1.5rem; 
+            cursor: pointer; transition: all 0.2s ease;
+        }
+        .edit-rating-input .star-btn:hover, .edit-rating-input .star-btn.active { 
+            color: #ffd700; transform: scale(1.2); 
+        }
         .edit-review-actions { display: flex; gap: 1rem; margin-top: 1.5rem; }
-        .edit-review-actions button { flex: 1; padding: 0.8rem; border-radius: 10px; border: none; cursor: pointer; font-weight: 700; transition: all 0.3s; }
-        .save-edit-btn { background: linear-gradient(90deg, #444, #666); color: #fff; }
-        .cancel-edit-btn { background: rgba(255, 255, 255, 0.05); color: #888; border: 1px solid rgba(255, 255, 255, 0.1); }
+        .edit-review-actions button { 
+            flex: 1; padding: 0.8rem; border-radius: 10px; border: none; 
+            cursor: pointer; font-weight: 700; transition: all 0.3s ease;
+        }
+        .save-edit-btn { 
+            background: linear-gradient(90deg, #444, #666); color: #fff; 
+        }
+        .save-edit-btn:hover { transform: translateY(-2px); }
+        .cancel-edit-btn { 
+            background: rgba(255, 255, 255, 0.05); color: #888; border: 1px solid rgba(255, 255, 255, 0.1); 
+        }
+        .cancel-edit-btn:hover { background: rgba(255,255,255,0.1); }
         
-        @media (max-width: 768px) { .cursor { display: none !important; } .hero-content { flex-direction: column; } .music-player-main { flex: 1; width: 100%; } .navbar { padding: 1rem; } .chat-container { flex-direction: column; height: 60vh; } .chat-sidebar { width: 100%; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.1); } .admin-users-header { flex-direction: column; text-align: center; } .admin-user-card { flex-direction: column; text-align: center; } .chat-message { max-width: 95%; } .reviews-grid { grid-template-columns: 1fr; } .reviews-stats { gap: 1.5rem; } .payment-options { flex-direction: column; } }
+        /* ===== ЧАСТИЦЫ ФОНА ===== */
+        .particles { 
+            position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; 
+        }
+        .particle { 
+            position: absolute; width: 4px; height: 4px; 
+            background: rgba(255,255,255,0.1); border-radius: 50%; 
+            animation: float-particle 15s infinite; 
+        }
+        @keyframes float-particle { 
+            0%,100% { transform: translateY(100vh); opacity: 0; } 
+            10% { opacity: 1; } 
+            90% { opacity: 1; } 
+            100% { transform: translateY(-100vh); opacity: 0; } 
+        }
+        
+        /* ===== АДАПТИВНОСТЬ ===== */
+        @media (max-width: 768px) { 
+            .cursor, .cursor-trail { display: none !important; } 
+            .hero-content { flex-direction: column; } 
+            .music-player-main { flex: 1; width: 100%; } 
+            .navbar { padding: 1rem; } 
+            .chat-container { flex-direction: column; height: 60vh; } 
+            .chat-sidebar { width: 100%; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.1); } 
+            .admin-users-header { flex-direction: column; text-align: center; } 
+            .admin-user-card { flex-direction: column; text-align: center; } 
+            .chat-message { max-width: 95%; } 
+            .reviews-grid { grid-template-columns: 1fr; } 
+            .reviews-stats { gap: 1.5rem; } 
+            .payment-options { flex-direction: column; }
+            .product-card:hover {
+                transform: perspective(1000px) rotateX(3deg) rotateY(3deg) translateZ(10px) scale(1.02);
+            }
+        }
+        
+        /* ===== УВЕДОМЛЕНИЯ ===== */
+        .notification {
+            position: fixed; top: 100px; right: 20px;
+            padding: 1rem 1.5rem; border-radius: 10px;
+            color: #fff; backdrop-filter: blur(10px);
+            z-index: 10000; animation: notificationSlide 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            max-width: 300px; border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        @keyframes notificationSlide {
+            from { opacity: 0; transform: translateX(100px) scale(0.8); }
+            to { opacity: 1; transform: translateX(0) scale(1); }
+        }
+        .notification.success {
+            background: rgba(100,255,100,0.15); border-color: rgba(100,255,100,0.3);
+        }
+        .notification.error {
+            background: rgba(255,100,100,0.15); border-color: rgba(255,100,100,0.3);
+        }
     </style>
 </head>
 <body>
@@ -312,6 +1191,7 @@
         <div class="loader-spinner"></div>
         <div class="loader-progress"><div class="loader-progress-bar" id="progressBar"></div></div>
     </div>
+    
     <div id="authModal" style="display: none;">
         <div class="auth-container">
             <h2>FAKELAVV SHOP</h2>
@@ -331,6 +1211,7 @@
             <div class="auth-error" id="authError"></div>
         </div>
     </div>
+    
     <div id="mainApp" style="display: none;">
         <nav class="navbar">
             <div class="logo">FAKELAVV</div>
@@ -351,6 +1232,7 @@
                 <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
             </div>
         </nav>
+        
         <div class="container">
             <div class="tab-content active" id="home">
                 <div class="hero">
@@ -389,6 +1271,7 @@
                     <div class="hero-highlight"><p>Профессиональные услуги в области цифровой безопасности, разработки и анализа. Индивидуальный подход к каждому проекту, гарантия качества и полная анонимность.</p></div>
                 </div>
             </div>
+            
             <div class="tab-content" id="chat">
                 <h2 class="section-title">Общий Чат</h2>
                 <div class="chat-container">
@@ -406,6 +1289,9 @@
                     </div>
                     <div class="chat-main">
                         <div class="chat-messages" id="chatMessages"></div>
+                        <div class="typing-indicator" id="typingIndicator">
+                            <span></span><span></span><span></span>
+                        </div>
                         <div class="chat-input-area">
                             <input type="text" class="chat-input" id="chatInput" placeholder="Написать сообщение..." maxlength="200">
                             <button class="chat-send-btn" id="sendBtn"><i class="fas fa-paper-plane"></i></button>
@@ -414,26 +1300,32 @@
                     </div>
                 </div>
             </div>
+            
             <div class="tab-content" id="programming">
                 <h2 class="section-title">Программирование</h2>
                 <div class="products-grid" id="programmingProducts"></div>
             </div>
+            
             <div class="tab-content" id="design">
                 <h2 class="section-title">Дизайн</h2>
                 <div class="products-grid" id="designProducts"></div>
             </div>
+            
             <div class="tab-content" id="black">
                 <h2 class="section-title" style="color: #ff4444;">Чёрнуха</h2>
                 <div class="products-grid" id="blackProducts"></div>
             </div>
+            
             <div class="tab-content" id="faq">
                 <h2 class="section-title">FAQ</h2>
                 <div class="faq-grid" id="faqGrid"></div>
             </div>
+            
             <div class="tab-content" id="packets">
                 <h2 class="section-title">Пакеты</h2>
                 <div class="products-grid" id="packetsProducts"></div>
             </div>
+            
             <div class="tab-content" id="reviews">
                 <h2 class="section-title">Оценка и Отзывы</h2>
                 <div class="reviews-stats">
@@ -464,6 +1356,7 @@
                 </div>
                 <div class="reviews-grid" id="reviewsGrid"></div>
             </div>
+            
             <div class="tab-content" id="badges">
                 <h2 class="section-title">Система Бейджиков</h2>
                 <div class="user-profile">
@@ -476,6 +1369,7 @@
                     <div class="badges-grid" id="badgesGrid"></div>
                 </div>
             </div>
+            
             <div class="tab-content" id="users">
                 <h2 class="section-title">Управление Пользователями</h2>
                 <div class="admin-users-panel">
@@ -486,6 +1380,7 @@
                     <div class="admin-users-list" id="adminUsersList"></div>
                 </div>
             </div>
+            
             <div class="tab-content" id="contacts">
                 <h2 class="section-title">Контакты</h2>
                 <div class="contacts-grid" id="contactsGrid"></div>
@@ -493,7 +1388,6 @@
         </div>
     </div>
     
-    <!-- Cart Modal with Payment Options -->
     <div class="cart-modal" id="cartModal">
         <div class="cart-container">
             <div class="cart-header">
@@ -508,8 +1402,6 @@
                     <span>Итого:</span>
                     <span id="cartTotal">0 ₽</span>
                 </div>
-                
-                <!-- Payment Section -->
                 <div class="payment-section" id="paymentSection" style="display: none;">
                     <div class="payment-title">Выберите способ оплаты:</div>
                     <div class="payment-options">
@@ -517,11 +1409,10 @@
                             <i class="fas fa-wallet"></i>
                             <div>
                                 <div>ЮMoney / Банковская карта</div>
-                                <div class="payment-info">Перевод на карту 4100 **** **** 0796</div>
+                                <div class="payment-info">Оплата на сайте ЮMoney</div>
                             </div>
                         </button>
-                        
-                        <button class="payment-btn telegram" onclick="payWithTelegram()">
+                        <button class="payment-btn telegram-card" onclick="payWithTelegram()">
                             <i class="fab fa-telegram"></i>
                             <div>
                                 <div>Telegram</div>
@@ -563,7 +1454,7 @@
             </div>
         </div>
     </div>
-    
+
     <script>
         const playlist=[{title:"FakeLavv - Передоз",artist:"FakeLavv",cover:"https://cdn.discordapp.com/attachments/1446528538684686541/1450312195547205672/cover.jpg",audio:"music/1.mp3"},{title:"FakeLavv - Ганджа",artist:"FakeLavv",cover:"https://cdn.discordapp.com/attachments/1446528538684686541/1450312195547205672/cover.jpg",audio:"music/2.mp3"},{title:"FakeLavv - Больно",artist:"FakeLavv",cover:"https://cdn.discordapp.com/attachments/1446528538684686541/1450312195547205672/cover.jpg",audio:"music/3.mp3"},{title:"FakeLavv - кровавый",artist:"FakeLavv",cover:"https://cdn.discordapp.com/attachments/1446528538684686541/1450312195547205672/cover.jpg",audio:"music/4.mp3"},{title:"FakeLavv - Never sober",artist:"FakeLavv",cover:"https://cdn.discordapp.com/attachments/1446528538684686541/1450312195547205672/cover.jpg",audio:"music/5.mp3"}];
         
@@ -581,159 +1472,889 @@
         const CHAT_LIMIT=5,CHAT_COOLDOWN=10;
         let messagesRemaining=CHAT_LIMIT,cooldownActive=false,cooldownInterval=null,lastMessageTime=0;
         let currentUser=null,socket=null,cart=[],currentTrack=0,isPlaying=false,audio=null,audioContext=null,analyser=null,messageCount=0,selectedUserForBadge=null,selectedBadge=null;
-        let selectedRating=0,editingReviewId=null;
+        let selectedRating=0,editingReviewId=null,editingRating=0;
+        let cursorTrails = [];
         const urlRegex = /(https?:\/\/[^\s]+)|(www\.[^\s]+)|([a-zA-Z0-9-]+\.[a-zA-Z]{2,}[^\s]*)/gi;
         
-        document.addEventListener('DOMContentLoaded',()=>{initParticles();initLoader();initCursor();checkAuth();initAuthForms();});
+        document.addEventListener('DOMContentLoaded',()=>{
+            initParticles();
+            initLoader();
+            initCursor();
+            checkAuth();
+            initAuthForms();
+        });
         
-        function initParticles(){const c=document.getElementById('particles');for(let i=0;i<20;i++){const p=document.createElement('div');p.className='particle';p.style.left=Math.random()*100+'%';p.style.animationDelay=Math.random()*15+'s';p.style.animationDuration=(10+Math.random()*10)+'s';c.appendChild(p);}}
+        function initParticles(){
+            const c=document.getElementById('particles');
+            for(let i=0;i<20;i++){
+                const p=document.createElement('div');
+                p.className='particle';
+                p.style.left=Math.random()*100+'%';
+                p.style.animationDelay=Math.random()*15+'s';
+                p.style.animationDuration=(10+Math.random()*10)+'s';
+                c.appendChild(p);
+            }
+        }
         
-        function initLoader(){const b=document.getElementById('progressBar');let p=0;const i=setInterval(()=>{p+=Math.random()*15+10;if(p>100)p=100;b.style.width=p+'%';if(p>=100){clearInterval(i);setTimeout(()=>document.getElementById('loader').classList.add('hidden'),300);}},100);}
+        function initLoader(){
+            const b=document.getElementById('progressBar');
+            let p=0;
+            const i=setInterval(()=>{
+                p+=Math.random()*15+10;
+                if(p>100)p=100;
+                b.style.width=p+'%';
+                if(p>=100){
+                    clearInterval(i);
+                    setTimeout(()=>document.getElementById('loader').classList.add('hidden'),300);
+                }
+            },100);
+        }
         
-        function initCursor(){if(window.matchMedia('(pointer: coarse)').matches){return;}const c=document.getElementById('cursor');c.style.display='block';let mx=0,my=0,cx=0,cy=0,rafId=null,lastMove=Date.now();document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;lastMove=Date.now();if(!rafId){rafId=requestAnimationFrame(animateCursor);}},{passive:true});document.addEventListener('mousedown',()=>c.classList.add('click'));document.addEventListener('mouseup',()=>c.classList.remove('click'));function animateCursor(){if(Date.now()-lastMove>100){rafId=null;return;}cx+=(mx-cx)*0.2;cy+=(my-cy)*0.2;c.style.left=cx+'px';c.style.top=cy+'px';rafId=requestAnimationFrame(animateCursor);}}
+        function initCursor(){
+            if(window.matchMedia('(pointer: coarse)').matches){
+                return;
+            }
+            const c=document.getElementById('cursor');
+            c.style.display='block';
+            
+            for(let i=0; i<5; i++){
+                const trail = document.createElement('div');
+                trail.className = 'cursor-trail';
+                trail.style.opacity = (i+1) * 0.1;
+                document.body.appendChild(trail);
+                cursorTrails.push({el: trail, x: 0, y: 0});
+            }
+            
+            let mx=0,my=0,cx=0,cy=0,rafId=null,lastMove=Date.now();
+            
+            document.addEventListener('mousemove',e=>{
+                mx=e.clientX;
+                my=e.clientY;
+                lastMove=Date.now();
+                if(!rafId){
+                    rafId=requestAnimationFrame(animateCursor);
+                }
+            },{passive:true});
+            
+            document.addEventListener('mousedown',()=>c.classList.add('click'));
+            document.addEventListener('mouseup',()=>c.classList.remove('click'));
+            
+            function animateCursor(){
+                if(Date.now()-lastMove>100){
+                    rafId=null;
+                    return;
+                }
+                cx+=(mx-cx)*0.2;
+                cy+=(my-cy)*0.2;
+                c.style.left=cx+'px';
+                c.style.top=cy+'px';
+                
+                cursorTrails.forEach((trail, index) => {
+                    const delay = (index + 1) * 0.1;
+                    trail.x += (mx - trail.x) * (0.2 - delay * 0.02);
+                    trail.y += (my - trail.y) * (0.2 - delay * 0.02);
+                    trail.el.style.left = trail.x + 'px';
+                    trail.el.style.top = trail.y + 'px';
+                });
+                
+                rafId=requestAnimationFrame(animateCursor);
+            }
+            
+            document.querySelectorAll('button, a, .product-card, .faq-card, .contact-card, .music-player, input, .chat-send-btn, .nav-tab, .cart-btn, .add-to-cart-btn').forEach(el=>{
+                el.addEventListener('mouseenter',()=>c.classList.add('hover'));
+                el.addEventListener('mouseleave',()=>c.classList.remove('hover'));
+            });
+        }
         
-        function initAuthForms(){const l=document.getElementById('loginForm'),r=document.getElementById('registerForm'),t=document.getElementById('toggleBtn'),x=document.getElementById('toggleText');t.addEventListener('click',()=>{if(l.classList.contains('active')){l.classList.remove('active');r.classList.add('active');x.textContent='Уже есть аккаунт?';t.textContent='Войти';}else{r.classList.remove('active');l.classList.add('active');x.textContent='Нет аккаунта?';t.textContent='Зарегистрироваться';}});l.addEventListener('submit',async e=>{e.preventDefault();const u=document.getElementById('loginUsername').value,p=document.getElementById('loginPassword').value;try{const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});const d=await r.json();if(d.success){currentUser=d;showMainApp();}else{showError(d.error);}}catch(err){showError('Ошибка соединения');}});r.addEventListener('submit',async e=>{e.preventDefault();const u=document.getElementById('regUsername').value,em=document.getElementById('regEmail').value,p=document.getElementById('regPassword').value;try{const r=await fetch('/api/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,email:em,password:p})});const d=await r.json();if(d.success){currentUser=d;showMainApp();}else{showError(d.error);}}catch(err){showError('Ошибка соединения');}});}
+        function initAuthForms(){
+            const l=document.getElementById('loginForm'),r=document.getElementById('registerForm'),t=document.getElementById('toggleBtn'),x=document.getElementById('toggleText');
+            t.addEventListener('click',()=>{
+                if(l.classList.contains('active')){
+                    l.classList.remove('active');
+                    r.classList.add('active');
+                    x.textContent='Уже есть аккаунт?';
+                    t.textContent='Войти';
+                }else{
+                    r.classList.remove('active');
+                    l.classList.add('active');
+                    x.textContent='Нет аккаунта?';
+                    t.textContent='Зарегистрироваться';
+                }
+            });
+            l.addEventListener('submit',async e=>{
+                e.preventDefault();
+                const u=document.getElementById('loginUsername').value,p=document.getElementById('loginPassword').value;
+                try{
+                    const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});
+                    const d=await r.json();
+                    if(d.success){
+                        currentUser=d;
+                        showMainApp();
+                    }else{
+                        showError(d.error);
+                    }
+                }catch(err){
+                    showError('Ошибка соединения');
+                }
+            });
+            r.addEventListener('submit',async e=>{
+                e.preventDefault();
+                const u=document.getElementById('regUsername').value,em=document.getElementById('regEmail').value,p=document.getElementById('regPassword').value;
+                try{
+                    const r=await fetch('/api/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,email:em,password:p})});
+                    const d=await r.json();
+                    if(d.success){
+                        currentUser=d;
+                        showMainApp();
+                    }else{
+                        showError(d.error);
+                    }
+                }catch(err){
+                    showError('Ошибка соединения');
+                }
+            });
+        }
         
-        function showError(m){document.getElementById('authError').textContent=m;}
+        function showError(m){
+            document.getElementById('authError').textContent=m;
+        }
         
-        async function checkAuth(){try{const r=await fetch('/api/me'),d=await r.json();if(d.loggedIn){currentUser=d;showMainApp();}else{document.getElementById('authModal').style.display='flex';}}catch(e){document.getElementById('authModal').style.display='flex';}}
+        async function checkAuth(){
+            try{
+                const r=await fetch('/api/me'),d=await r.json();
+                if(d.loggedIn){
+                    currentUser=d;
+                    showMainApp();
+                }else{
+                    document.getElementById('authModal').style.display='flex';
+                }
+            }catch(e){
+                document.getElementById('authModal').style.display='flex';
+            }
+        }
         
-        async function showMainApp(){document.getElementById('authModal').style.display='none';document.getElementById('mainApp').style.display='block';document.getElementById('profileName').textContent=currentUser.username;document.getElementById('badgesPageName').textContent=currentUser.username;document.getElementById('chatUsername').textContent=currentUser.username;if(currentUser.isOwner){const n=document.getElementById('navTabs');if(!document.querySelector('[data-tab="users"]')){const u=document.createElement('button');u.className='nav-tab admin-tab';u.dataset.tab='users';u.innerHTML='<i class="fas fa-users"></i> Users';n.appendChild(u);initNavigation();}}updateBadges();initChat();initPlayer();init3DTilt();renderProducts();renderFAQ();renderContacts();renderBadges();initCart();initNavigation();initReviews();await loadCart();}
+        async function showMainApp(){
+            document.getElementById('authModal').style.display='none';
+            document.getElementById('mainApp').style.display='block';
+            document.getElementById('profileName').textContent=currentUser.username;
+            document.getElementById('badgesPageName').textContent=currentUser.username;
+            document.getElementById('chatUsername').textContent=currentUser.username;
+            if(currentUser.isOwner){
+                const n=document.getElementById('navTabs');
+                if(!document.querySelector('[data-tab="users"]')){
+                    const u=document.createElement('button');
+                    u.className='nav-tab admin-tab';
+                    u.dataset.tab='users';
+                    u.innerHTML='<i class="fas fa-users"></i> Users';
+                    n.appendChild(u);
+                    initNavigation();
+                }
+            }
+            updateBadges();
+            initChat();
+            initPlayer();
+            init3DTilt();
+            renderProducts();
+            renderFAQ();
+            renderContacts();
+            renderBadges();
+            initCart();
+            initNavigation();
+            initReviews();
+            await loadCart();
+        }
         
-        function initNavigation(){document.querySelectorAll('.nav-tab').forEach(t=>{t.addEventListener('click',()=>{const d=t.dataset.tab;document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.tab-content').forEach(x=>x.classList.remove('active'));t.classList.add('active');document.getElementById(d).classList.add('active');if(d==='users'&&currentUser?.isOwner)loadAdminUsers();if(d==='reviews')loadReviews();});});}
+        function initNavigation(){
+            document.querySelectorAll('.nav-tab').forEach(t=>{
+                t.addEventListener('click',()=>{
+                    const d=t.dataset.tab;
+                    document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(x=>x.classList.remove('active'));
+                    t.classList.add('active');
+                    document.getElementById(d).classList.add('active');
+                    if(d==='users'&&currentUser?.isOwner)loadAdminUsers();
+                    if(d==='reviews')loadReviews();
+                });
+            });
+        }
         
-        function initPlayer(){audio=new Audio();audio.crossOrigin="anonymous";loadTrack(0);initVisualizer();document.getElementById('playBtn').addEventListener('click',togglePlay);document.getElementById('nextBtn').addEventListener('click',()=>changeTrack(1));document.getElementById('prevBtn').addEventListener('click',()=>changeTrack(-1));document.getElementById('volumeSlider').addEventListener('input',updateVolume);document.getElementById('progressContainer').addEventListener('click',seek);audio.addEventListener('timeupdate',updateProgress);audio.addEventListener('ended',()=>changeTrack(1));audio.addEventListener('loadedmetadata',()=>{document.getElementById('duration').textContent=formatTime(audio.duration);});}
+        function initPlayer(){
+            audio=new Audio();
+            audio.crossOrigin="anonymous";
+            loadTrack(0);
+            initVisualizer();
+            document.getElementById('playBtn').addEventListener('click',togglePlay);
+            document.getElementById('nextBtn').addEventListener('click',()=>changeTrack(1));
+            document.getElementById('prevBtn').addEventListener('click',()=>changeTrack(-1));
+            document.getElementById('volumeSlider').addEventListener('input',updateVolume);
+            document.getElementById('progressContainer').addEventListener('click',seek);
+            audio.addEventListener('timeupdate',updateProgress);
+            audio.addEventListener('ended',()=>changeTrack(1));
+            audio.addEventListener('loadedmetadata',()=>{
+                document.getElementById('duration').textContent=formatTime(audio.duration);
+            });
+        }
         
-        function initVisualizer(){const c=document.getElementById('visualizer');c.innerHTML='';for(let i=0;i<20;i++){const b=document.createElement('div');b.className='visualizer-bar';b.style.height='3px';c.appendChild(b);}}
+        function initVisualizer(){
+            const c=document.getElementById('visualizer');
+            c.innerHTML='';
+            for(let i=0;i<20;i++){
+                const b=document.createElement('div');
+                b.className='visualizer-bar';
+                b.style.height='3px';
+                c.appendChild(b);
+            }
+        }
         
-        function initAudioContext(){if(!audioContext){audioContext=new(window.AudioContext||window.webkitAudioContext)();analyser=audioContext.createAnalyser();analyser.fftSize=64;const s=audioContext.createMediaElementSource(audio);s.connect(analyser);analyser.connect(audioContext.destination);}}
+        function initAudioContext(){
+            if(!audioContext){
+                audioContext=new(window.AudioContext||window.webkitAudioContext)();
+                analyser=audioContext.createAnalyser();
+                analyser.fftSize=64;
+                const s=audioContext.createMediaElementSource(audio);
+                s.connect(analyser);
+                analyser.connect(audioContext.destination);
+            }
+        }
         
-        function animateVisualizer(){if(!isPlaying||!analyser)return;const d=new Uint8Array(analyser.frequencyBinCount);analyser.getByteFrequencyData(d);document.querySelectorAll('.visualizer-bar').forEach((b,i)=>{b.style.height=Math.max(3,(d[i*2]/255)*50)+'px';});requestAnimationFrame(animateVisualizer);}
+        function animateVisualizer(){
+            if(!isPlaying||!analyser)return;
+            const d=new Uint8Array(analyser.frequencyBinCount);
+            analyser.getByteFrequencyData(d);
+            document.querySelectorAll('.visualizer-bar').forEach((b,i)=>{
+                b.style.height=Math.max(3,(d[i*2]/255)*50)+'px';
+            });
+            requestAnimationFrame(animateVisualizer);
+        }
         
-        function loadTrack(i){currentTrack=i;const t=playlist[i];document.getElementById('trackTitle').textContent=t.title;document.getElementById('trackArtist').textContent=t.artist;document.getElementById('coverImage').style.backgroundImage=`url('${t.cover}')`;audio.src=t.audio;if(isPlaying){audio.play();initAudioContext();animateVisualizer();}}
+        function loadTrack(i){
+            currentTrack=i;
+            const t=playlist[i];
+            document.getElementById('trackTitle').textContent=t.title;
+            document.getElementById('trackArtist').textContent=t.artist;
+            document.getElementById('coverImage').style.backgroundImage=`url('${t.cover}')`;
+            audio.src=t.audio;
+            if(isPlaying){
+                audio.play();
+                initAudioContext();
+                animateVisualizer();
+            }
+        }
         
-        function togglePlay(){isPlaying=!isPlaying;const i=document.getElementById('playIcon'),c=document.getElementById('coverContainer');if(isPlaying){audio.play();i.classList.replace('fa-play','fa-pause');c.classList.add('playing');initAudioContext();animateVisualizer();}else{audio.pause();i.classList.replace('fa-pause','fa-play');c.classList.remove('playing');}}
+        function togglePlay(){
+            isPlaying=!isPlaying;
+            const i=document.getElementById('playIcon'),c=document.getElementById('coverContainer');
+            if(isPlaying){
+                audio.play();
+                i.classList.replace('fa-play','fa-pause');
+                c.classList.add('playing');
+                initAudioContext();
+                animateVisualizer();
+            }else{
+                audio.pause();
+                i.classList.replace('fa-pause','fa-play');
+                c.classList.remove('playing');
+            }
+        }
         
-        function changeTrack(d){currentTrack=(currentTrack+d+playlist.length)%playlist.length;loadTrack(currentTrack);}
+        function changeTrack(d){
+            currentTrack=(currentTrack+d+playlist.length)%playlist.length;
+            loadTrack(currentTrack);
+        }
         
-        function updateVolume(e){audio.volume=e.target.value/100;}
+        function updateVolume(e){
+            audio.volume=e.target.value/100;
+        }
         
-        function updateProgress(){const p=(audio.currentTime/audio.duration)*100||0;document.getElementById('progressBarPlayer').style.width=p+'%';document.getElementById('currentTime').textContent=formatTime(audio.currentTime);}
+        function updateProgress(){
+            const p=(audio.currentTime/audio.duration)*100||0;
+            document.getElementById('progressBarPlayer').style.width=p+'%';
+            document.getElementById('currentTime').textContent=formatTime(audio.currentTime);
+        }
         
-        function seek(e){const r=e.currentTarget.getBoundingClientRect();const p=(e.clientX-r.left)/r.width;if(audio.duration)audio.currentTime=p*audio.duration;}
+        function seek(e){
+            const r=e.currentTarget.getBoundingClientRect();
+            const p=(e.clientX-r.left)/r.width;
+            if(audio.duration)audio.currentTime=p*audio.duration;
+        }
         
-        function formatTime(s){if(isNaN(s))return'0:00';const m=Math.floor(s/60);const sec=Math.floor(s%60);return`${m}:${sec.toString().padStart(2,'0')}`;}
+        function formatTime(s){
+            if(isNaN(s))return'0:00';
+            const m=Math.floor(s/60);
+            const sec=Math.floor(s%60);
+            return`${m}:${sec.toString().padStart(2,'0')}`;
+        }
         
-        function init3DTilt(){document.querySelectorAll('.music-player,.product-card,.faq-card,.contact-card').forEach(c=>{c.addEventListener('mousemove',e=>{const r=c.getBoundingClientRect();const x=e.clientX-r.left,y=e.clientY-r.top;const rx=(y-r.height/2)/10,ry=(r.width/2-x)/10;c.style.transform=`perspective(1000px) rotateX(${rx}deg) rotateY(${ry}deg) scale3d(1.02,1.02,1.02)`;});c.addEventListener('mouseleave',()=>{c.style.transform='perspective(1000px) rotateX(0) rotateY(0) scale3d(1,1,1)';});});}
+        function init3DTilt(){
+            document.querySelectorAll('.music-player,.product-card,.faq-card,.contact-card').forEach(c=>{
+                c.addEventListener('mousemove',handleTilt,{passive:true});
+                c.addEventListener('mouseleave',resetTilt);
+            });
+        }
         
-        function initChat(){socket=io();socket.emit('joinChat',{username:currentUser.username});socket.on('chatHistory',m=>{const c=document.getElementById('chatMessages');c.innerHTML='';m.forEach(x=>appendMessage(x));});socket.on('newMessage',m=>{appendMessage(m);if(m.username===currentUser.username){messageCount++;document.getElementById('statMessages').textContent=messageCount;}});socket.on('onlineList',u=>{const l=document.getElementById('onlineList'),c=document.getElementById('onlineCount');l.innerHTML='';c.textContent=u.length;u.forEach(x=>{const d=document.createElement('div');d.className='online-user';d.innerHTML=`<span class="online-indicator"></span>${x.username}${x.badges.map(b=>`<span class="badge badge-${b} badge-small"><i class="fas ${badgeInfo[b]?.icon||'fa-star'}"></i> ${badgeInfo[b]?.name||b}</span>`).join('')}`;l.appendChild(d);});});socket.on('error',d=>alert(d.message));socket.on('banned',()=>{alert('Вы были забанены');logout();});socket.on('badgeUpdate',b=>{currentUser.badges=b;updateBadges();});document.getElementById('sendBtn').addEventListener('click',sendMessage);document.getElementById('chatInput').addEventListener('keypress',e=>{if(e.key==='Enter')sendMessage();});updateChatLimitDisplay();}
+        function handleTilt(e){
+            const c=e.currentTarget;
+            const r=c.getBoundingClientRect();
+            const x=e.clientX-r.left,y=e.clientY-r.top;
+            const rx=(y-r.height/2)/10,ry=(r.width/2-x)/10;
+            c.style.transform=`perspective(1000px) rotateX(${rx}deg) rotateY(${ry}deg) scale3d(1.02,1.02,1.02)`;
+        }
         
-        function updateChatLimitDisplay(){const i=document.getElementById('chatLimitInfo'),l=document.getElementById('messagesLeft');l.textContent=messagesRemaining;if(cooldownActive){i.classList.add('chat-limit-blocked');i.classList.remove('chat-limit-warning');}else if(messagesRemaining<=2){i.classList.add('chat-limit-warning');i.classList.remove('chat-limit-blocked');}else{i.classList.remove('chat-limit-warning','chat-limit-blocked');}}
+        function resetTilt(e){
+            e.currentTarget.style.transform='perspective(1000px) rotateX(0) rotateY(0) scale3d(1,1,1)';
+        }
         
-        function startCooldown(){cooldownActive=true;let r=CHAT_COOLDOWN;document.getElementById('chatInput').disabled=true;document.getElementById('sendBtn').disabled=true;cooldownInterval=setInterval(()=>{r--;document.getElementById('cooldownTime').textContent=r;updateChatLimitDisplay();if(r<=0){clearInterval(cooldownInterval);cooldownActive=false;messagesRemaining=CHAT_LIMIT;document.getElementById('chatInput').disabled=false;document.getElementById('sendBtn').disabled=false;document.getElementById('cooldownTime').textContent='0';updateChatLimitDisplay();}},1000);}
+        let typingTimeout = null;
+        let isTyping = false;
         
-        function containsLink(text){return urlRegex.test(text);}
+        function initChat(){
+            socket=io();
+            socket.emit('joinChat',{username:currentUser.username});
+            socket.on('chatHistory',m=>{
+                const c=document.getElementById('chatMessages');
+                c.innerHTML='';
+                m.forEach(x=>appendMessage(x));
+            });
+            socket.on('newMessage',m=>{
+                appendMessage(m);
+                if(m.username===currentUser.username){
+                    messageCount++;
+                    document.getElementById('statMessages').textContent=messageCount;
+                }
+                hideTypingIndicator();
+            });
+            socket.on('userTyping',(data)=>{
+                if(data.username !== currentUser.username){
+                    showTypingIndicator();
+                }
+            });
+            socket.on('onlineList',u=>{
+                const l=document.getElementById('onlineList'),c=document.getElementById('onlineCount');
+                l.innerHTML='';
+                c.textContent=u.length;
+                u.forEach(x=>{
+                    const d=document.createElement('div');
+                    d.className='online-user';
+                    d.innerHTML=`<span class="online-indicator"></span>${x.username}${x.badges.map(b=>`<span class="badge badge-${b} badge-small"><i class="fas ${badgeInfo[b]?.icon||'fa-star'}"></i> ${badgeInfo[b]?.name||b}</span>`).join('')}`;
+                    l.appendChild(d);
+                });
+            });
+            socket.on('error',d=>alert(d.message));
+            socket.on('banned',()=>{
+                alert('Вы были забанены');
+                logout();
+            });
+            socket.on('badgeUpdate',b=>{
+                currentUser.badges=b;
+                updateBadges();
+            });
+            
+            const chatInput = document.getElementById('chatInput');
+            chatInput.addEventListener('input',()=>{
+                if(!isTyping){
+                    isTyping = true;
+                    socket.emit('typing');
+                }
+                clearTimeout(typingTimeout);
+                typingTimeout = setTimeout(()=>{
+                    isTyping = false;
+                }, 1000);
+            });
+            
+            document.getElementById('sendBtn').addEventListener('click',sendMessage);
+            document.getElementById('chatInput').addEventListener('keypress',e=>{
+                if(e.key==='Enter')sendMessage();
+            });
+            updateChatLimitDisplay();
+        }
         
-        function sendMessage(){if(cooldownActive)return;const i=document.getElementById('chatInput'),t=i.value.trim();if(!t)return;if(t.length>200){alert('Сообщение слишком длинное (макс. 200 символов)');return;}if(containsLink(t)){alert('Ссылки запрещены в чате!');return;}const n=Date.now();if(n-lastMessageTime<1000){alert('Слишком быстро! Подождите секунду.');return;}lastMessageTime=n;if(socket){socket.emit('sendMessage',{text:t});i.value='';messagesRemaining--;updateChatLimitDisplay();if(messagesRemaining<=0)startCooldown();}}
+        function showTypingIndicator(){
+            const indicator = document.getElementById('typingIndicator');
+            indicator.classList.add('active');
+            const messagesContainer = document.getElementById('chatMessages');
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
         
-        function appendMessage(m){const c=document.getElementById('chatMessages'),d=document.createElement('div');d.className=`chat-message ${m.username===currentUser.username?'own':'other'}`;const b=m.badges.map(x=>`<span class="badge badge-${x} badge-small"><i class="fas ${badgeInfo[x]?.icon||'fa-star'}"></i></span>`).join('');d.innerHTML=`<div class="chat-message-header"><span class="chat-message-username">${escapeHtml(m.username)}</span>${b}<span class="chat-message-time">${m.time}</span></div><div class="chat-message-text">${escapeHtml(m.text)}</div>`;c.appendChild(d);c.scrollTop=c.scrollHeight;}
+        function hideTypingIndicator(){
+            const indicator = document.getElementById('typingIndicator');
+            indicator.classList.remove('active');
+        }
         
-        function escapeHtml(t){const d=document.createElement('div');d.textContent=t;return d.innerHTML;}
+        function updateChatLimitDisplay(){
+            const i=document.getElementById('chatLimitInfo'),l=document.getElementById('messagesLeft');
+            l.textContent=messagesRemaining;
+            if(cooldownActive){
+                i.classList.add('chat-limit-blocked');
+                i.classList.remove('chat-limit-warning');
+            }else if(messagesRemaining<=2){
+                i.classList.add('chat-limit-warning');
+                i.classList.remove('chat-limit-blocked');
+            }else{
+                i.classList.remove('chat-limit-warning','chat-limit-blocked');
+            }
+        }
         
-        function renderProducts(){renderProductGrid('programmingProducts',products.programming);renderProductGrid('designProducts',products.design);renderProductGrid('packetsProducts',products.packets);renderProductGrid('blackProducts',products.black,true);}
+        function startCooldown(){
+            cooldownActive=true;
+            let r=CHAT_COOLDOWN;
+            document.getElementById('chatInput').disabled=true;
+            document.getElementById('sendBtn').disabled=true;
+            cooldownInterval=setInterval(()=>{
+                r--;
+                document.getElementById('cooldownTime').textContent=r;
+                updateChatLimitDisplay();
+                if(r<=0){
+                    clearInterval(cooldownInterval);
+                    cooldownActive=false;
+                    messagesRemaining=CHAT_LIMIT;
+                    document.getElementById('chatInput').disabled=false;
+                    document.getElementById('sendBtn').disabled=false;
+                    document.getElementById('cooldownTime').textContent='0';
+                    updateChatLimitDisplay();
+                }
+            },1000);
+        }
         
-        function renderProductGrid(id,items,isBlack=false){const g=document.getElementById(id);if(!g)return;g.innerHTML=items.map(i=>`<div class="product-card ${isBlack?'black-card':''}"><div class="product-icon"><i class="fas ${i.icon}"></i></div><h3 class="product-title">${i.title}</h3><p class="product-desc">${i.desc}</p><div class="product-price">${i.price.toLocaleString()} ₽</div><button class="add-to-cart-btn" onclick="addToCart('${i.id}','${i.title}',${i.price})"><i class="fas fa-cart-plus"></i> В корзину</button></div>`).join('');}
+        function containsLink(text){
+            return urlRegex.test(text);
+        }
         
-        async function loadCart(){try{const r=await fetch('/api/cart');const d=await r.json();if(d.cart){cart=d.cart;updateCartCount();}}catch(e){console.error('Ошибка загрузки корзины:',e);}}
+        function sendMessage(){
+            if(cooldownActive)return;
+            const i=document.getElementById('chatInput'),t=i.value.trim();
+            if(!t)return;
+            if(t.length>200){
+                alert('Сообщение слишком длинное (макс. 200 символов)');
+                return;
+            }
+            if(containsLink(t)){
+                alert('Ссылки запрещены в чате!');
+                return;
+            }
+            const n=Date.now();
+            if(n-lastMessageTime<1000){
+                alert('Слишком быстро! Подождите секунду.');
+                return;
+            }
+            lastMessageTime=n;
+            if(socket){
+                socket.emit('sendMessage',{text:t});
+                i.value='';
+                messagesRemaining--;
+                updateChatLimitDisplay();
+                if(messagesRemaining<=0)startCooldown();
+            }
+        }
         
-        function initCart(){document.getElementById('cartBtn').addEventListener('click',openCart);}
+        function appendMessage(m){
+            const c=document.getElementById('chatMessages'),d=document.createElement('div');
+            d.className=`chat-message ${m.username===currentUser.username?'own':'other'}`;
+            const b=m.badges.map(x=>`<span class="badge badge-${x} badge-small"><i class="fas ${badgeInfo[x]?.icon||'fa-star'}"></i></span>`).join('');
+            d.innerHTML=`<div class="chat-message-header"><span class="chat-message-username">${escapeHtml(m.username)}</span>${b}<span class="chat-message-time">${m.time}</span></div><div class="chat-message-text">${escapeHtml(m.text)}</div>`;
+            c.appendChild(d);
+            c.scrollTop=c.scrollHeight;
+        }
         
-        async function addToCart(id,t,p){if(cart.find(x=>x.id===id)){alert('Этот товар уже в корзине');return;}cart.push({id,title:t,price:p});await saveCart();updateCartCount();const b=event.target,orig=b.innerHTML;b.innerHTML='<i class="fas fa-check"></i> Добавлено';setTimeout(()=>b.innerHTML=orig,1500);}
+        function escapeHtml(t){
+            const d=document.createElement('div');
+            d.textContent=t;
+            return d.innerHTML;
+        }
         
-        async function saveCart(){try{await fetch('/api/cart',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cart:cart})});}catch(e){console.error('Ошибка сохранения корзины:',e);}}
+        function renderProducts(){
+            renderProductGrid('programmingProducts',products.programming);
+            renderProductGrid('designProducts',products.design);
+            renderProductGrid('packetsProducts',products.packets);
+            renderProductGrid('blackProducts',products.black,true);
+        }
         
-        function updateCartCount(){document.getElementById('cartCount').textContent=cart.length;}
+        function renderProductGrid(id,items,isBlack=false){
+            const g=document.getElementById(id);
+            if(!g)return;
+            g.innerHTML=items.map(i=>`<div class="product-card ${isBlack?'black-card':''}"><div class="product-icon"><i class="fas ${i.icon}"></i></div><h3 class="product-title">${i.title}</h3><p class="product-desc">${i.desc}</p><div class="product-price">${i.price.toLocaleString()} ₽</div><button class="add-to-cart-btn" onclick="addToCart('${i.id}','${i.title}',${i.price}, this)"><i class="fas fa-cart-plus"></i> В корзину</button></div>`).join('');
+        }
         
-        function openCart(){const m=document.getElementById('cartModal'),i=document.getElementById('cartItems'),p=document.getElementById('paymentSection');if(cart.length===0){i.innerHTML='<div class="empty-cart"><i class="fas fa-shopping-basket" style="font-size:3rem;margin-bottom:1rem;"></i><br>Корзина пуста</div>';p.style.display='none';}else{i.innerHTML=cart.map((x,idx)=>`<div class="cart-item"><div class="cart-item-info"><h4>${x.title}</h4><p>${x.price.toLocaleString()} ₽</p></div><button class="cart-item-remove" onclick="removeFromCart(${idx})"><i class="fas fa-trash"></i></button></div>`).join('');p.style.display='block';}document.getElementById('cartTotal').textContent=cart.reduce((s,x)=>s+x.price,0).toLocaleString()+' ₽';m.classList.add('active');}
+        async function loadCart(){
+            try{
+                const r=await fetch('/api/cart');
+                const d=await r.json();
+                if(d.cart){
+                    cart=d.cart;
+                    updateCartCount();
+                }
+            }catch(e){
+                console.error('Ошибка загрузки корзины:',e);
+            }
+        }
         
-        async function closeCart(){document.getElementById('cartModal').classList.remove('active');}
+        function initCart(){
+            document.getElementById('cartBtn').addEventListener('click',openCart);
+        }
         
-        async function removeFromCart(i){cart.splice(i,1);await saveCart();updateCartCount();openCart();}
+        async function addToCart(id,t,p, btnElement){
+            if(cart.find(x=>x.id===id)){
+                showNotification('Этот товар уже в корзине', 'error');
+                return;
+            }
+            cart.push({id,title:t,price:p});
+            await saveCart();
+            updateCartCount();
+            
+            if(btnElement){
+                btnElement.classList.add('added');
+                btnElement.innerHTML = '<i class="fas fa-check"></i> Добавлено';
+                
+                const ripple = document.createElement('div');
+                ripple.style.cssText = `
+                    position: absolute; top: 50%; left: 50%; width: 0; height: 0;
+                    background: rgba(255,255,255,0.5); border-radius: 50%;
+                    transform: translate(-50%,-50%); pointer-events: none;
+                    animation: rippleEffect 0.6s ease-out;
+                `;
+                btnElement.style.position = 'relative';
+                btnElement.style.overflow = 'hidden';
+                btnElement.appendChild(ripple);
+                
+                setTimeout(()=>{
+                    btnElement.classList.remove('added');
+                    btnElement.innerHTML = '<i class="fas fa-cart-plus"></i> В корзину';
+                    ripple.remove();
+                },1500);
+            }
+            
+            showNotification(`${t} добавлен в корзину`, 'success');
+        }
         
-        // Payment Functions
+        async function saveCart(){
+            try{
+                await fetch('/api/cart',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cart:cart})});
+            }catch(e){
+                console.error('Ошибка сохранения корзины:',e);
+            }
+        }
+        
+        function updateCartCount(){
+            document.getElementById('cartCount').textContent=cart.length;
+        }
+        
+        function openCart(){
+            const m=document.getElementById('cartModal'),i=document.getElementById('cartItems'),p=document.getElementById('paymentSection');
+            if(cart.length===0){
+                i.innerHTML='<div class="empty-cart"><i class="fas fa-shopping-basket" style="font-size:3rem;margin-bottom:1rem;"></i><br>Корзина пуста</div>';
+                p.style.display='none';
+            }else{
+                i.innerHTML=cart.map((x,idx)=>`<div class="cart-item"><div class="cart-item-info"><h4>${x.title}</h4><p>${x.price.toLocaleString()} ₽</p></div><button class="cart-item-remove" onclick="removeFromCart(${idx})"><i class="fas fa-trash"></i></button></div>`).join('');
+                p.style.display='block';
+            }
+            document.getElementById('cartTotal').textContent=cart.reduce((s,x)=>s+x.price,0).toLocaleString()+' ₽';
+            m.classList.add('active');
+        }
+        
+        async function closeCart(){
+            document.getElementById('cartModal').classList.remove('active');
+        }
+        
+        async function removeFromCart(i){
+            cart.splice(i,1);
+            await saveCart();
+            updateCartCount();
+            openCart();
+        }
+        
         function payWithYooMoney(){
             const total = cart.reduce((s,x)=>s+x.price,0);
-            const itemsList = cart.map(x => `- ${x.title}: ${x.price.toLocaleString()} ₽`).join('\n');
+            if(total === 0) return;
             
-            const message = `Заказ из FakeLavv SHOP\n\nТовары:\n${itemsList}\n\nИтого: ${total.toLocaleString()} ₽\n\nОплата на карту ЮMoney: 4100118840680796`;
+            const yoomoneyUrl = `https://yoomoney.ru/quickpay/confirm?receiver=4100118840680796&quickpay-form=button&paymentType=AC&sum=${total}`;
+            window.open(yoomoneyUrl, '_blank');
             
-            // Copy to clipboard
-            navigator.clipboard.writeText(message).then(() => {
-                alert('💳 Реквизиты скопированы!\n\nКарта ЮMoney: 4100118840680796\n\nСумма: ' + total.toLocaleString() + ' ₽\n\nТекст заказа скопирован в буфер обмена. Отправьте перевод и напишите в Telegram @fakelavv с чеком.');
-            }).catch(() => {
-                alert('💳 Карта ЮMoney: 4100118840680796\n\nСумма: ' + total.toLocaleString() + ' ₽\n\nОтправьте перевод и напишите в Telegram @fakelavv с чеком.');
-            });
+            showNotification('Перенаправление на ЮMoney...', 'success');
         }
         
         function payWithTelegram(){
             const total = cart.reduce((s,x)=>s+x.price,0);
-            const itemsList = cart.map(x => `- ${x.title}: ${x.price.toLocaleString()} ₽`).join('\n');
-            
-            const message = `Привет! Хочу купить:\n\n${itemsList}\n\nИтого: ${total.toLocaleString()} ₽\n\nСкиньте реквизиты для оплаты.`;
-            
+            const itemsList = cart.map(x => `- ${x.title}: ${x.price.toLocaleString()} ₽`).join('\\n');
+            const message = `Привет! Хочу купить:\\n\\n${itemsList}\\n\\nИтого: ${total.toLocaleString()} ₽\\n\\nСкиньте реквизиты для оплаты.`;
             const telegramUrl = `https://t.me/FAKELAVVMP3?text=${encodeURIComponent(message)}`;
             window.open(telegramUrl, '_blank');
         }
         
-        function renderFAQ(){const f=[{icon:'fa-clock',q:'Сколько выполняется заказ?',a:'От 1 часа до 24 часов. Срочные заказы +50% к стоимости.'},{icon:'fa-user-secret',q:'Насколько анонимно?',a:'Полная анонимность. Все данные шифруются и удаляются после работы.'},{icon:'fa-ban',q:'Возврат средств?',a:'ВОЗВРАТА НЕТ. Услуги цифровые, не подлежат возврату.'},{icon:'fa-headset',q:'Есть ли поддержка?',a:'Поддержка 24/7 в Telegram. Ответ за 5-15 минут.'},{icon:'fa-shield-alt',q:'Какие гарантии?',a:'Гарантия 14 дней на исправление ошибок.'},{icon:'fa-credit-card',q:'Способы оплаты?',a:'ЮMoney, карты, криптовалюта (BTC, USDT).'}];document.getElementById('faqGrid').innerHTML=f.map((x,i)=>`<div class="faq-card" style="animation-delay:${i*0.1}s"><h3><i class="fas ${x.icon}"></i> ${x.q}</h3><p>${x.a}</p></div>`).join('');}
+        function showNotification(msg, type){
+            const n = document.createElement('div');
+            n.className = `notification ${type}`;
+            n.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check' : 'fa-exclamation-circle'}"></i> ${msg}`;
+            document.body.appendChild(n);
+            setTimeout(()=>{
+                n.style.animation = 'notificationSlide 0.4s reverse';
+                setTimeout(()=>n.remove(), 400);
+            }, 3000);
+        }
         
-        function renderContacts(){document.getElementById('contactsGrid').innerHTML=contacts.map(c=>`<a href="${c.url}" class="contact-card" target="_blank"><div class="contact-icon"><i class="${c.icon}"></i></div><div class="contact-title">${c.title}</div><div class="contact-value">${c.value}</div></a>`).join('');}
+        function renderFAQ(){
+            const f=[{icon:'fa-clock',q:'Сколько выполняется заказ?',a:'От 1 часа до 24 часов. Срочные заказы +50% к стоимости.'},{icon:'fa-user-secret',q:'Насколько анонимно?',a:'Полная анонимность. Все данные шифруются и удаляются после работы.'},{icon:'fa-ban',q:'Возврат средств?',a:'ВОЗВРАТА НЕТ. Услуги цифровые, не подлежат возврату.'},{icon:'fa-headset',q:'Есть ли поддержка?',a:'Поддержка 24/7 в Telegram. Ответ за 5-15 минут.'},{icon:'fa-shield-alt',q:'Какие гарантии?',a:'Гарантия 14 дней на исправление ошибок.'},{icon:'fa-credit-card',q:'Способы оплаты?',a:'ЮMoney, карты, криптовалюта (BTC, USDT).'}];
+            document.getElementById('faqGrid').innerHTML=f.map((x,i)=>`<div class="faq-card" style="animation-delay:${i*0.1}s"><h3><i class="fas ${x.icon}"></i> ${x.q}</h3><p>${x.a}</p></div>`).join('');
+        }
         
-        function updateBadges(){const b=currentUser?.badges||['new'],h=b.map(x=>`<span class="badge badge-${x}"><i class="fas ${badgeInfo[x]?.icon||'fa-star'}"></i> ${badgeInfo[x]?.name||x}</span>`).join('');document.getElementById('profileBadges').innerHTML=h;document.getElementById('chatBadges').innerHTML=h;document.getElementById('badgesPageBadges').innerHTML=h;document.getElementById('statBadges').textContent=b.length;}
+        function renderContacts(){
+            document.getElementById('contactsGrid').innerHTML=contacts.map(c=>`<a href="${c.url}" class="contact-card" target="_blank"><div class="contact-icon"><i class="${c.icon}"></i></div><div class="contact-title">${c.title}</div><div class="contact-value">${c.value}</div></a>`).join('');
+        }
         
-        function renderBadges(){document.getElementById('badgesGrid').innerHTML=Object.entries(badgeInfo).map(([k,v])=>`<div class="badge-item"><span class="badge badge-${k}"><i class="fas ${v.icon}"></i> ${v.name}</span><div class="badge-desc">${v.desc}</div></div>`).join('');}
+        function updateBadges(){
+            const b=currentUser?.badges||['new'],h=b.map(x=>`<span class="badge badge-${x}"><i class="fas ${badgeInfo[x]?.icon||'fa-star'}"></i> ${badgeInfo[x]?.name||x}</span>`).join('');
+            document.getElementById('profileBadges').innerHTML=h;
+            document.getElementById('chatBadges').innerHTML=h;
+            document.getElementById('badgesPageBadges').innerHTML=h;
+            document.getElementById('statBadges').textContent=b.length;
+        }
         
-        async function loadAdminUsers(){try{const r=await fetch('/api/admin/users'),d=await r.json();document.getElementById('totalUsers').textContent=d.users.length;document.getElementById('onlineUsersCount').textContent=d.users.filter(x=>x.online).length;document.getElementById('bannedUsersCount').textContent=d.users.filter(x=>x.banned).length;document.getElementById('adminUsersList').innerHTML=d.users.map(u=>`<div class="admin-user-card"><div class="admin-user-info"><div class="admin-user-avatar"><i class="fas fa-user"></i></div><div class="admin-user-details"><h4>${u.username}${u.online?'<span class="online-indicator"></span>':''}${u.badges.map(b=>`<span class="badge badge-${b} badge-small"><i class="fas ${badgeInfo[b]?.icon||'fa-star'}"></i></span>`).join('')}</h4><p>${u.email} | IP: ${u.ips?.[0]||'N/A'} | Сообщений: ${u.messagesCount||0}</p></div></div><div class="admin-user-actions">${u.banned?`<button class="admin-btn admin-btn-mute" onclick="adminAction('unban','${u.username}')">Разбанить</button>`:`<button class="admin-btn admin-btn-ban" onclick="adminAction('ban','${u.username}')">Забанить</button>`}${u.muted?`<button class="admin-btn admin-btn-mute" onclick="adminAction('unmute','${u.username}')">Размутить</button>`:`<button class="admin-btn admin-btn-mute" onclick="adminAction('mute','${u.username}')">Замутить</button>`}<button class="admin-btn admin-btn-delete" onclick="adminAction('delete','${u.username}')">Удалить</button><button class="admin-btn admin-btn-badge" onclick="openBadgeModal('${u.username}')">Бейджик</button></div></div>`).join('');}catch(e){console.error(e);}}
+        function renderBadges(){
+            document.getElementById('badgesGrid').innerHTML=Object.entries(badgeInfo).map(([k,v])=>`<div class="badge-item"><span class="badge badge-${k}"><i class="fas ${v.icon}"></i> ${v.name}</span><div class="badge-desc">${v.desc}</div></div>`).join('');
+        }
         
-        async function adminAction(a,u){if(!confirm(`Вы уверены, что хотите ${a} пользователя ${u}?`))return;try{const r=await fetch('/api/admin/action',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:a,targetUsername:u})}),d=await r.json();if(d.success)loadAdminUsers();else alert(d.error);}catch(e){alert('Ошибка выполнения действия');}}
+        async function loadAdminUsers(){
+            try{
+                const r=await fetch('/api/admin/users'),d=await r.json();
+                document.getElementById('totalUsers').textContent=d.users.length;
+                document.getElementById('onlineUsersCount').textContent=d.users.filter(x=>x.online).length;
+                document.getElementById('bannedUsersCount').textContent=d.users.filter(x=>x.banned).length;
+                document.getElementById('adminUsersList').innerHTML=d.users.map(u=>`<div class="admin-user-card"><div class="admin-user-info"><div class="admin-user-avatar"><i class="fas fa-user"></i></div><div class="admin-user-details"><h4>${u.username}${u.online?'<span class="online-indicator"></span>':''}${u.badges.map(b=>`<span class="badge badge-${b} badge-small"><i class="fas ${badgeInfo[b]?.icon||'fa-star'}"></i></span>`).join('')}</h4><p>${u.email} | IP: ${u.ips?.[0]||'N/A'} | Сообщений: ${u.messagesCount||0}</p></div></div><div class="admin-user-actions">${u.banned?`<button class="admin-btn admin-btn-mute" onclick="adminAction('unban','${u.username}')">Разбанить</button>`:`<button class="admin-btn admin-btn-ban" onclick="adminAction('ban','${u.username}')">Забанить</button>`}${u.muted?`<button class="admin-btn admin-btn-mute" onclick="adminAction('unmute','${u.username}')">Размутить</button>`:`<button class="admin-btn admin-btn-mute" onclick="adminAction('mute','${u.username}')">Замутить</button>`}<button class="admin-btn admin-btn-delete" onclick="adminAction('delete','${u.username}')">Удалить</button><button class="admin-btn admin-btn-badge" onclick="openBadgeModal('${u.username}')">Бейджик</button></div></div>`).join('');
+            }catch(e){
+                console.error(e);
+            }
+        }
         
-        function openBadgeModal(u){selectedUserForBadge=u;selectedBadge=null;document.getElementById('badgeSelectGrid').innerHTML=Object.entries(badgeInfo).map(([k,v])=>`<div class="badge-select-item" onclick="selectBadge('${k}',this)"><span class="badge badge-${k}"><i class="fas ${v.icon}"></i> ${v.name}</span><div style="font-size:0.75rem;color:#888;margin-top:0.3rem;">${v.desc}</div></div>`).join('');document.getElementById('badgeSelectModal').classList.add('active');}
+        async function adminAction(a,u){
+            if(!confirm(`Вы уверены, что хотите ${a} пользователя ${u}?`))return;
+            try{
+                const r=await fetch('/api/admin/action',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:a,targetUsername:u})});
+                const d=await r.json();
+                if(d.success)loadAdminUsers();
+                else alert(d.error);
+            }catch(e){
+                alert('Ошибка выполнения действия');
+            }
+        }
         
-        function closeBadgeModal(){document.getElementById('badgeSelectModal').classList.remove('active');selectedUserForBadge=null;selectedBadge=null;}
+        function openBadgeModal(u){
+            selectedUserForBadge=u;
+            selectedBadge=null;
+            document.getElementById('badgeSelectGrid').innerHTML=Object.entries(badgeInfo).map(([k,v])=>`<div class="badge-select-item" onclick="selectBadge('${k}',this)"><span class="badge badge-${k}"><i class="fas ${v.icon}"></i> ${v.name}</span><div style="font-size:0.75rem;color:#888;margin-top:0.3rem;">${v.desc}</div></div>`).join('');
+            document.getElementById('badgeSelectModal').classList.add('active');
+        }
         
-        function selectBadge(b,e){selectedBadge=b;document.querySelectorAll('.badge-select-item').forEach(x=>x.classList.remove('selected'));e.classList.add('selected');}
+        function closeBadgeModal(){
+            document.getElementById('badgeSelectModal').classList.remove('active');
+            selectedUserForBadge=null;
+            selectedBadge=null;
+        }
         
-        async function giveSelectedBadge(){if(!selectedBadge||!selectedUserForBadge){alert('Выберите бейджик');return;}try{const r=await fetch('/api/admin/badge',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'give',targetUsername:selectedUserForBadge,badge:selectedBadge})}),d=await r.json();if(d.success){alert(`Бейджик ${badgeInfo[selectedBadge].name} выдан ${selectedUserForBadge}`);closeBadgeModal();loadAdminUsers();}else alert(d.error);}catch(e){alert('Ошибка выдачи бейджика');}}
+        function selectBadge(b,e){
+            selectedBadge=b;
+            document.querySelectorAll('.badge-select-item').forEach(x=>x.classList.remove('selected'));
+            e.classList.add('selected');
+        }
         
-        async function removeSelectedBadge(){if(!selectedBadge||!selectedUserForBadge){alert('Выберите бейджик');return;}try{const r=await fetch('/api/admin/badge',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'remove',targetUsername:selectedUserForBadge,badge:selectedBadge})}),d=await r.json();if(d.success){alert(`Бейджик ${badgeInfo[selectedBadge].name} удален у ${selectedUserForBadge}`);closeBadgeModal();loadAdminUsers();}else alert(d.error);}catch(e){alert('Ошибка удаления бейджика');}}
+        async function giveSelectedBadge(){
+            if(!selectedBadge||!selectedUserForBadge){
+                alert('Выберите бейджик');
+                return;
+            }
+            try{
+                const r=await fetch('/api/admin/badge',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'give',targetUsername:selectedUserForBadge,badge:selectedBadge})});
+                const d=await r.json();
+                if(d.success){
+                    alert(`Бейджик ${badgeInfo[selectedBadge].name} выдан ${selectedUserForBadge}`);
+                    closeBadgeModal();
+                    loadAdminUsers();
+                }else alert(d.error);
+            }catch(e){
+                alert('Ошибка выдачи бейджика');
+            }
+        }
         
-        function initReviews(){const stars=document.querySelectorAll('#ratingInput .star-btn');stars.forEach(s=>{s.addEventListener('click',()=>{const r=parseInt(s.dataset.rating);selectedRating=r;stars.forEach((st,idx)=>{if(idx<r)st.classList.add('active');else st.classList.remove('active');});});});const editStars=document.querySelectorAll('#editRatingInput .star-btn');editStars.forEach(s=>{s.addEventListener('click',()=>{const r=parseInt(s.dataset.rating);editingRating=r;editStars.forEach((st,idx)=>{if(idx<r)st.classList.add('active');else st.classList.remove('active');});});});}
+        async function removeSelectedBadge(){
+            if(!selectedBadge||!selectedUserForBadge){
+                alert('Выберите бейджик');
+                return;
+            }
+            try{
+                const r=await fetch('/api/admin/badge',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'remove',targetUsername:selectedUserForBadge,badge:selectedBadge})});
+                const d=await r.json();
+                if(d.success){
+                    alert(`Бейджик ${badgeInfo[selectedBadge].name} удален у ${selectedUserForBadge}`);
+                    closeBadgeModal();
+                    loadAdminUsers();
+                }else alert(d.error);
+            }catch(e){
+                alert('Ошибка удаления бейджика');
+            }
+        }
         
-        let editingRating=0;
+        function initReviews(){
+            const stars=document.querySelectorAll('#ratingInput .star-btn');
+            stars.forEach(s=>{
+                s.addEventListener('click',()=>{
+                    const r=parseInt(s.dataset.rating);
+                    selectedRating=r;
+                    stars.forEach((st,idx)=>{
+                        if(idx<r)st.classList.add('active');
+                        else st.classList.remove('active');
+                    });
+                });
+            });
+            const editStars=document.querySelectorAll('#editRatingInput .star-btn');
+            editStars.forEach(s=>{
+                s.addEventListener('click',()=>{
+                    const r=parseInt(s.dataset.rating);
+                    editingRating=r;
+                    editStars.forEach((st,idx)=>{
+                        if(idx<r)st.classList.add('active');
+                        else st.classList.remove('active');
+                    });
+                });
+            });
+        }
         
-        async function loadReviews(){try{const r=await fetch('/api/reviews'),d=await r.json();renderReviews(d.reviews,d.userReview);updateReviewStats(d.reviews);if(d.userReview){document.getElementById('addReviewForm').style.display='none';}else{document.getElementById('addReviewForm').style.display='block';selectedRating=0;document.querySelectorAll('#ratingInput .star-btn').forEach(s=>s.classList.remove('active'));document.getElementById('reviewText').value='';}}catch(e){console.error(e);}}
+        async function loadReviews(){
+            try{
+                const r=await fetch('/api/reviews'),d=await r.json();
+                renderReviews(d.reviews,d.userReview);
+                updateReviewStats(d.reviews);
+                if(d.userReview){
+                    document.getElementById('addReviewForm').style.display='none';
+                }else{
+                    document.getElementById('addReviewForm').style.display='block';
+                    selectedRating=0;
+                    document.querySelectorAll('#ratingInput .star-btn').forEach(s=>s.classList.remove('active'));
+                    document.getElementById('reviewText').value='';
+                }
+            }catch(e){
+                console.error(e);
+            }
+        }
         
-        function renderReviews(reviews,userReview){const g=document.getElementById('reviewsGrid');let html='';if(userReview){html+=createReviewCard(userReview,true);}reviews.forEach(r=>{if(!userReview||r.id!==userReview.id){html+=createReviewCard(r,false);}});g.innerHTML=html||'<div style="text-align:center;color:#888;padding:3rem;">Пока нет отзывов. Будьте первым!</div>';}
+        function renderReviews(reviews,userReview){
+            const g=document.getElementById('reviewsGrid');
+            let html='';
+            if(userReview){
+                html+=createReviewCard(userReview,true);
+            }
+            reviews.forEach(r=>{
+                if(!userReview||r.id!==userReview.id){
+                    html+=createReviewCard(r,false);
+                }
+            });
+            g.innerHTML=html||'<div style="text-align:center;color:#888;padding:3rem;">Пока нет отзывов. Будьте первым!</div>';
+        }
         
-        function createReviewCard(r,isOwner){const date=new Date(r.date).toLocaleDateString('ru-RU');const stars=Array(5).fill(0).map((_,i)=>`<i class="fas fa-star ${i<r.rating?'':'empty'}"></i>`).join('');return`<div class="review-card ${r.isAdminEdit?'admin-review':''}" data-id="${r.id}"><div class="review-header"><div class="review-user"><div class="review-avatar"><i class="fas fa-user"></i></div><div><div class="review-username">${escapeHtml(r.username)}</div><div class="review-date">${date}${r.isAdminEdit?' (изменено админом)':''}</div></div></div><div class="review-rating">${stars}</div></div><div class="review-text">${escapeHtml(r.text||'Без комментария')}</div>${(isOwner||currentUser?.isOwner)?`<div class="review-actions">${currentUser?.isOwner?`<button class="review-btn edit" onclick="openEditReviewModal('${r.id}',${r.rating},'${escapeHtml(r.text||'')}')">Изменить</button><button class="review-btn delete" onclick="deleteReview('${r.id}')">Удалить</button>`:`<button class="review-btn delete" onclick="deleteReview('${r.id}')">Удалить</button>`}</div>`:''}</div>`;}
+        function createReviewCard(r,isOwner){
+            const date=new Date(r.date).toLocaleDateString('ru-RU');
+            const stars=Array(5).fill(0).map((_,i)=>`<i class="fas fa-star ${i<r.rating?'':'empty'}"></i>`).join('');
+            return`<div class="review-card ${r.isAdminEdit?'admin-review':''}" data-id="${r.id}"><div class="review-header"><div class="review-user"><div class="review-avatar"><i class="fas fa-user"></i></div><div><div class="review-username">${escapeHtml(r.username)}</div><div class="review-date">${date}${r.isAdminEdit?' (изменено админом)':''}</div></div></div><div class="review-rating">${stars}</div></div><div class="review-text">${escapeHtml(r.text||'Без комментария')}</div>${(isOwner||currentUser?.isOwner)?`<div class="review-actions">${currentUser?.isOwner?`<button class="review-btn edit" onclick="openEditReviewModal('${r.id}',${r.rating},'${escapeHtml(r.text||'')}')">Изменить</button><button class="review-btn delete" onclick="deleteReview('${r.id}')">Удалить</button>`:`<button class="review-btn delete" onclick="deleteReview('${r.id}')">Удалить</button>`}</div>`:''}</div>`;
+        }
         
-        function updateReviewStats(reviews){if(!reviews.length){document.getElementById('avgRating').textContent='0.0';document.getElementById('totalReviews').textContent='0';document.getElementById('fiveStarPercent').textContent='0%';return;}const avg=(reviews.reduce((s,r)=>s+r.rating,0)/reviews.length).toFixed(1);const fiveStar=Math.round((reviews.filter(r=>r.rating===5).length/reviews.length)*100);document.getElementById('avgRating').textContent=avg;document.getElementById('totalReviews').textContent=reviews.length;document.getElementById('fiveStarPercent').textContent=fiveStar+'%';}
+        function updateReviewStats(reviews){
+            if(!reviews.length){
+                document.getElementById('avgRating').textContent='0.0';
+                document.getElementById('totalReviews').textContent='0';
+                document.getElementById('fiveStarPercent').textContent='0%';
+                return;
+            }
+            const avg=(reviews.reduce((s,r)=>s+r.rating,0)/reviews.length).toFixed(1);
+            const fiveStar=Math.round((reviews.filter(r=>r.rating===5).length/reviews.length)*100);
+            document.getElementById('avgRating').textContent=avg;
+            document.getElementById('totalReviews').textContent=reviews.length;
+            document.getElementById('fiveStarPercent').textContent=fiveStar+'%';
+        }
         
-        async function submitReview(){if(selectedRating===0){alert('Выберите оценку от 1 до 5 звёзд');return;}const text=document.getElementById('reviewText').value.trim();try{const r=await fetch('/api/reviews',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({rating:selectedRating,text:text})});const d=await r.json();if(d.success){loadReviews();}else{alert(d.error);}}catch(e){alert('Ошибка отправки отзыва');}}
+        async function submitReview(){
+            if(selectedRating===0){
+                alert('Выберите оценку от 1 до 5 звёзд');
+                return;
+            }
+            const text=document.getElementById('reviewText').value.trim();
+            try{
+                const r=await fetch('/api/reviews',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({rating:selectedRating,text:text})});
+                const d=await r.json();
+                if(d.success){
+                    loadReviews();
+                }else{
+                    alert(d.error);
+                }
+            }catch(e){
+                alert('Ошибка отправки отзыва');
+            }
+        }
         
-        async function deleteReview(id){if(!confirm('Удалить этот отзыв?'))return;try{const r=await fetch(`/api/reviews/${id}`,{method:'DELETE'});const d=await r.json();if(d.success){loadReviews();}else{alert(d.error);}}catch(e){alert('Ошибка удаления отзыва');}}
+        async function deleteReview(id){
+            if(!confirm('Удалить этот отзыв?'))return;
+            try{
+                const r=await fetch(`/api/reviews/${id}`,{method:'DELETE'});
+                const d=await r.json();
+                if(d.success){
+                    loadReviews();
+                }else{
+                    alert(d.error);
+                }
+            }catch(e){
+                alert('Ошибка удаления отзыва');
+            }
+        }
         
-        function openEditReviewModal(id,rating,text){editingReviewId=id;editingRating=rating;document.getElementById('editReviewText').value=text.replace(/\\n/g,'\n');const stars=document.querySelectorAll('#editRatingInput .star-btn');stars.forEach((s,idx)=>{if(idx<rating)s.classList.add('active');else s.classList.remove('active');});document.getElementById('editReviewModal').classList.add('active');}
+        function openEditReviewModal(id,rating,text){
+            editingReviewId=id;
+            editingRating=rating;
+            document.getElementById('editReviewText').value=text.replace(/\\n/g,'\n');
+            const stars=document.querySelectorAll('#editRatingInput .star-btn');
+            stars.forEach((s,idx)=>{
+                if(idx<rating)s.classList.add('active');
+                else s.classList.remove('active');
+            });
+            document.getElementById('editReviewModal').classList.add('active');
+        }
         
-        function closeEditReviewModal(){document.getElementById('editReviewModal').classList.remove('active');editingReviewId=null;editingRating=0;}
+        function closeEditReviewModal(){
+            document.getElementById('editReviewModal').classList.remove('active');
+            editingReviewId=null;
+            editingRating=0;
+        }
         
-        async function saveReviewEdit(){if(editingRating===0){alert('Выберите оценку');return;}const text=document.getElementById('editReviewText').value.trim();try{const r=await fetch(`/api/reviews/${editingReviewId}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({rating:editingRating,text:text})});const d=await r.json();if(d.success){closeEditReviewModal();loadReviews();}else{alert(d.error);}}catch(e){alert('Ошибка обновления отзыва');}}
+        async function saveReviewEdit(){
+            if(editingRating===0){
+                alert('Выберите оценку');
+                return;
+            }
+            const text=document.getElementById('editReviewText').value.trim();
+            try{
+                const r=await fetch(`/api/reviews/${editingReviewId}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({rating:editingRating,text:text})});
+                const d=await r.json();
+                if(d.success){
+                    closeEditReviewModal();
+                    loadReviews();
+                }else{
+                    alert(d.error);
+                }
+            }catch(e){
+                alert('Ошибка обновления отзыва');
+            }
+        }
         
-        async function logout(){await fetch('/api/logout',{method:'POST'});location.reload();}
+        async function logout(){
+            await fetch('/api/logout',{method:'POST'});
+            location.reload();
+        }
         
         document.getElementById('cartModal').addEventListener('click',e=>{if(e.target.id==='cartModal')closeCart();});
         document.getElementById('badgeSelectModal').addEventListener('click',e=>{if(e.target.id==='badgeSelectModal')closeBadgeModal();});
         document.getElementById('editReviewModal').addEventListener('click',e=>{if(e.target.id==='editReviewModal')closeEditReviewModal();});
+        
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes rippleEffect {
+                to { width: 300px; height: 300px; opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html>
